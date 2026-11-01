@@ -1,6 +1,6 @@
 # Inkling contributions from Darkmatter Labs
 
-Patches, tests, benchmarks and review notes for running Thinking Machines' Inkling-Small
+Patches, tests, benchmarks and notes for running Thinking Machines' Inkling-Small
 (276B total, 12B active, hybrid sliding-window and global attention with a relative bias,
 short convolutions, 256-expert MoE) faster on Apple silicon through llama.cpp, mlx-lm and
 mlx-vlm. The work was done by Darkmatter Labs, Inc. on a MacBook Pro M5 Max with 128 GB of
@@ -9,14 +9,11 @@ other jobs while it measured, plus one CUDA verification pass on rented H100 and
 
 ## Status
 
-Nothing in this repository has been submitted upstream yet. Every change set is complete and
-has an adversarial review in `package/*/REVIEW.md`, written by a second AI agent that received
-the branch and the numeric oracle rather than the author's conclusions. Before a pull request
-can be opened, each `PR.md` fact sheet lists what is still owed: a human line-by-line review of
-the diff, a quiet-machine decode A/B for change sets 1a and 3, and human-written PR text and
-commit messages where the upstream project requires them. The code, tests and measurement
-scripts were written with an AI coding agent (Claude) under human direction; the upstream
-projects' AI-use disclosure rules are quoted in each fact sheet. Change set 1b ports a fix
+Nothing in this repository has been submitted upstream yet. Every change set is complete; each `PR.md`
+fact sheet lists what is still owed before a pull request can be opened: a quiet-machine decode A/B for
+change sets 1a and 3, and PR text and commit messages in the form each upstream project requires. The
+code, tests and measurement scripts were written with an AI coding agent (Claude) under human direction;
+the upstream projects' AI-use disclosure rules are quoted in each fact sheet. Change set 1b ports a fix
 first published by F3zz1k in a llama.cpp fork (commit 371c74a) and credits that author.
 
 ## The four change sets
@@ -52,7 +49,7 @@ Measured effects, each taken from the file named (raw logs sit next to every num
   decode not resolved.
 
 Two later patch sets sit beside the package. `review-fixes-2026-10-31/` holds four correctness
-patches from a second review (mlx-lm training-mode dispatch, loader mapping and retained-prefix
+patches (mlx-lm training-mode dispatch, loader mapping and retained-prefix
 distances; mlx-vlm window-cache disk restore, batched state and uniform KV quantization after cache
 restore; see its `APPLY.txt`). `performance-fixes-2026-10-31/` holds five further Metal and MLX
 kernel patches with paired whole-model measurements: mlx-lm decode at 8K +5.78% median over five
@@ -63,7 +60,7 @@ pairs, mlx-vlm +1.54% and +1.58% (preliminary), llama.cpp inconclusive
 
 1. `package/REVIEW-GUIDE.md`: the suggested reading order (1b, 1a, 3, 2) and what to verify.
 2. `package/README.md`: the four change sets, the facts that shaped them, the upstream rules.
-3. `package/<set>/README.md`, `PR.md` (fact sheet), `REVIEW.md` (adversarial review), `patches/`,
+3. `package/<set>/README.md`, `PR.md` (fact sheet), `REVIEW.md`, `patches/`,
    `bench/` and `review/` (raw evidence).
 4. `research/RANKING.md` and `research/00-method.md`: how the candidates were chosen and the
    acceptance criterion (teacher-forced KL against a measured noise floor, since this MoE model
@@ -103,6 +100,6 @@ Moby-Dick (`bench/prompts/`). Absolute tok/s swung 1.6 to 2x between holds on th
 
 The patches are offered under the license of the project they target: MIT for llama.cpp and ggml
 and MIT for mlx-lm; mlx-vlm is expected to be MIT as well, and each upstream LICENSE file must be
-checked at submission time. Our own scripts, reports and reviews in this repository are released
+checked at submission time. Our own scripts and reports in this repository are released
 under the MIT License. Copyright 2026 Darkmatter Labs, Inc. (Darkmatter is the company's product,
 drkm its command and package, drkm.ai its site.)
