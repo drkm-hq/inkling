@@ -1,0 +1,270 @@
+...............
+----------------------------------------------------------------------
+Ran 15 tests in 2.717s
+
+OK
+[INFO] Quantized model with 7.318 bits per weight.
+[INFO] Quantized model with 7.318 bits per weight.
+
+A2 report (rel error, tolerance):
+  5.436e-08 <= 1e-05  cpu: banded_mask (1, 2, 1, 600, 512, 512)
+  3.872e-08 <= 1e-05  cpu: banded_mask (2, 2, 8, 2000, 512, 512)
+  3.472e-08 <= 1e-05  cpu: banded_mask (1, 3, 37, 548, 512, 512)
+  3.336e-08 <= 1e-05  cpu: banded_mask (1, 2, 600, 1111, 512, 512)
+  2.730e-08 <= 1e-05  cpu: banded_mask (1, 2, 1, 1500, 0, 1024)
+  5.243e-08 <= 1e-05  cpu: banded_mask (2, 2, 8, 1030, 0, 1024)
+  3.285e-08 <= 1e-05  cpu: banded_mask (1, 2, 37, 1100, 0, 1024)
+  5.189e-08 <= 1e-05  cpu: banded_mask (1, 2, 1300, 1300, 0, 1024)
+  3.409e-08 <= 1e-05  cpu: banded_mask (2, 2, 3, 10, 4, 4)
+  2.027e-08 <= 1e-05  cpu: banded_mask (1, 2, 12, 12, 4, 4)
+  4.855e-08 <= 1e-05  cpu: banded_mask (1, 2, 5, 12, 0, 8)
+  4.866e-08 <= 1e-05  cpu: banded_mask (1, 2, 1, 1, 4, 4)
+  3.320e-08 <= 1e-05  gpu: banded_mask (1, 2, 1, 600, 512, 512)
+  3.232e-08 <= 1e-05  gpu: banded_mask (2, 2, 8, 2000, 512, 512)
+  3.341e-08 <= 1e-05  gpu: banded_mask (1, 3, 37, 548, 512, 512)
+  2.998e-08 <= 1e-05  gpu: banded_mask (1, 2, 600, 1111, 512, 512)
+  3.862e-08 <= 1e-05  gpu: banded_mask (1, 2, 1, 1500, 0, 1024)
+  4.363e-08 <= 1e-05  gpu: banded_mask (2, 2, 8, 1030, 0, 1024)
+  3.456e-08 <= 1e-05  gpu: banded_mask (1, 2, 37, 1100, 0, 1024)
+  3.314e-08 <= 1e-05  gpu: banded_mask (1, 2, 1300, 1300, 0, 1024)
+  2.076e-08 <= 1e-05  gpu: banded_mask (2, 2, 3, 10, 4, 4)
+  2.996e-08 <= 1e-05  gpu: banded_mask (1, 2, 12, 12, 4, 4)
+  3.048e-08 <= 1e-05  gpu: banded_mask (1, 2, 5, 12, 0, 8)
+  1.841e-08 <= 1e-05  gpu: banded_mask (1, 2, 1, 1, 4, 4)
+  1.116e-07 <= 1e-04  cpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 0
+  1.281e-07 <= 1e-04  cpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 1
+  2.040e-07 <= 1e-04  cpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 2
+  2.673e-07 <= 1e-04  cpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 3
+  3.099e-07 <= 1e-04  cpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 4
+  1.587e-07 <= 1e-04  cpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 5
+  1.164e-07 <= 1e-04  cpu: BatchGenerator seq 1 (prompt 4, 3 tokens) logprobs step 0
+  2.128e-07 <= 1e-04  cpu: BatchGenerator seq 1 (prompt 4, 3 tokens) logprobs step 1
+  1.550e-07 <= 1e-04  cpu: BatchGenerator seq 1 (prompt 4, 3 tokens) logprobs step 2
+  2.365e-07 <= 1e-04  cpu: BatchGenerator seq 2 (prompt 13, 5 tokens) logprobs step 0
+  2.735e-07 <= 1e-04  cpu: BatchGenerator seq 2 (prompt 13, 5 tokens) logprobs step 1
+  2.609e-07 <= 1e-04  cpu: BatchGenerator seq 2 (prompt 13, 5 tokens) logprobs step 2
+  2.534e-07 <= 1e-04  cpu: BatchGenerator seq 2 (prompt 13, 5 tokens) logprobs step 3
+  2.212e-07 <= 1e-04  cpu: BatchGenerator seq 2 (prompt 13, 5 tokens) logprobs step 4
+  1.142e-07 <= 1e-04  cpu: BatchGenerator seq 3 (prompt 7, 4 tokens) logprobs step 0
+  1.245e-07 <= 1e-04  cpu: BatchGenerator seq 3 (prompt 7, 4 tokens) logprobs step 1
+  1.576e-07 <= 1e-04  cpu: BatchGenerator seq 3 (prompt 7, 4 tokens) logprobs step 2
+  3.693e-07 <= 1e-04  cpu: BatchGenerator seq 3 (prompt 7, 4 tokens) logprobs step 3
+  1.259e-07 <= 1e-04  gpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 0
+  1.281e-07 <= 1e-04  gpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 1
+  1.657e-07 <= 1e-04  gpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 2
+  2.673e-07 <= 1e-04  gpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 3
+  1.833e-07 <= 1e-04  gpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 4
+  1.669e-07 <= 1e-04  gpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 5
+  1.530e-07 <= 1e-04  gpu: BatchGenerator seq 1 (prompt 4, 3 tokens) logprobs step 0
+  2.132e-07 <= 1e-04  gpu: BatchGenerator seq 1 (prompt 4, 3 tokens) logprobs step 1
+  1.366e-07 <= 1e-04  gpu: BatchGenerator seq 1 (prompt 4, 3 tokens) logprobs step 2
+  2.194e-07 <= 1e-04  gpu: BatchGenerator seq 2 (prompt 13, 5 tokens) logprobs step 0
+  1.871e-07 <= 1e-04  gpu: BatchGenerator seq 2 (prompt 13, 5 tokens) logprobs step 1
+  2.593e-07 <= 1e-04  gpu: BatchGenerator seq 2 (prompt 13, 5 tokens) logprobs step 2
+  2.239e-07 <= 1e-04  gpu: BatchGenerator seq 2 (prompt 13, 5 tokens) logprobs step 3
+  2.212e-07 <= 1e-04  gpu: BatchGenerator seq 2 (prompt 13, 5 tokens) logprobs step 4
+  1.607e-07 <= 1e-04  gpu: BatchGenerator seq 3 (prompt 7, 4 tokens) logprobs step 0
+  1.643e-07 <= 1e-04  gpu: BatchGenerator seq 3 (prompt 7, 4 tokens) logprobs step 1
+  1.431e-07 <= 1e-04  gpu: BatchGenerator seq 3 (prompt 7, 4 tokens) logprobs step 2
+  2.787e-07 <= 1e-04  gpu: BatchGenerator seq 3 (prompt 7, 4 tokens) logprobs step 3
+  5.904e-07 <= 1e-05  cpu: left-padded batch decode step 0 row A
+  4.604e-07 <= 1e-05  cpu: left-padded batch decode step 0 row B
+  5.628e-07 <= 1e-05  cpu: left-padded batch decode step 1 row A
+  5.164e-07 <= 1e-05  cpu: left-padded batch decode step 1 row B
+  6.760e-07 <= 1e-05  cpu: left-padded batch decode step 2 row A
+  5.171e-07 <= 1e-05  cpu: left-padded batch decode step 2 row B
+  1.024e-06 <= 1e-05  cpu: left-padded batch decode step 3 row A
+  8.052e-07 <= 1e-05  cpu: left-padded batch decode step 3 row B
+  3.827e-07 <= 1e-05  cpu: left-padded batch decode step 4 row A
+  6.763e-07 <= 1e-05  cpu: left-padded batch decode step 4 row B
+  8.615e-07 <= 1e-05  cpu: left-padded batch decode step 5 row A
+  4.143e-07 <= 1e-05  cpu: left-padded batch decode step 5 row B
+  5.422e-07 <= 1e-05  cpu: left-padded batch decode step 6 row A
+  7.939e-07 <= 1e-05  cpu: left-padded batch decode step 6 row B
+  7.346e-07 <= 1e-05  cpu: left-padded batch decode step 7 row A
+  5.055e-07 <= 1e-05  cpu: left-padded batch decode step 7 row B
+  9.864e-07 <= 1e-05  gpu: left-padded batch decode step 0 row A
+  5.109e-07 <= 1e-05  gpu: left-padded batch decode step 0 row B
+  6.693e-07 <= 1e-05  gpu: left-padded batch decode step 1 row A
+  6.718e-07 <= 1e-05  gpu: left-padded batch decode step 1 row B
+  6.244e-07 <= 1e-05  gpu: left-padded batch decode step 2 row A
+  5.645e-07 <= 1e-05  gpu: left-padded batch decode step 2 row B
+  8.284e-07 <= 1e-05  gpu: left-padded batch decode step 3 row A
+  7.574e-07 <= 1e-05  gpu: left-padded batch decode step 3 row B
+  5.092e-07 <= 1e-05  gpu: left-padded batch decode step 4 row A
+  5.968e-07 <= 1e-05  gpu: left-padded batch decode step 4 row B
+  5.524e-07 <= 1e-05  gpu: left-padded batch decode step 5 row A
+  4.886e-07 <= 1e-05  gpu: left-padded batch decode step 5 row B
+  4.018e-07 <= 1e-05  gpu: left-padded batch decode step 6 row A
+  5.384e-07 <= 1e-05  gpu: left-padded batch decode step 6 row B
+  1.111e-06 <= 1e-05  gpu: left-padded batch decode step 7 row A
+  8.604e-07 <= 1e-05  gpu: left-padded batch decode step 7 row B
+  6.666e-07 <= 1e-05  cpu: right-padded chunked prefill row A
+  6.218e-07 <= 1e-05  cpu: right-padded chunked prefill row B (valid part)
+  5.645e-07 <= 1e-05  cpu: decode after right-padded prefill step 0 row A
+  6.185e-07 <= 1e-05  cpu: decode after right-padded prefill step 0 row B
+  5.155e-07 <= 1e-05  cpu: decode after right-padded prefill step 1 row A
+  1.041e-06 <= 1e-05  cpu: decode after right-padded prefill step 1 row B
+  6.464e-07 <= 1e-05  cpu: decode after right-padded prefill step 2 row A
+  9.582e-07 <= 1e-05  cpu: decode after right-padded prefill step 2 row B
+  7.764e-07 <= 1e-05  cpu: decode after right-padded prefill step 3 row A
+  5.042e-07 <= 1e-05  cpu: decode after right-padded prefill step 3 row B
+  9.055e-07 <= 1e-05  cpu: decode after right-padded prefill step 4 row A
+  4.163e-07 <= 1e-05  cpu: decode after right-padded prefill step 4 row B
+  5.983e-07 <= 1e-05  cpu: decode after right-padded prefill step 5 row A
+  5.727e-07 <= 1e-05  cpu: decode after right-padded prefill step 5 row B
+  8.025e-07 <= 1e-05  gpu: right-padded chunked prefill row A
+  5.505e-07 <= 1e-05  gpu: right-padded chunked prefill row B (valid part)
+  6.023e-07 <= 1e-05  gpu: decode after right-padded prefill step 0 row A
+  7.518e-07 <= 1e-05  gpu: decode after right-padded prefill step 0 row B
+  6.524e-07 <= 1e-05  gpu: decode after right-padded prefill step 1 row A
+  8.326e-07 <= 1e-05  gpu: decode after right-padded prefill step 1 row B
+  7.399e-07 <= 1e-05  gpu: decode after right-padded prefill step 2 row A
+  6.000e-07 <= 1e-05  gpu: decode after right-padded prefill step 2 row B
+  8.677e-07 <= 1e-05  gpu: decode after right-padded prefill step 3 row A
+  5.052e-07 <= 1e-05  gpu: decode after right-padded prefill step 3 row B
+  9.709e-07 <= 1e-05  gpu: decode after right-padded prefill step 4 row A
+  1.109e-06 <= 1e-05  gpu: decode after right-padded prefill step 4 row B
+  6.739e-07 <= 1e-05  gpu: decode after right-padded prefill step 5 row A
+  7.376e-07 <= 1e-05  gpu: decode after right-padded prefill step 5 row B
+  2.181e-07 <= 1e-05  cpu: layer 0 cached K (last 9) 
+  2.625e-07 <= 1e-05  cpu: layer 0 cached V
+  2.802e-07 <= 1e-05  cpu: layer 0 k|v conv state
+  2.927e-07 <= 1e-05  cpu: layer 0 attn conv state
+  3.375e-07 <= 1e-05  cpu: layer 0 mlp conv state
+  3.361e-07 <= 1e-05  cpu: layer 1 cached K (last 9) 
+  4.443e-07 <= 1e-05  cpu: layer 1 cached V
+  3.376e-07 <= 1e-05  cpu: layer 1 k|v conv state
+  5.133e-07 <= 1e-05  cpu: layer 1 attn conv state
+  6.729e-07 <= 1e-05  cpu: layer 1 mlp conv state
+  4.755e-07 <= 1e-05  cpu: layer 2 cached K (last 9) 
+  5.214e-07 <= 1e-05  cpu: layer 2 cached V
+  5.597e-07 <= 1e-05  cpu: layer 2 k|v conv state
+  1.264e-06 <= 1e-05  cpu: layer 2 attn conv state
+  7.028e-07 <= 1e-05  cpu: layer 2 mlp conv state
+  2.797e-07 <= 1e-05  gpu: layer 0 cached K (last 9) 
+  2.013e-07 <= 1e-05  gpu: layer 0 cached V
+  2.612e-07 <= 1e-05  gpu: layer 0 k|v conv state
+  4.687e-07 <= 1e-05  gpu: layer 0 attn conv state
+  3.506e-07 <= 1e-05  gpu: layer 0 mlp conv state
+  4.843e-07 <= 1e-05  gpu: layer 1 cached K (last 9) 
+  2.970e-07 <= 1e-05  gpu: layer 1 cached V
+  4.025e-07 <= 1e-05  gpu: layer 1 k|v conv state
+  3.474e-07 <= 1e-05  gpu: layer 1 attn conv state
+  5.179e-07 <= 1e-05  gpu: layer 1 mlp conv state
+  4.891e-07 <= 1e-05  gpu: layer 2 cached K (last 9) 
+  7.698e-07 <= 1e-05  gpu: layer 2 cached V
+  5.239e-07 <= 1e-05  gpu: layer 2 k|v conv state
+  5.304e-07 <= 1e-05  gpu: layer 2 attn conv state
+  9.181e-07 <= 1e-05  gpu: layer 2 mlp conv state
+  1.572e-15 <= 1e-12  oracle: chunked (7, 1 x 33) == full
+  5.876e-07 <= 1e-05  cpu: decode 7 + 1 x 33
+  5.321e-07 <= 1e-05  cpu: chunks of 1
+  6.027e-07 <= 1e-05  cpu: chunks of 3
+  7.670e-07 <= 1e-05  cpu: chunks of 5
+  7.646e-07 <= 1e-05  cpu: chunks of 7
+  7.016e-07 <= 1e-05  cpu: mixed (5,3,1,1,1,1,...)
+  6.658e-07 <= 1e-05  cpu: multi-token after rotation (9,1,3,1,2,1,5,1,...)
+  6.016e-07 <= 1e-05  gpu: decode 7 + 1 x 33
+  7.026e-07 <= 1e-05  gpu: chunks of 1
+  6.466e-07 <= 1e-05  gpu: chunks of 3
+  6.196e-07 <= 1e-05  gpu: chunks of 5
+  6.010e-07 <= 1e-05  gpu: chunks of 7
+  6.465e-07 <= 1e-05  gpu: mixed (5,3,1,1,1,1,...)
+  5.733e-07 <= 1e-05  gpu: multi-token after rotation (9,1,3,1,2,1,5,1,...)
+  9.238e-07 <= 1e-05  cpu/hf: full forward logits B=2 L=12
+  3.784e-07 <= 1e-05  cpu/hf: layer 0 output
+  4.958e-07 <= 1e-05  cpu/hf: layer 1 output
+  5.816e-07 <= 1e-05  cpu/hf: layer 2 output
+  9.238e-07 <= 1e-05  cpu/mlx: full forward logits B=2 L=12
+  3.784e-07 <= 1e-05  cpu/mlx: layer 0 output
+  4.958e-07 <= 1e-05  cpu/mlx: layer 1 output
+  5.816e-07 <= 1e-05  cpu/mlx: layer 2 output
+  6.649e-07 <= 1e-05  cpu: full forward L=40 (many windows, tau active)
+  5.944e-07 <= 1e-05  cpu: single token, no cache
+  0.000e+00 <= 1e-05  cpu: batch rows == single rows
+  9.143e-07 <= 1e-05  gpu/hf: full forward logits B=2 L=12
+  3.229e-07 <= 1e-05  gpu/hf: layer 0 output
+  5.711e-07 <= 1e-05  gpu/hf: layer 1 output
+  7.940e-07 <= 1e-05  gpu/hf: layer 2 output
+  9.143e-07 <= 1e-05  gpu/mlx: full forward logits B=2 L=12
+  3.229e-07 <= 1e-05  gpu/mlx: layer 0 output
+  5.711e-07 <= 1e-05  gpu/mlx: layer 1 output
+  7.940e-07 <= 1e-05  gpu/mlx: layer 2 output
+  7.392e-07 <= 1e-05  gpu: full forward L=40 (many windows, tau active)
+  5.786e-07 <= 1e-05  gpu: single token, no cache
+  0.000e+00 <= 1e-05  gpu: batch rows == single rows
+  2.507e-07 <= 1e-04  cpu: generate_step logprobs step 0
+  1.809e-07 <= 1e-04  cpu: generate_step logprobs step 1
+  1.505e-07 <= 1e-04  cpu: generate_step logprobs step 2
+  1.416e-07 <= 1e-04  cpu: generate_step logprobs step 3
+  1.982e-07 <= 1e-04  cpu: generate_step logprobs step 4
+  1.553e-07 <= 1e-04  cpu: generate_step logprobs step 5
+  2.464e-07 <= 1e-04  cpu: generate_step logprobs step 6
+  1.211e-07 <= 1e-04  cpu: generate_step logprobs step 7
+  2.507e-07 <= 1e-04  gpu: generate_step logprobs step 0
+  1.809e-07 <= 1e-04  gpu: generate_step logprobs step 1
+  1.505e-07 <= 1e-04  gpu: generate_step logprobs step 2
+  1.416e-07 <= 1e-04  gpu: generate_step logprobs step 3
+  1.982e-07 <= 1e-04  gpu: generate_step logprobs step 4
+  1.553e-07 <= 1e-04  gpu: generate_step logprobs step 5
+  2.464e-07 <= 1e-04  gpu: generate_step logprobs step 6
+  1.211e-07 <= 1e-04  gpu: generate_step logprobs step 7
+  0.000e+00 <= 1e-12  cpu: decode after save/load == original
+  6.570e-07 <= 1e-05  cpu: decode after save/load vs oracle
+  0.000e+00 <= 1e-12  gpu: decode after save/load == original
+  6.113e-07 <= 1e-05  gpu: decode after save/load vs oracle
+  1.042e-06 <= 2e-05  cpu: quantized tiny model full vs its dequantized twin
+  8.955e-07 <= 2e-05  cpu: quantized tiny model decode 7 + 1 x 9 vs its dequantized twin
+  6.331e-01 <= 1e+00  cpu: dequantized 4-bit tiny model vs oracle (information only)
+  2.115e-06 <= 2e-05  gpu: quantized tiny model full vs its dequantized twin
+  1.729e-06 <= 2e-05  gpu: quantized tiny model decode 7 + 1 x 9 vs its dequantized twin
+  6.331e-01 <= 1e+00  gpu: dequantized 4-bit tiny model vs oracle (information only)
+  6.668e-07 <= 1e-05  gpu: fp32 (routes recorded) vs oracle
+  6.766e-01 <= 1e+00  gpu: mlx.core.bfloat16 vs oracle, all tokens (2/32 tokens route differently from fp32)
+  4.329e-01 <= 1e+00  gpu: mlx.core.bfloat16 vs oracle on tokens routed like fp32 (information only)
+  0.000e+00 <= 1e-02  gpu: mlx.core.bfloat16 kernels vs fallbacks
+  3.082e-03 <= 1e+00  gpu: mlx.core.float16 vs oracle, all tokens (0/32 tokens route differently from fp32)
+  3.082e-03 <= 1e+00  gpu: mlx.core.float16 vs oracle on tokens routed like fp32 (information only)
+  0.000e+00 <= 1e-02  gpu: mlx.core.float16 kernels vs fallbacks
+  8.202e-08 <= 1e-05  cpu: router compiled N=1: expert sets differ from the oracle on rows [] (row 0 holds the exact tie); max weight rel err 8.20e-08
+  2.651e-07 <= 1e-05  cpu: router compiled N=37: expert sets differ from the oracle on rows [] (row 0 holds the exact tie); max weight rel err 2.65e-07
+  2.600e-07 <= 1e-05  cpu: router compiled N=300: expert sets differ from the oracle on rows [] (row 0 holds the exact tie); max weight rel err 2.60e-07
+  9.630e-08 <= 1e-05  gpu: router kernel N=1: expert sets differ from the oracle on rows [] (row 0 holds the exact tie); max weight rel err 9.63e-08
+  1.299e-07 <= 1e-05  gpu: router compiled N=1: expert sets differ from the oracle on rows [] (row 0 holds the exact tie); max weight rel err 1.30e-07
+  2.857e-07 <= 1e-05  gpu: router kernel N=37: expert sets differ from the oracle on rows [] (row 0 holds the exact tie); max weight rel err 2.86e-07
+  2.953e-07 <= 1e-05  gpu: router compiled N=37: expert sets differ from the oracle on rows [] (row 0 holds the exact tie); max weight rel err 2.95e-07
+  3.170e-07 <= 1e-05  gpu: router kernel N=300: expert sets differ from the oracle on rows [] (row 0 holds the exact tie); max weight rel err 3.17e-07
+  3.958e-07 <= 1e-05  gpu: router compiled N=300: expert sets differ from the oracle on rows [] (row 0 holds the exact tie); max weight rel err 3.96e-07
+  0.000e+00 <= 8e-03  gpu: ShortConv mlx.core.bfloat16 L=1 kernel vs fallback (bit-identical: True)
+  0.000e+00 <= 8e-03  gpu: ShortConv mlx.core.bfloat16 L=2 kernel vs fallback (bit-identical: True)
+  0.000e+00 <= 8e-03  gpu: ShortConv mlx.core.bfloat16 L=5 kernel vs fallback (bit-identical: True)
+  0.000e+00 <= 8e-03  gpu: ShortConv mlx.core.bfloat16 L=8 kernel vs fallback (bit-identical: True)
+  0.000e+00 <= 8e-03  gpu: ShortConv mlx.core.bfloat16 L=9 kernel vs fallback (bit-identical: True)
+  0.000e+00 <= 8e-03  gpu: ShortConv mlx.core.bfloat16 L=20 kernel vs fallback (bit-identical: True)
+  0.000e+00 <= 1e-03  gpu: ShortConv mlx.core.float16 L=1 kernel vs fallback (bit-identical: True)
+  0.000e+00 <= 1e-03  gpu: ShortConv mlx.core.float16 L=2 kernel vs fallback (bit-identical: True)
+  0.000e+00 <= 1e-03  gpu: ShortConv mlx.core.float16 L=5 kernel vs fallback (bit-identical: True)
+  0.000e+00 <= 1e-03  gpu: ShortConv mlx.core.float16 L=8 kernel vs fallback (bit-identical: True)
+  0.000e+00 <= 1e-03  gpu: ShortConv mlx.core.float16 L=9 kernel vs fallback (bit-identical: True)
+  0.000e+00 <= 1e-03  gpu: ShortConv mlx.core.float16 L=20 kernel vs fallback (bit-identical: True)
+  4.549e-08 <= 1e-06  gpu: ShortConv mlx.core.float32 L=1 kernel vs fallback (bit-identical: False)
+  4.566e-08 <= 1e-05  gpu: ShortConv fp32 L=1 vs oracle (+residual)
+  0.000e+00 <= 0e+00  gpu: ShortConv state L=1
+  4.690e-08 <= 1e-06  gpu: ShortConv mlx.core.float32 L=2 kernel vs fallback (bit-identical: False)
+  5.200e-08 <= 1e-05  gpu: ShortConv fp32 L=2 vs oracle (+residual)
+  0.000e+00 <= 0e+00  gpu: ShortConv state L=2
+  8.145e-08 <= 1e-06  gpu: ShortConv mlx.core.float32 L=5 kernel vs fallback (bit-identical: False)
+  4.842e-08 <= 1e-05  gpu: ShortConv fp32 L=5 vs oracle (+residual)
+  0.000e+00 <= 0e+00  gpu: ShortConv state L=5
+  5.343e-08 <= 1e-06  gpu: ShortConv mlx.core.float32 L=8 kernel vs fallback (bit-identical: False)
+  7.072e-08 <= 1e-05  gpu: ShortConv fp32 L=8 vs oracle (+residual)
+  0.000e+00 <= 0e+00  gpu: ShortConv state L=8
+  0.000e+00 <= 1e-06  gpu: ShortConv mlx.core.float32 L=9 kernel vs fallback (bit-identical: True)
+  1.029e-07 <= 1e-05  gpu: ShortConv fp32 L=9 vs oracle (+residual)
+  0.000e+00 <= 0e+00  gpu: ShortConv state L=9
+  0.000e+00 <= 1e-06  gpu: ShortConv mlx.core.float32 L=20 kernel vs fallback (bit-identical: True)
+  6.696e-08 <= 1e-05  gpu: ShortConv fp32 L=20 vs oracle (+residual)
+  0.000e+00 <= 0e+00  gpu: ShortConv state L=20
+  0.000e+00 <= 1e+00  trim_prompt_cache is a no-op (ArraysCache not trimmable)
+  6.371e-07 <= 1e-05  decode after refused trim vs oracle

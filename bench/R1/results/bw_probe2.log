@@ -1,0 +1,22 @@
+gemv M=1 4096x4096 bf16 (16 copies, chain 32)                0.0743 ms/op      33.6 MB   451.9 GB/s
+gemv M=1 4096x4096 q8 (16 copies, chain 32)                  0.0430 ms/op      17.8 MB   414.8 GB/s
+gemv M=1 4096x4096 q4 (16 copies, chain 32)                  0.0319 ms/op       9.4 MB   295.5 GB/s
+gemv M=1 4096x4096 q2 (16 copies, chain 32)                  0.0221 ms/op       5.2 MB   237.0 GB/s
+gemv M=1 6656x4096 bf16 (+slice) (12 copies, chain 24)       0.1207 ms/op      54.5 MB   451.6 GB/s
+gemv M=1 6656x4096 q8 (+slice) (12 copies, chain 24)         0.0705 ms/op      29.0 MB   410.8 GB/s
+gemv M=1 6656x4096 q4 (+slice) (12 copies, chain 24)         0.0454 ms/op      15.3 MB   337.5 GB/s
+gemv M=1 dense up+down 16384x4096 x2 bf16 (4 copies, chain 12)   0.5614 ms/op     268.4 MB   478.2 GB/s
+gemv M=1 dense up+down 16384x4096 x2 q8 (4 copies, chain 12)   0.3167 ms/op     142.6 MB   450.3 GB/s
+gemv M=1 dense up+down 16384x4096 x2 q4 (4 copies, chain 12)   0.1823 ms/op      75.5 MB   414.2 GB/s
+gemv M=1 dense up+down 16384x4096 x2 q2 (4 copies, chain 12)   0.1357 ms/op      41.9 MB   309.1 GB/s
+gemv M=1 lm_head 201024x4096 bf16 (chain 6)                  3.3491 ms/op    1646.8 MB   491.7 GB/s
+gemv M=1 lm_head 201024x4096 q8 (chain 6)                    1.7991 ms/op     874.9 MB   486.3 GB/s
+gemv M=1 lm_head 201024x4096 q4 (chain 6)                    0.9393 ms/op     463.2 MB   493.1 GB/s
+gemv M=1 lm_head 201024x4096 q2 (chain 6)                    0.5331 ms/op     257.3 MB   482.7 GB/s
+SwitchGLU gather_qmm q2 N=1 K=6 up+gate+down (chain 16)      0.1687 ms/op      47.2 MB   279.6 GB/s
+gather_qmm q2 down_proj only N=1 K=6 (chain 16)              0.0631 ms/op      15.7 MB   249.1 GB/s
+gather_qmm q2 up_proj only N=1 K=6 (chain 16)                0.0687 ms/op      15.7 MB   228.9 GB/s
+SwitchGLU gather_qmm q4 N=1 K=6 up+gate+down (chain 16)      0.2564 ms/op      84.9 MB   331.3 GB/s
+gather_qmm q4 down_proj only N=1 K=6 (chain 16)              0.0951 ms/op      28.3 MB   297.7 GB/s
+gather_qmm q4 up_proj only N=1 K=6 (chain 16)                0.0891 ms/op      28.3 MB   317.9 GB/s
+wrote <workdir>/bench/R1/results/bw_probe2.json

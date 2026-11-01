@@ -1,0 +1,10 @@
+{"section": "bandwidth probe"}
+a+1  fp16 1 GiB (read+write)                               | r1:    4.671 ms (best    4.442)    460 GB/s | r4:    4.525 ms (best    4.326)    475 GB/s
+a*b  fp16 1 GiB (2 reads+write)                            | r1:    6.984 ms (best    6.487)    461 GB/s | r4:    6.653 ms (best    5.419)    484 GB/s
+sum(a) fp16 1 GiB (read)                                   | r1:    2.277 ms (best    2.104)    472 GB/s | r4:    2.061 ms (best    1.914)    521 GB/s
+a+1  fp16 4 GiB (read+write)                               | r1:   19.135 ms (best   17.661)    449 GB/s | r4:   18.112 ms (best   17.628)    474 GB/s
+a*b  fp16 4 GiB (2 reads+write)                            | r1:   34.225 ms (best   29.158)    376 GB/s | r4:   33.429 ms (best   29.785)    385 GB/s
+sum(a) fp16 4 GiB (read)                                   | r1:   14.464 ms (best   12.581)    297 GB/s | r4:   11.997 ms (best   11.312)    358 GB/s
+gemv bf16 16384x4096 (0.12 GiB)                            | r1:    0.586 ms (best    0.446)    229 GB/s | r8:    0.304 ms (best    0.269)    441 GB/s
+gemv bf16 16384x16384 (0.50 GiB)                           | r1:    1.346 ms (best    1.212)    399 GB/s | r8:    1.180 ms (best    1.024)    455 GB/s
+gemv bf16 32768x16384 (1.00 GiB)                           | r1:    2.433 ms (best    2.214)    441 GB/s | r8:    2.313 ms (best    2.149)    464 GB/s

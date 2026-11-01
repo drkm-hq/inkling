@@ -1,0 +1,9 @@
+=== START bw 21:55:31 load=28.81 16.45 11.12
+=== END bw rc=0 21:56:50
+=== START bench_sdpa 21:56:50 load=90.51 36.97 19.26
+=== END bench_sdpa rc=0 21:56:55
+=== START bench_misc 21:56:55 load=90.51 36.97 19.26
+=== END bench_misc rc=0 21:57:02
+=== START bench_moe 21:57:02 load=81.95 36.88 19.43
+=== END bench_moe rc=0 21:57:19
+=== ALL DONE

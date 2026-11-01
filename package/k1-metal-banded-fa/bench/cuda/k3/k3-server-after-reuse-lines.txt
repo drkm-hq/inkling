@@ -1,0 +1,39 @@
+0.01.820.017 I print_info: n_swa                 = 512
+0.27.561.355 I cmn  common_conte: the context does not support partial sequence removal
+0.27.562.548 I srv    load_model: speculative decoding will use checkpoints
+0.27.562.711 I srv    load_model: context checkpoints enabled, max = 32, min spacing = 8192
+0.30.637.198 I slot create_check: id  0 | task 0 | created context checkpoint 1 of 32 (pos_min = 221, pos_max = 221, n_tokens = 222, size = 35.278 MiB)
+0.30.939.338 I srv        update:    - prompt 0x562826fc9da0:     241 tokens, checkpoints:  1,    79.746 MiB
+0.30.939.412 I slot   operator(): id  0 | task 18 | erased invalidated context checkpoint (pos_min = 221, pos_max = 221, n_tokens = 222, n_swa = 512, pos_next = 0, size = 35.278 MiB)
+0.37.639.396 I slot create_check: id  0 | task 18 | created context checkpoint 1 of 32 (pos_min = 7701, pos_max = 7701, n_tokens = 7702, size = 74.930 MiB)
+0.38.082.455 I slot create_check: id  0 | task 18 | created context checkpoint 2 of 32 (pos_min = 8213, pos_max = 8213, n_tokens = 8214, size = 74.930 MiB)
+0.39.236.298 I slot   operator(): id  0 | task 88 | erased invalidated context checkpoint (pos_min = 7701, pos_max = 7701, n_tokens = 7702, n_swa = 512, pos_next = 0, size = 74.930 MiB)
+0.39.236.530 I slot   operator(): id  0 | task 88 | erased invalidated context checkpoint (pos_min = 8213, pos_max = 8213, n_tokens = 8214, n_swa = 512, pos_next = 0, size = 74.930 MiB)
+0.45.981.511 I slot create_check: id  0 | task 88 | created context checkpoint 1 of 32 (pos_min = 7901, pos_max = 7901, n_tokens = 7902, size = 74.930 MiB)
+0.46.427.957 I slot create_check: id  0 | task 88 | created context checkpoint 2 of 32 (pos_min = 8413, pos_max = 8413, n_tokens = 8414, size = 74.930 MiB)
+0.47.756.882 I slot   operator(): id  0 | task 158 | checking checkpoint with [8413, 8413] against 8217...
+0.47.756.883 I slot   operator(): id  0 | task 158 | checking checkpoint with [7901, 7901] against 8217...
+0.47.771.322 I slot   operator(): id  0 | task 158 | restored context checkpoint (pos_min = 7901, pos_max = 7901, n_tokens = 7902, n_past = 7902, size = 74.930 MiB)
+0.47.771.337 I slot   operator(): id  0 | task 158 | erased invalidated context checkpoint (pos_min = 8413, pos_max = 8413, n_tokens = 8414, n_swa = 512, pos_next = 7902, size = 74.930 MiB)
+0.47.771.963 I slot create_check: id  0 | task 158 | superseding context checkpoint at n_tokens = 7902
+0.47.799.648 I slot create_check: id  0 | task 158 | created context checkpoint 1 of 32 (pos_min = 7901, pos_max = 7901, n_tokens = 7902, size = 74.930 MiB)
+0.48.139.114 I slot create_check: id  0 | task 158 | created context checkpoint 2 of 32 (pos_min = 8213, pos_max = 8213, n_tokens = 8214, size = 74.930 MiB)
+0.49.327.340 I slot   operator(): id  0 | task 224 | checking checkpoint with [8213, 8213] against 8218...
+0.49.338.849 I slot   operator(): id  0 | task 224 | restored context checkpoint (pos_min = 8213, pos_max = 8213, n_tokens = 8214, n_past = 8214, size = 74.930 MiB)
+0.49.338.923 I slot create_check: id  0 | task 224 | superseding context checkpoint at n_tokens = 8214
+0.49.367.175 I slot create_check: id  0 | task 224 | created context checkpoint 2 of 32 (pos_min = 8213, pos_max = 8213, n_tokens = 8214, size = 74.930 MiB)
+0.49.645.617 I slot create_check: id  0 | task 224 | created context checkpoint 3 of 32 (pos_min = 8413, pos_max = 8413, n_tokens = 8414, size = 74.930 MiB)
+0.50.874.954 I slot   operator(): id  0 | task 290 | checking checkpoint with [8413, 8413] against 8217...
+0.50.874.954 I slot   operator(): id  0 | task 290 | checking checkpoint with [8213, 8213] against 8217...
+0.50.886.806 I slot   operator(): id  0 | task 290 | restored context checkpoint (pos_min = 8213, pos_max = 8213, n_tokens = 8214, n_past = 8214, size = 74.930 MiB)
+0.50.886.829 I slot   operator(): id  0 | task 290 | erased invalidated context checkpoint (pos_min = 8413, pos_max = 8413, n_tokens = 8414, n_swa = 512, pos_next = 8214, size = 74.930 MiB)
+0.50.888.804 I slot create_check: id  0 | task 290 | superseding context checkpoint at n_tokens = 8214
+0.50.916.355 I slot create_check: id  0 | task 290 | created context checkpoint 2 of 32 (pos_min = 8213, pos_max = 8213, n_tokens = 8214, size = 74.930 MiB)
+0.52.137.701 I slot create_check: id  0 | task 355 | created context checkpoint 3 of 32 (pos_min = 8280, pos_max = 8280, n_tokens = 8281, size = 74.930 MiB)
+0.52.416.498 I slot create_check: id  0 | task 355 | created context checkpoint 4 of 32 (pos_min = 8476, pos_max = 8476, n_tokens = 8477, size = 74.930 MiB)
+0.53.632.255 I slot   operator(): id  0 | task 421 | erased invalidated context checkpoint (pos_min = 7901, pos_max = 7901, n_tokens = 7902, n_swa = 512, pos_next = 0, size = 74.930 MiB)
+0.53.632.566 I slot   operator(): id  0 | task 421 | erased invalidated context checkpoint (pos_min = 8213, pos_max = 8213, n_tokens = 8214, n_swa = 512, pos_next = 0, size = 74.930 MiB)
+0.53.632.921 I slot   operator(): id  0 | task 421 | erased invalidated context checkpoint (pos_min = 8280, pos_max = 8280, n_tokens = 8281, n_swa = 512, pos_next = 0, size = 74.930 MiB)
+0.53.633.297 I slot   operator(): id  0 | task 421 | erased invalidated context checkpoint (pos_min = 8476, pos_max = 8476, n_tokens = 8477, n_swa = 512, pos_next = 0, size = 74.930 MiB)
+1.00.391.001 I slot create_check: id  0 | task 421 | created context checkpoint 1 of 32 (pos_min = 7964, pos_max = 7964, n_tokens = 7965, size = 74.930 MiB)
+1.00.848.607 I slot create_check: id  0 | task 421 | created context checkpoint 2 of 32 (pos_min = 8476, pos_max = 8476, n_tokens = 8477, size = 74.930 MiB)

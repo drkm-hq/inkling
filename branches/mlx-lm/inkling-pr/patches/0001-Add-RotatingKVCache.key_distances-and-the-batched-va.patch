@@ -1,0 +1,54 @@
+From b7c2df88f5b39f8ef9dd19af04c4d11682c2e5ff Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Thu, 29 Oct 2026 03:26:06 -0400
+Subject: [PATCH 1/4] Add RotatingKVCache.key_distances() (and the batched
+ variant)
+
+The distance of every cached key from the most recent one, in the order
+update_and_fetch returns them, so a model can gather a position-dependent
+additive mask (a relative position bias) over a rotated cache.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ mlx_lm/models/cache.py | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/mlx_lm/models/cache.py b/mlx_lm/models/cache.py
+index bb3d62f..034d8ee 100644
+--- a/mlx_lm/models/cache.py
++++ b/mlx_lm/models/cache.py
+@@ -530,6 +530,19 @@ class RotatingKVCache(_BaseCache):
+         else:
+             return self.keys, self.values
+ 
++    def key_distances(self):
++        """How many positions behind the most recent key each cached key is, in
++        the order ``update_and_fetch`` returned them (the cache may be rotated)."""
++        S = min(self.offset, self.keys.shape[2])
++        s = mx.arange(S)
++        if self.keys.shape[2] > self.max_size:
++            # Temporal order, right after a multi-token update
++            return S - 1 - s
++        dist = (self._idx - 1 - s) % (self.max_size - self.keep)
++        if self.keep > 0:
++            dist = mx.where(s < self.keep, self.offset - 1 - s, dist)
++        return dist
++
+     def size(self):
+         return min(self.offset, self.max_size)
+ 
+@@ -1240,6 +1253,14 @@ class BatchRotatingKVCache(_BaseCache):
+         else:
+             return self.keys, self.values
+ 
++    def key_distances(self):
++        """See ``RotatingKVCache.key_distances``."""
++        S = min(self._offset, self.keys.shape[2])
++        s = mx.arange(S)
++        if self.keys.shape[2] > self.max_size:
++            return S - 1 - s
++        return (self._idx - 1 - s) % self.max_size
++
+     def prepare(self, *, left_padding=None, lengths=None, right_padding=None):
+         if left_padding is not None:
+             if self.keys is not None:

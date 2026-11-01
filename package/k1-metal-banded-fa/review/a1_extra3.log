@@ -1,0 +1,6 @@
+[04:57:16Z] extension-3 lock acquired (pid 94836)
+[04:57:28Z] evalcb base -fa on exit=0 (  125000 lines) at 0 min
+[04:57:40Z] evalcb k1 -fa on exit=0 at 0 min
+[04:57:53Z] evalcb k1 -fa off exit=0 at 0 min
+[04:57:53Z] extension-3 done at 0 min
+[04:57:53Z] lock released, queue line removed

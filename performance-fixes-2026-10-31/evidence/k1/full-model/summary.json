@@ -1,0 +1,48 @@
+{
+  "pairs": [
+    {
+      "round": 0,
+      "baseline_tps": 16.163569,
+      "candidate_tps": 15.823353,
+      "candidate_over_baseline": 0.9789516783081756,
+      "change_percent": -2.1048321691824357
+    },
+    {
+      "round": 1,
+      "baseline_tps": 12.738896,
+      "candidate_tps": 16.82686,
+      "candidate_over_baseline": 1.3209041034639109,
+      "change_percent": 32.09041034639108
+    },
+    {
+      "round": 2,
+      "baseline_tps": 10.386666,
+      "candidate_tps": 8.919352,
+      "candidate_over_baseline": 0.8587309922163666,
+      "change_percent": -14.12690077836334
+    }
+  ],
+  "median_paired_change_percent": -2.1048321691824357,
+  "conclusion": "Inconclusive: substantial drift and ratios with mixed signs; no whole-model speedup established.",
+  "equality": {
+    "content_equal": true,
+    "tokens_equal": true,
+    "token_count": 32
+  },
+  "relative_projection_pipeline_seen": {
+    "baseline": false,
+    "candidate": false
+  },
+  "model_convolution_channels_per_layer": [
+    1024,
+    1024,
+    4096,
+    4096
+  ],
+  "microbenchmark_channels_per_layer": [
+    1024,
+    1024,
+    1024,
+    4096
+  ]
+}

@@ -1,0 +1,33 @@
+usage: bench_mlx.py [-h] [--model MODEL] --tag TAG [--prompts PROMPTS]
+                    [--repeats REPEATS] [--max-tokens MAX_TOKENS]
+                    [--warmup-prompt WARMUP_PROMPT]
+                    [--warmup-tokens WARMUP_TOKENS]
+                    [--reasoning-effort REASONING_EFFORT] [--no-template]
+                    [--kv-bits KV_BITS] [--kv-group-size KV_GROUP_SIZE]
+                    [--kv-quant-scheme KV_QUANT_SCHEME]
+                    [--quantized-kv-start QUANTIZED_KV_START]
+                    [--draft-model DRAFT_MODEL] [--draft-kind DRAFT_KIND]
+                    [--draft-block-size DRAFT_BLOCK_SIZE]
+                    [--prefill-step-size PREFILL_STEP_SIZE]
+                    [--chunk-gib CHUNK_GIB] [--time-limit TIME_LIMIT]
+                    [--mem-limit-gb MEM_LIMIT_GB] [--keep-eos] [--out OUT]
+                    [--no-lock] [--smoke] [--quiet-wait QUIET_WAIT]
+bench_mlx.py: error: unrecognized arguments: --kv-key-bits 8 --kv-value-bits 4
+        0.05 real         0.03 user         0.01 sys
+            23642112  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+                1774  page reclaims
+                   0  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                   0  voluntary context switches
+                 262  involuntary context switches
+           267235850  instructions retired
+           158808917  cycles elapsed
+            13762968  peak memory footprint

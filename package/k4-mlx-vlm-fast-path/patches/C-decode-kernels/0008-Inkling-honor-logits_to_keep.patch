@@ -1,0 +1,83 @@
+From d0ea67cdf817727d4d8708786a3aa662590ff8eb Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Wed, 28 Oct 2026 22:54:54 -0400
+Subject: [PATCH 8/9] Inkling: honor logits_to_keep
+
+LanguageModel.__call__ ignored logits_to_keep, so every multi-token step
+ran the 201024-wide lm_head over the whole input: generate_step passes
+logits_to_keep=1 for its prompt step and the batch generator asks for the
+trailing rows it needs, but Inkling materialized [T, vocab] regardless (an
+unchunked prompt with a drafter, or the server's prompt processing, is
+0.8 GB of logits and 3.4 TFLOP per 2048 tokens before the last row is
+sliced out). The head now sees only the trailing logits_to_keep rows of the
+normalized hidden state; hidden states returned for speculative drafters
+stay whole, and an absent, zero, or oversized value keeps every row as
+before. The test checks the kept rows equal the trailing rows of the full
+head, that hidden states keep their length, and the pass-through cases.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ mlx_vlm/models/inkling/language.py      | 14 +++++++++++---
+ mlx_vlm/tests/test_inkling_fast_path.py | 24 ++++++++++++++++++++++++
+ 2 files changed, 35 insertions(+), 3 deletions(-)
+
+diff --git a/mlx_vlm/models/inkling/language.py b/mlx_vlm/models/inkling/language.py
+index 69cfd3a..82beafd 100644
+--- a/mlx_vlm/models/inkling/language.py
++++ b/mlx_vlm/models/inkling/language.py
+@@ -966,9 +966,17 @@ class LanguageModel(nn.Module):
+         if inputs_embeds is None:
+             inputs_embeds = input_embeddings
+         pre_norm = self.model(inputs, cache, inputs_embeds, skip_final_norm=True)
+-        logits = (
+-            None if skip_logits else self._logits_from_norm(self.model.norm(pre_norm))
+-        )
++        if skip_logits:
++            logits = None
++        else:
++            # generate_step and the batch generator ask for the trailing rows
++            # only; the 201024-wide head over a whole prompt chunk is 0.8 GB
++            # of logits per 2048 tokens otherwise. Hidden states stay whole.
++            h = pre_norm
++            keep = kwargs.get("logits_to_keep")
++            if keep and 0 < int(keep) < h.shape[1]:
++                h = h[:, -int(keep) :, :]
++            logits = self._logits_from_norm(self.model.norm(h))
+         return LanguageModelOutput(
+             logits=logits,
+             hidden_states=[pre_norm] if return_hidden else None,
+diff --git a/mlx_vlm/tests/test_inkling_fast_path.py b/mlx_vlm/tests/test_inkling_fast_path.py
+index a6438ec..826c92a 100644
+--- a/mlx_vlm/tests/test_inkling_fast_path.py
++++ b/mlx_vlm/tests/test_inkling_fast_path.py
+@@ -398,3 +398,27 @@ def test_log_scaling_skipped_below_the_floor(monkeypatch):
+     # The step that crosses the floor scales again.
+     scaled(x[:, floor : floor + 1], cache=cache)
+     assert len(logs) == 1
++
++
++# ------------------------------------------------------------ logits_to_keep
++
++
++def test_logits_to_keep_limits_the_head_only():
++    model = tiny_model()
++    ids = tokens(12)
++    full = model(ids, cache=model.make_cache()).logits
++    assert full.shape == (1, 12, VOCAB - 4)
++    kept = model(ids, cache=model.make_cache(), logits_to_keep=3)
++    assert kept.logits.shape == (1, 3, VOCAB - 4)
++    close(kept.logits, full[:, -3:])
++    one = model(ids, cache=model.make_cache(), logits_to_keep=1, return_hidden=True)
++    assert one.logits.shape == (1, 1, VOCAB - 4)
++    close(one.logits, full[:, -1:])
++    assert one.hidden_states[-1].shape == (1, 12, 32)
++    for keep in (None, 0, 12, 50):
++        out = model(ids, cache=model.make_cache(), logits_to_keep=keep).logits
++        assert out.shape == full.shape
++    assert (
++        model(ids, cache=model.make_cache(), skip_logits=True, logits_to_keep=1).logits
++        is None
++    )
+-- 
+2.55.0
+

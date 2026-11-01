@@ -1,0 +1,211 @@
+From aca5359f26f0370d5af0e7ce07ac18eac3499ea8 Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Wed, 28 Oct 2026 22:57:04 -0400
+Subject: [PATCH 10/12] Inkling: quantized KV cache for the global layers
+
+--kv-bits did nothing for Inkling under the default uniform scheme (the
+per-layer CacheList has neither offset nor to_quantized, so
+maybe_quantize_kv_cache skipped every layer) and broke under TurboQuant
+(update_and_fetch returned state proxies the attention read .shape on).
+Layers now use InklingCacheList, a CacheList that exposes the kv cache's
+offset and a to_quantized that converts a global layer's full KVCache to a
+QuantizedKVCache and leaves a sliding layer's window cache in floats (it
+holds at most window + slack keys; there is nothing to save). The attention
+accepts the (packed, scales, biases) tuples, applies the sliding slice to
+each tensor, builds the mask from the packed shape, groups the per-head
+mask as [B, n_kv, n_rep, L, S] the way the quantized GQA scores are laid
+out, and routes through the base SDPA wrapper with cache=kv so the
+quantized matmuls run; TurboQuant and other proxy-returning caches raise a
+NotImplementedError naming the supported scheme. Continuous batching with
+kv-bits keeps the generic refusal for model-specific caches. Tests check
+that only the global layer is quantized, that 8-bit prefill and decode stay
+close to the float path, that speculative snapshot/rollback restores the
+quantized cache's position, and the clear failures.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ mlx_vlm/models/inkling/language.py      | 57 ++++++++++++++++++++---
+ mlx_vlm/tests/test_inkling_fast_path.py | 62 ++++++++++++++++++++++++-
+ 2 files changed, 111 insertions(+), 8 deletions(-)
+
+diff --git a/mlx_vlm/models/inkling/language.py b/mlx_vlm/models/inkling/language.py
+index d248556..16134d7 100644
+--- a/mlx_vlm/models/inkling/language.py
++++ b/mlx_vlm/models/inkling/language.py
+@@ -389,6 +389,29 @@ class InklingShortConvolution(nn.Module):
+ _SLIDING_KV_SLICE = True
+ 
+ 
++class InklingCacheList(CacheList):
++    """A layer's (kv, conv) cache pair, exposing the hooks the generic
++    kv-bits plumbing looks for on a layer entry: ``offset`` and
++    ``to_quantized``. Only a global layer's full KVCache is quantized; a
++    sliding layer's window cache holds at most window + slack keys and stays
++    in floats."""
++
++    @property
++    def offset(self):
++        return self.caches[0].offset
++
++    def to_quantized(self, group_size: int = 64, bits: int = 4):
++        kv = self.caches[0]
++        if type(kv) is not KVCache:
++            return self
++        return InklingCacheList(
++            kv.to_quantized(group_size=group_size, bits=bits), *self.caches[1:]
++        )
++
++    def extract(self, idx):
++        return InklingCacheList(*(c.extract(idx) for c in self.caches))
++
++
+ class InklingAttention(nn.Module):
+     def __init__(self, config: ModelConfig, layer_idx: int):
+         super().__init__()
+@@ -450,7 +473,19 @@ class InklingAttention(nn.Module):
+ 
+         if kv is not None:
+             k, v = kv.update_and_fetch(k, v)
+-        S = k.shape[2]
++        if isinstance(k, mx.array):
++            quantized = False
++            S = k.shape[2]
++        elif isinstance(k, (tuple, list)):
++            # QuantizedKVCache: (packed, scales, biases) per tensor; a tuple
++            # from its own allocation, a list from mx.quantize in to_quantized.
++            quantized = True
++            S = k[0].shape[2]
++        else:
++            raise NotImplementedError(
++                f"{type(kv).__name__} is not supported by the Inkling attention; "
++                "quantize the KV cache with --kv-quant-scheme uniform"
++            )
+ 
+         q = qkvr[..., :dq]
+         r = qkvr[..., dq + dk + dv :].reshape(B, L, self.n_heads, self.d_rel)
+@@ -464,9 +499,13 @@ class InklingAttention(nn.Module):
+             # The mask keeps the right positions: its offset is S_eff - L,
+             # and any left padding shifts with the slice.
+             j0 = S - L - (self.sliding - 1)
+-            k = k[:, :, j0:, :]
+-            v = v[:, :, j0:, :]
+-            S = k.shape[2]
++            if quantized:
++                k = tuple(t[:, :, j0:, :] for t in k)
++                v = tuple(t[:, :, j0:, :] for t in v)
++            else:
++                k = k[:, :, j0:, :]
++                v = v[:, :, j0:, :]
++            S = (k[0] if quantized else k).shape[2]
+             if left_padding is not None:
+                 left_padding = mx.maximum(left_padding - j0, 0)
+         offset = S - L
+@@ -479,7 +518,7 @@ class InklingAttention(nn.Module):
+             self.sliding,
+             self.rel_extent,
+             left_padding=left_padding,
+-            shape_ref=k,
++            shape_ref=k[0] if quantized else k,
+         )
+         # Log scaling is exactly 1 for every query position up to the floor
+         # (the real checkpoints set it at 128K): skip the tau passes over q
+@@ -491,8 +530,12 @@ class InklingAttention(nn.Module):
+             q = q * tau
+             mask = mx.where(mask > -1e29, mask * tau, mask)
+ 
++        if quantized and self.n_heads != self.n_kv:
++            # The quantized SDPA scores GQA as [B, n_kv, n_rep, L, S]; the
++            # per-head mask has to be grouped the same way.
++            mask = mask.reshape(B, self.n_kv, self.n_heads // self.n_kv, L, S)
+         out = scaled_dot_product_attention(
+-            q, k, v, cache=None, scale=self.scale, mask=mask
++            q, k, v, cache=kv if quantized else None, scale=self.scale, mask=mask
+         )
+         out = out.transpose(0, 2, 1, 3).reshape(B, L, -1)
+         return self.o_proj(out)
+@@ -1029,7 +1072,7 @@ class LanguageModel(nn.Module):
+         # the last ``sliding_window_size - 1`` keys plus a slack buffer in
+         # temporal order; global layers keep everything.
+         return [
+-            CacheList(
++            InklingCacheList(
+                 (
+                     SlidingWindowKVCache(layer.self_attn.sliding)
+                     if layer.self_attn.sliding > 0
+diff --git a/mlx_vlm/tests/test_inkling_fast_path.py b/mlx_vlm/tests/test_inkling_fast_path.py
+index d31bae8..39701a0 100644
+--- a/mlx_vlm/tests/test_inkling_fast_path.py
++++ b/mlx_vlm/tests/test_inkling_fast_path.py
+@@ -7,7 +7,6 @@ and the same per-row results under batching.
+ """
+ 
+ import mlx.core as mx
+-import mlx.nn as nn
+ import numpy as np
+ import pytest
+ from mlx.utils import tree_flatten
+@@ -449,3 +448,64 @@ def test_dense_mlp_scale_keeps_the_activation_dtype(dtype):
+     out = model(tokens(6), cache=model.make_cache(), return_hidden=True)
+     assert out.hidden_states[-1].dtype == dtype
+     assert out.logits.dtype == dtype
++
++
++# ------------------------------------------------------ quantized KV (H2)
++
++
++def test_kv_bits_quantizes_the_global_layers_only():
++    from mlx_vlm.generate.common import maybe_quantize_kv_cache
++    from mlx_vlm.models.cache import QuantizedKVCache
++
++    model = tiny_model(head_dim=32, swa_head_dim=32)
++    ids = tokens(300)
++    reference = model.make_cache()
++    want = run(model, ids, reference, 97)
++    cache = model.make_cache()
++    assert all(type(c) is lang.InklingCacheList for c in cache)
++    maybe_quantize_kv_cache(cache, 0, 32, 8)
++    kinds = [type(c.caches[0]) for c in cache]
++    assert kinds == [SlidingWindowKVCache, QuantizedKVCache, SlidingWindowKVCache]
++    assert all(type(c) is lang.InklingCacheList for c in cache)
++    got = run(model, ids, cache, 97)
++    assert cache[1].caches[0].offset == 300 and cache[1].offset == 300
++    np.testing.assert_allclose(np.array(got), np.array(want), atol=0.15, rtol=0.05)
++    y = ids[:, -1:]
++    for _ in range(20):
++        got = model(y, cache=cache).logits
++        want = model(y, cache=reference).logits
++        np.testing.assert_allclose(np.array(got), np.array(want), atol=0.15, rtol=0.05)
++        y = mx.argmax(want[:, -1], axis=-1)[:, None]
++    # Snapshot/rollback carries the quantized cache's absolute position.
++    verify = tokens(3, seed=8)
++    _, _, state = model.speculative_verify_hidden(verify, cache)
++    assert model.rollback_speculative_cache(cache, state, 0, 3) == 0
++    assert cache[1].caches[0].offset == 321
++
++    # generate_step converts after the first prefill chunk, i.e. on a
++    # non-empty cache: KVCache.to_quantized stores what mx.quantize returns
++    # (lists), while an empty cache allocates tuples. Both must decode.
++    late, fresh = model.make_cache(), model.make_cache()
++    run(model, ids, late, 97)
++    run(model, ids, fresh, 97)
++    maybe_quantize_kv_cache(late, 0, 32, 8)
++    assert isinstance(late[1].caches[0].keys, list)
++    y = ids[:, -1:]
++    for _ in range(5):
++        got = model(y, cache=late).logits
++        want = model(y, cache=fresh).logits
++        np.testing.assert_allclose(np.array(got), np.array(want), atol=0.15, rtol=0.05)
++        y = mx.argmax(want[:, -1], axis=-1)[:, None]
++
++
++def test_other_kv_quantization_schemes_fail_clearly():
++    from mlx_vlm.generate.common import maybe_quantize_kv_cache
++
++    model = tiny_model(head_dim=32, swa_head_dim=32)
++    cache = model.make_cache()
++    model(tokens(10), cache=cache)
++    maybe_quantize_kv_cache(cache, 0, 32, 3.5)  # fractional bits: TurboQuant
++    with pytest.raises(NotImplementedError, match="kv-quant-scheme uniform"):
++        model(tokens(1), cache=cache)
++    with pytest.raises(NotImplementedError):
++        _make_cache(model, left_padding=[0, 0], kv_bits=8)

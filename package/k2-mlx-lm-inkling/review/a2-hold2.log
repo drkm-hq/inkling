@@ -1,0 +1,34 @@
+[2026-10-29T07:25:15Z] follow-up hold script start (pid 66087); waiting for the main hold (pid 53800) to exit
+[2026-10-29T07:33:36Z] main hold gone; queue: M1 A3 
+[03:33:36] waiting: queue head 'M1', GPU busy: ['GPU_LOCK held by pid 28328']
+[03:33:56] waiting: queue head 'M1', GPU busy: ['GPU_LOCK held by pid 28328', 'pid 68756 rss 83.7 GiB: <workdir>/upstream/llama.cpp-base/build/bin/llama-server -m ~/.cache/huggin']
+[03:34:16] waiting: queue head 'M1', GPU busy: ['GPU_LOCK held by pid 28328', 'pid 68756 rss 90.6 GiB: <workdir>/upstream/llama.cpp-base/build/bin/llama-server -m ~/.cache/huggin']
+[03:34:36] waiting: queue head 'M1', GPU busy: ['GPU_LOCK held by pid 28328', 'pid 68756 rss 90.7 GiB: <workdir>/upstream/llama.cpp-base/build/bin/llama-server -m ~/.cache/huggin']
+[03:34:56] waiting: queue head 'M1', GPU busy: ['GPU_LOCK held by pid 28328', 'pid 68756 rss 90.9 GiB: <workdir>/upstream/llama.cpp-base/build/bin/llama-server -m ~/.cache/huggin']
+[03:36:16] waiting: queue head 'M1', GPU busy: ['GPU_LOCK held by pid 28328', 'pid 68756 rss 91.0 GiB: <workdir>/upstream/llama.cpp-base/build/bin/llama-server -m ~/.cache/huggin']
+[03:37:57] waiting: queue head 'M1', GPU busy: ['GPU_LOCK held by pid 28328', 'pid 68756 rss 90.8 GiB: <workdir>/upstream/llama.cpp-base/build/bin/llama-server -m ~/.cache/huggin']
+[03:38:17] waiting: queue head 'M1', GPU busy: ['GPU_LOCK held by pid 28328', 'pid 68756 rss 90.9 GiB: <workdir>/upstream/llama.cpp-base/build/bin/llama-server -m ~/.cache/huggin']
+[03:39:17] waiting: queue head 'M1', GPU busy: ['GPU_LOCK held by pid 28328', 'pid 70420 rss 92.1 GiB: <workdir>/upstream/llama.cpp-base/build/bin/llama-server -m ~/.cache/huggin']
+[03:39:57] waiting: queue head 'M1', GPU busy: ['GPU_LOCK held by pid 28328', 'pid 70420 rss 92.3 GiB: <workdir>/upstream/llama.cpp-base/build/bin/llama-server -m ~/.cache/huggin']
+[03:40:17] waiting: queue head 'M1', GPU busy: ['GPU_LOCK held by pid 28328', 'pid 70420 rss 92.4 GiB: <workdir>/upstream/llama.cpp-base/build/bin/llama-server -m ~/.cache/huggin']
+[03:40:37] waiting: queue head 'M1', GPU busy: ['GPU_LOCK held by pid 28328', 'pid 70420 rss 92.5 GiB: <workdir>/upstream/llama.cpp-base/build/bin/llama-server -m ~/.cache/huggin']
+[03:42:38] waiting: queue head 'M1', GPU busy: ['GPU_LOCK held by pid 28328', 'pid 70420 rss 92.4 GiB: <workdir>/upstream/llama.cpp-base/build/bin/llama-server -m ~/.cache/huggin']
+[03:42:58] waiting: queue head 'M1', GPU busy: ['GPU_LOCK held by pid 28328', 'pid 70420 rss 92.3 GiB: <workdir>/upstream/llama.cpp-base/build/bin/llama-server -m ~/.cache/huggin']
+[03:45:38] waiting: queue head 'M1', GPU busy: ['GPU_LOCK held by pid 28328', 'pid 70420 rss 92.4 GiB: <workdir>/upstream/llama.cpp-base/build/bin/llama-server -m ~/.cache/huggin']
+[03:45:58] waiting: queue head 'M1', GPU busy: ['GPU_LOCK held by pid 28328', 'pid 71933 rss 39.3 GiB: python baseline/bench_mlx.py --no-lock --tag p32k-clean --prompts p_32k --repeats 3 --max-tokens 128 --warmup-tokens 32 ']
+[03:46:18] waiting: queue head 'M1', GPU busy: ['GPU_LOCK held by pid 28328', 'pid 71933 rss 32.8 GiB: python baseline/bench_mlx.py --no-lock --tag p32k-clean --prompts p_32k --repeats 3 --max-tokens 128 --warmup-tokens 32 ']
+[03:48:18] waiting: queue head 'M1', GPU busy: ['GPU_LOCK held by pid 28328', 'pid 71933 rss 32.7 GiB: python baseline/bench_mlx.py --no-lock --tag p32k-clean --prompts p_32k --repeats 3 --max-tokens 128 --warmup-tokens 32 ']
+[03:56:20] waiting: queue head 'A3', GPU busy: ['GPU_LOCK held by pid 3312']
+[03:56:40] waiting: queue head 'A3', GPU busy: ['GPU_LOCK held by pid 3312', 'pid 73925 rss 92.1 GiB: <workdir>/upstream/llama.cpp-k3/build-k3/bin/llama-server -m ~/.cache/huggi']
+[03:57:00] waiting: queue head 'A3', GPU busy: ['GPU_LOCK held by pid 3312', 'pid 73925 rss 92.3 GiB: <workdir>/upstream/llama.cpp-k3/build-k3/bin/llama-server -m ~/.cache/huggi']
+[03:57:20] waiting: queue head 'A3', GPU busy: ['GPU_LOCK held by pid 3312', 'pid 73925 rss 92.4 GiB: <workdir>/upstream/llama.cpp-k3/build-k3/bin/llama-server -m ~/.cache/huggi']
+[03:59:20] waiting: queue head 'A3', GPU busy: ['GPU_LOCK held by pid 3312']
+[03:59:40] waiting: queue head 'A3', GPU busy: ['GPU_LOCK held by pid 3312', 'pid 74381 rss 93.8 GiB: <workdir>/upstream/llama.cpp-k3/build-k3/bin/llama-server -m ~/.cache/huggi']
+[04:00:00] waiting: queue head 'A3', GPU busy: ['GPU_LOCK held by pid 3312', 'pid 74381 rss 93.9 GiB: <workdir>/upstream/llama.cpp-k3/build-k3/bin/llama-server -m ~/.cache/huggi']
+[04:00:40] waiting: queue head 'A3', GPU busy: ['GPU_LOCK held by pid 3312', 'pid 74381 rss 93.8 GiB: <workdir>/upstream/llama.cpp-k3/build-k3/bin/llama-server -m ~/.cache/huggi']
+[2026-10-29T08:03:41Z] follow-up hold started; load=5.02 4.81 5.20
+[2026-10-29T08:04:03Z] fold forced rc=0 (398s left)
+[2026-10-29T08:04:25Z] dense rerun rc=0 (376s left)
+[2026-10-29T08:04:25Z] follow-up hold done after 44s
+[2026-10-29T08:04:25Z] GPU_LOCK released
+[2026-10-29T08:04:25Z] A2 left the queue; queue now: 

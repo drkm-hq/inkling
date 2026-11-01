@@ -1,0 +1,78 @@
+W1028 22:01:08.601000 34421 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+decode SWA S=512: banded_mask_v2 [1,32,1,512]                             0.1063 ms  writes 0.03 MB
+decode SWA S=512: SDPA with additive mask                                 0.1193 ms  K+V read 2.10 MB
+decode SWA S=512: SDPA mask=None                                          0.0636 ms  
+decode SWA S=512: mask_v2 + SDPA (as in InklingAttention)                 0.0383 ms  
+decode global S=2048: banded_mask_v2 [1,32,1,2048]                        0.0371 ms  writes 0.13 MB
+decode global S=2048: SDPA with additive mask                             0.0442 ms  K+V read 8.39 MB
+decode global S=2048: SDPA mask=None                                      0.0404 ms  
+decode global S=2048: mask_v2 + SDPA (as in InklingAttention)             0.0559 ms  
+decode global S=2048: tau where() over the mask (L473)                    0.0276 ms  
+decode global S=8192: banded_mask_v2 [1,32,1,8192]                        0.0565 ms  writes 0.52 MB
+decode global S=8192: SDPA with additive mask                             0.0897 ms  K+V read 33.55 MB
+decode global S=8192: SDPA mask=None                                      0.0740 ms  
+decode global S=8192: mask_v2 + SDPA (as in InklingAttention)             0.1113 ms  
+decode global S=8192: tau where() over the mask (L473)                    0.0276 ms  
+decode global S=32768: banded_mask_v2 [1,32,1,32768]                      0.1253 ms  writes 2.10 MB
+decode global S=32768: SDPA with additive mask                            0.3150 ms  K+V read 134.22 MB
+decode global S=32768: SDPA mask=None                                     0.2868 ms  
+decode global S=32768: mask_v2 + SDPA (as in InklingAttention)            0.4704 ms  
+decode global S=32768: tau where() over the mask (L473)                   0.0338 ms  
+prefill SWA LQ=2048 S=2048: banded_mask_v2 [1,32,2048,2048]               2.2651 ms  writes 0.27 GB
+prefill SWA LQ=2048 S=2048: SDPA with additive mask                       1.8570 ms  
+prefill SWA LQ=2048 S=2048: SDPA mask='causal' (no bias; reference)       0.8966 ms  
+prefill SWA LQ=2048 S=2559: banded_mask_v2 [1,32,2048,2559]               2.7026 ms  writes 0.34 GB
+prefill SWA LQ=2048 S=2559: SDPA with additive mask                       2.2344 ms  
+prefill global LQ=2048 S=2048: banded_mask_v2 [1,32,2048,2048]            2.8285 ms  writes 0.27 GB
+prefill global LQ=2048 S=2048: SDPA with additive mask                    1.8643 ms  
+prefill global LQ=2048 S=2048: SDPA mask='causal' (no bias; reference)    0.8924 ms  
+prefill global LQ=2048 S=2048: tau where() over the mask (L473)           3.9455 ms  
+prefill global LQ=2048 S=8192: banded_mask_v2 [1,32,2048,8192]            7.3490 ms  writes 1.07 GB
+prefill global LQ=2048 S=8192: SDPA with additive mask                    7.3752 ms  
+prefill global LQ=2048 S=8192: tau where() over the mask (L473)          15.9781 ms  
+prefill global LQ=8192 S=8192: banded_mask_v2 [1,32,8192,8192]           28.5418 ms  writes 4.29 GB
+prefill global LQ=8192 S=8192: SDPA with additive mask                   27.4411 ms  
+prefill global LQ=8192 S=8192: SDPA mask='causal' (no bias; reference)   10.5935 ms  
+prefill global LQ=8192 S=8192: tau where() over the mask (L473)          62.2408 ms  
+sconv decode fused kernel C=1024 (+residual)                              0.1289 ms  
+sconv decode UNFUSED path C=1024 (mask forces mx ops)                     0.1317 ms  
+sconv prefill T=2048 C=1024 (conv1d path)                                 0.4463 ms  
+sconv decode fused kernel C=4096 (+residual)                              0.0233 ms  
+sconv decode UNFUSED path C=4096 (mask forces mx ops)                     0.0685 ms  
+sconv prefill T=2048 C=4096 (conv1d path)                                 1.4904 ms  
+route kernel N=1 (inkling_moe_route)                                      0.1418 ms  
+route pure-MLX N=1 (L772-793 chain)                                       0.2337 ms  
+router gemv N=1 (xf @ gate_weight.T, bf16 258x4096)                       0.1417 ms  
+route kernel N=8 (inkling_moe_route)                                      0.1431 ms  
+route pure-MLX N=8 (L772-793 chain)                                       0.2020 ms  
+router gemv N=8 (xf @ gate_weight.T, bf16 258x4096)                       0.1553 ms  
+route kernel N=2048 (inkling_moe_route)                                   0.1609 ms  
+route pure-MLX N=2048 (L772-793 chain)                                    0.2612 ms  
+router gemv N=2048 (xf @ gate_weight.T, bf16 258x4096)                    0.2726 ms  
+MoE block q4 N=1: default path (down_combine kernel if q4)                0.2821 ms  
+MoE block q4 N=1: gather_qmm down path (_DOWN_COMBINE=False)              0.2992 ms  
+MoE block q4 N=3: default path (down_combine kernel if q4)                0.5318 ms  
+MoE block q4 N=3: gather_qmm down path (_DOWN_COMBINE=False)              0.6085 ms  
+MoE block q4 N=8: default path (down_combine kernel if q4)                1.1667 ms  
+MoE block q4 N=8: gather_qmm down path (_DOWN_COMBINE=False)              1.1631 ms  
+MoE block q4 N=2048 (prefill, sorted gather_qmm)                         30.5216 ms  
+  gather_qmm q4 up_proj N=2048 sorted (x gathered [12288,1,4096])        10.3584 ms  
+  gather_qmm q4 up_proj N=2048 UNsorted                                 567.8464 ms  
+  gather_qmm q4 down_proj N=2048 sorted                                  31.2766 ms  
+  reference bf16 GEMM [2048,4096]x[4096,2048] (1/18 of the MoE FLOPs)     2.5649 ms  
+  reference q4 quantized_matmul [2048,4096]x[4096,2048]                   3.5614 ms  
+MoE block q2 N=1: default path (down_combine kernel if q4)                0.3878 ms  
+MoE block q2 N=1: gather_qmm down path (_DOWN_COMBINE=False)              0.3725 ms  
+MoE block q2 N=3: default path (down_combine kernel if q4)                0.7109 ms  
+MoE block q2 N=3: gather_qmm down path (_DOWN_COMBINE=False)              0.7486 ms  
+MoE block q2 N=8: default path (down_combine kernel if q4)                1.9043 ms  
+MoE block q2 N=8: gather_qmm down path (_DOWN_COMBINE=False)              2.2379 ms  
+MoE block q2 N=2048 (prefill, sorted gather_qmm)                         79.5036 ms  
+  gather_qmm q2 up_proj N=2048 sorted (x gathered [12288,1,4096])        21.6147 ms  
+  gather_qmm q2 up_proj N=2048 UNsorted                                 172.6264 ms  
+  gather_qmm q2 down_proj N=2048 sorted                                  22.1088 ms  
+  reference bf16 GEMM [2048,4096]x[4096,2048] (1/18 of the MoE FLOPs)     1.7426 ms  
+  reference q2 quantized_matmul [2048,4096]x[4096,2048]                   3.0431 ms  
+tiny-shape 3-layer decode step: wall per token (async loop) ~ dispatch floor    0.5638 ms  same op graph as the real model, GPU work negligible
+tiny-shape 3-layer decode step: python graph-build time per token         0.1648 ms  
+wrote <workdir>/bench/R1/results/kernels_bench.json

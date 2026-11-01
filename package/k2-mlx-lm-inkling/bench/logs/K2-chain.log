@@ -1,0 +1,42 @@
+chain start 2026-10-29T03:25:34Z model=~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit/snapshots/f8a0af554e168077bdaf48e1fb6682fb395c807c/
+[23:25:34] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 2986 rss 89.8 GiB: <workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server -m ~/.ca']
+[23:25:55] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 2986 rss 88.1 GiB: <workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server -m ~/.ca']
+[23:26:15] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 2986 rss 87.1 GiB: <workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server -m ~/.ca']
+[23:26:56] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 2986 rss 87.0 GiB: <workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server -m ~/.ca']
+[23:27:37] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 2986 rss 86.8 GiB: <workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server -m ~/.ca']
+[23:27:57] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 2986 rss 86.7 GiB: <workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server -m ~/.ca']
+[23:28:38] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 2986 rss 86.1 GiB: <workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server -m ~/.ca']
+[23:28:58] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 2986 rss 86.3 GiB: <workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server -m ~/.ca']
+[23:29:18] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 2986 rss 86.6 GiB: <workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server -m ~/.ca']
+[23:29:38] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 2986 rss 85.8 GiB: <workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server -m ~/.ca']
+[23:30:19] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 7666 rss 83.4 GiB: <workdir>/upstream/llama.cpp-k3/build-k3/bin/llama-server -m ~/.cache/huggi']
+[23:30:39] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 7666 rss 93.6 GiB: <workdir>/upstream/llama.cpp-k3/build-k3/bin/llama-server -m ~/.cache/huggi']
+[23:30:59] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 7666 rss 93.8 GiB: <workdir>/upstream/llama.cpp-k3/build-k3/bin/llama-server -m ~/.cache/huggi']
+[23:32:19] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 7666 rss 93.9 GiB: <workdir>/upstream/llama.cpp-k3/build-k3/bin/llama-server -m ~/.cache/huggi']
+[23:32:42] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 7666 rss 93.7 GiB: <workdir>/upstream/llama.cpp-k3/build-k3/bin/llama-server -m ~/.cache/huggi']
+[23:33:03] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 7666 rss 93.8 GiB: <workdir>/upstream/llama.cpp-k3/build-k3/bin/llama-server -m ~/.cache/huggi']
+[23:33:47] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 7666 rss 93.5 GiB: <workdir>/upstream/llama.cpp-k3/build-k3/bin/llama-server -m ~/.cache/huggi']
+[23:34:08] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 7666 rss 93.0 GiB: <workdir>/upstream/llama.cpp-k3/build-k3/bin/llama-server -m ~/.cache/huggi']
+[23:34:40] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 7666 rss 92.9 GiB: <workdir>/upstream/llama.cpp-k3/build-k3/bin/llama-server -m ~/.cache/huggi']
+[23:35:06] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 7666 rss 93.1 GiB: <workdir>/upstream/llama.cpp-k3/build-k3/bin/llama-server -m ~/.cache/huggi']
+[23:35:27] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 7666 rss 93.5 GiB: <workdir>/upstream/llama.cpp-k3/build-k3/bin/llama-server -m ~/.cache/huggi']
+[23:35:47] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 7666 rss 93.8 GiB: <workdir>/upstream/llama.cpp-k3/build-k3/bin/llama-server -m ~/.cache/huggi']
+[23:36:07] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 13822 rss 93.4 GiB: <workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server -m ~/.ca']
+[23:36:27] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 13822 rss 93.6 GiB: <workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server -m ~/.ca']
+[23:37:07] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 13822 rss 93.8 GiB: <workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server -m ~/.ca']
+[23:40:10] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 13822 rss 93.6 GiB: <workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server -m ~/.ca']
+[23:40:31] waiting: queue head 'K3', GPU busy: ['GPU_LOCK held by pid 1042', 'pid 13822 rss 94.1 GiB: <workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server -m ~/.ca']
+[2026-10-29T03:41:11Z] hold 1 started (lock pid 4855)
+equiv mlx_vlm rc=143 2026-10-29T03:52:19Z
+equiv mlx_lm rc=0 2026-10-29T03:53:45Z
+diff rc=1
+Traceback (most recent call last):
+  File "<workdir>/bench/K2/equiv_diff.py", line 45, in <module>
+    main(sys.argv[1], sys.argv[2])
+  File "<workdir>/bench/K2/equiv_diff.py", line 11, in main
+    a, b = json.load(open(a_path)), json.load(open(b_path))
+                     ^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '<workdir>/bench/results/K2-equiv-mlx_vlm.json'
+bench 2bit rc=0 2026-10-29T03:59:52Z
+[2026-10-29T04:00:20Z] hold 1 released; queue now: K4 A1 A3 M1 
+[00:00:20] waiting: queue head 'K4', GPU free

@@ -1,0 +1,5 @@
+[04:04:13] mlx_lm 0.1.dev8+gcce083427 (<workdir>/upstream/mlx-lm-a2/mlx_lm/__init__.py, head 1966960 A2 review: pre-commit formatting, drop unused imports): lazy load 2.1s, chunked eval 6.5s, 82.4 GiB, active 82.4 GiB
+[04:04:13] run p_2k_raw: 2072 prompt tokens, teacher forced on the mlx-vlm 0.7.11 tokens of hold 2
+[04:04:24]   vs reference logprobs (a2-logprobs-mlx_lm): KL mean 0.0505 median 0.0048 max 2.3376 (step 47); |dlogprob| top-1 mean 0.0913 max 3.8643; top-1 agreement 91.4%
+[04:04:24]   argmax agrees with the fed tokens at 117/128 steps; prefill 5.3s, decode 6.1s (20.7 tok/s), min margin 0.000
+[04:04:24] wrote <workdir>/package/k2-mlx-lm-inkling/review/a2-forced-mlx_lm-rerun.json

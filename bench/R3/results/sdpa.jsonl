@@ -1,0 +1,136 @@
+{"_sysinfo": {"mlx": "0.32.4", "device": "Apple M5 Max", "arch": "applegpu_g17s", "load1": 90.5, "load5": 37.0}, "_t": 1793239011.072109}
+{"section": "decode T=512"}
+{"label": "decode T=512 mask=None", "T": 512, "med_ms_r1": 0.186, "best_ms_r1": 0.1363, "gbps_r1": 11.3, "med_ms_r8": 0.0307, "best_ms_r8": 0.0284, "gbps_r8": 68.2, "nbytes": 2097152}
+{"label": "decode T=512 mask=additive bf16 [1,32,1,T]", "T": 512, "med_ms_r1": 0.1799, "best_ms_r1": 0.1337, "gbps_r1": 11.8, "med_ms_r8": 0.0321, "best_ms_r8": 0.0277, "gbps_r8": 66.3, "nbytes": 2129920}
+{"label": "decode T=512 mask=bool [1,1,1,T] (window)", "T": 512, "med_ms_r1": 0.1908, "best_ms_r1": 0.1499, "gbps_r1": 11.0, "med_ms_r8": 0.0346, "best_ms_r8": 0.0302, "gbps_r8": 60.6, "nbytes": 2097152}
+{"label": "decode T=512 mask=additive bf16 [1,1,1,T] broadcast", "T": 512, "med_ms_r1": 0.208, "best_ms_r1": 0.1605, "gbps_r1": 10.1, "med_ms_r8": 0.0386, "best_ms_r8": 0.0299, "gbps_r8": 54.3, "nbytes": 2097152}
+{"label": "decode T=512 rel-bias build (vendored style) + sdpa", "T": 512, "med_ms_r1": 0.312, "best_ms_r1": 0.2466, "gbps_r1": 6.8, "med_ms_r8": 0.0963, "best_ms_r8": 0.0877, "gbps_r8": 22.1, "nbytes": 2129920}
+{"label": "decode T=512 UNFUSED matmul+softmax+matmul (additive mask)", "T": 512, "med_ms_r1": 0.2694, "best_ms_r1": 0.2481, "gbps_r1": 7.8, "med_ms_r8": 0.0702, "best_ms_r8": 0.0622, "gbps_r8": 29.9, "nbytes": 2097152}
+{"section": "decode T=4096"}
+{"label": "decode T=4096 mask=None", "T": 4096, "med_ms_r1": 0.3103, "best_ms_r1": 0.275, "gbps_r1": 54.1, "med_ms_r8": 0.1635, "best_ms_r8": 0.0848, "gbps_r8": 102.6, "nbytes": 16777216}
+{"label": "decode T=4096 mask=additive bf16 [1,32,1,T]", "T": 4096, "med_ms_r1": 0.2535, "best_ms_r1": 0.1796, "gbps_r1": 67.2, "med_ms_r8": 0.1125, "best_ms_r8": 0.0926, "gbps_r8": 151.4, "nbytes": 17039360}
+{"label": "decode T=4096 mask=bool [1,1,1,T] (window)", "T": 4096, "med_ms_r1": 0.208, "best_ms_r1": 0.1827, "gbps_r1": 80.6, "med_ms_r8": 0.0578, "best_ms_r8": 0.0533, "gbps_r8": 290.2, "nbytes": 16777216}
+{"label": "decode T=4096 mask=additive bf16 [1,1,1,T] broadcast", "T": 4096, "med_ms_r1": 0.2242, "best_ms_r1": 0.1956, "gbps_r1": 74.8, "med_ms_r8": 0.0843, "best_ms_r8": 0.0822, "gbps_r8": 199.1, "nbytes": 16777216}
+{"label": "decode T=4096 rel-bias build (vendored style) + sdpa", "T": 4096, "med_ms_r1": 0.3006, "best_ms_r1": 0.2387, "gbps_r1": 56.7, "med_ms_r8": 0.1109, "best_ms_r8": 0.103, "gbps_r8": 153.6, "nbytes": 17039360}
+{"label": "decode T=4096 UNFUSED matmul+softmax+matmul (additive mask)", "T": 4096, "med_ms_r1": 0.2913, "best_ms_r1": 0.2753, "gbps_r1": 57.6, "med_ms_r8": 0.1049, "best_ms_r8": 0.0921, "gbps_r8": 159.9, "nbytes": 16777216}
+{"section": "decode T=32768"}
+{"label": "decode T=32768 mask=None", "T": 32768, "med_ms_r1": 0.4948, "best_ms_r1": 0.4269, "gbps_r1": 271.3, "med_ms_r8": 0.2858, "best_ms_r8": 0.2758, "gbps_r8": 469.7, "nbytes": 134217728}
+{"label": "decode T=32768 mask=additive bf16 [1,32,1,T]", "T": 32768, "med_ms_r1": 0.5195, "best_ms_r1": 0.461, "gbps_r1": 262.4, "med_ms_r8": 0.3261, "best_ms_r8": 0.303, "gbps_r8": 418.0, "nbytes": 136314880}
+{"label": "decode T=32768 mask=bool [1,1,1,T] (window)", "T": 32768, "med_ms_r1": 0.409, "best_ms_r1": 0.381, "gbps_r1": 328.2, "med_ms_r8": 0.1962, "best_ms_r8": 0.179, "gbps_r8": 684.1, "nbytes": 134217728}
+{"label": "decode T=32768 mask=additive bf16 [1,1,1,T] broadcast", "T": 32768, "med_ms_r1": 0.5812, "best_ms_r1": 0.5442, "gbps_r1": 230.9, "med_ms_r8": 0.3891, "best_ms_r8": 0.3762, "gbps_r8": 345.0, "nbytes": 134217728}
+{"label": "decode T=32768 rel-bias build (vendored style) + sdpa", "T": 32768, "med_ms_r1": 0.6478, "best_ms_r1": 0.5905, "gbps_r1": 210.4, "med_ms_r8": 0.4907, "best_ms_r8": 0.4731, "gbps_r8": 277.8, "nbytes": 136314880}
+{"label": "decode T=32768 UNFUSED matmul+softmax+matmul (additive mask)", "T": 32768, "med_ms_r1": 1.5975, "best_ms_r1": 1.3961, "gbps_r1": 84.0, "med_ms_r8": 1.1729, "best_ms_r8": 0.9841, "gbps_r8": 114.4, "nbytes": 134217728}
+{"label": "42-layer attention per token at ctx 4096", "ms_swa35_at512_nomask": 1.075, "ms_global7_add_mask": 0.787, "ms_global7_bias_build": 0.776, "total_ms_add": 1.862, "total_ms_bias": 1.851}
+{"label": "42-layer attention per token at ctx 32768", "ms_swa35_at512_nomask": 1.075, "ms_global7_add_mask": 2.283, "ms_global7_bias_build": 3.435, "total_ms_add": 3.357, "total_ms_bias": 4.509}
+{"section": "prefill T=2048"}
+{"label": "prefill T=2048 mask='causal'", "T": 2048, "med_ms_r1": 2.2564, "best_ms_r1": 2.0522, "med_ms_r4": 2.1695, "best_ms_r4": 2.0619}
+{"label": "prefill T=2048 'causal' dense-TFLOPS", "tflops": 31.68}
+{"label": "prefill T=2048 mask=bool causal array", "T": 2048, "med_ms_r1": 3.5734, "best_ms_r1": 3.1869, "med_ms_r4": 4.0525, "best_ms_r4": 3.4366}
+{"label": "prefill T=2048 bool causal array dense-TFLOPS", "tflops": 16.96}
+{"label": "prefill T=2048 mask=bool window512 array", "T": 2048, "med_ms_r1": 5.2783, "best_ms_r1": 4.9756, "med_ms_r4": 5.3637, "best_ms_r4": 4.8018}
+{"label": "prefill T=2048 bool window512 array dense-TFLOPS", "tflops": 12.81}
+{"label": "prefill T=2048 mask=additive bf16 [1,32,T,T]", "T": 2048, "med_ms_r1": 5.1725, "best_ms_r1": 4.6899, "med_ms_r4": 4.9165, "best_ms_r4": 4.7474}
+{"label": "prefill T=2048 additive bf16 [1,32,T,T] dense-TFLOPS", "tflops": 13.98}
+{"label": "prefill T=2048 rel-bias build only [1,32,T,T] (vendored style)", "T": 2048, "med_ms_r1": 7.4999, "best_ms_r1": 7.3258, "med_ms_r4": 7.4333, "best_ms_r4": 7.1583}
+{"_sysinfo": {"mlx": "0.32.4", "device": "Apple M5 Max", "arch": "applegpu_g17s", "load1": 8.7, "load5": 15.7}, "_t": 1793239833.783314}
+{"section": "decode T=512"}
+{"label": "decode T=512 mask=None", "T": 512, "med_ms_r1": 6.3841, "best_ms_r1": 2.2217, "gbps_r1": 0.3, "med_ms_r8": 0.2, "best_ms_r8": 0.0547, "gbps_r8": 10.5, "nbytes": 2097152}
+{"label": "decode T=512 mask=additive bf16 [1,32,1,T]", "T": 512, "med_ms_r1": 0.9392, "best_ms_r1": 0.2689, "gbps_r1": 2.3, "med_ms_r8": 0.0915, "best_ms_r8": 0.0418, "gbps_r8": 23.3, "nbytes": 2129920}
+{"label": "decode T=512 mask=bool [1,1,1,T] (window)", "T": 512, "med_ms_r1": 0.9412, "best_ms_r1": 0.3266, "gbps_r1": 2.2, "med_ms_r8": 0.1558, "best_ms_r8": 0.0599, "gbps_r8": 13.5, "nbytes": 2097152}
+{"label": "decode T=512 mask=additive bf16 [1,1,1,T] broadcast", "T": 512, "med_ms_r1": 0.3206, "best_ms_r1": 0.2066, "gbps_r1": 6.5, "med_ms_r8": 0.059, "best_ms_r8": 0.0406, "gbps_r8": 35.5, "nbytes": 2097152}
+{"label": "decode T=512 rel-bias build (vendored style) + sdpa", "T": 512, "med_ms_r1": 0.4814, "best_ms_r1": 0.2865, "gbps_r1": 4.4, "med_ms_r8": 0.2291, "best_ms_r8": 0.1393, "gbps_r8": 9.3, "nbytes": 2129920}
+{"label": "decode T=512 UNFUSED matmul+softmax+matmul (additive mask)", "T": 512, "med_ms_r1": 0.5843, "best_ms_r1": 0.4694, "gbps_r1": 3.6, "med_ms_r8": 0.1488, "best_ms_r8": 0.0958, "gbps_r8": 14.1, "nbytes": 2097152}
+{"section": "decode T=4096"}
+{"label": "decode T=4096 mask=None", "T": 4096, "med_ms_r1": 0.4453, "best_ms_r1": 0.3067, "gbps_r1": 37.7, "med_ms_r8": 0.2311, "best_ms_r8": 0.152, "gbps_r8": 72.6, "nbytes": 16777216}
+{"label": "decode T=4096 mask=additive bf16 [1,32,1,T]", "T": 4096, "med_ms_r1": 0.6213, "best_ms_r1": 0.4079, "gbps_r1": 27.4, "med_ms_r8": 0.2629, "best_ms_r8": 0.2091, "gbps_r8": 64.8, "nbytes": 17039360}
+{"label": "decode T=4096 mask=bool [1,1,1,T] (window)", "T": 4096, "med_ms_r1": 0.5781, "best_ms_r1": 0.3278, "gbps_r1": 29.0, "med_ms_r8": 0.1813, "best_ms_r8": 0.0998, "gbps_r8": 92.5, "nbytes": 16777216}
+{"label": "decode T=4096 mask=additive bf16 [1,1,1,T] broadcast", "T": 4096, "med_ms_r1": 0.6994, "best_ms_r1": 0.3965, "gbps_r1": 24.0, "med_ms_r8": 0.4101, "best_ms_r8": 0.1652, "gbps_r8": 40.9, "nbytes": 16777216}
+{"label": "decode T=4096 rel-bias build (vendored style) + sdpa", "T": 4096, "med_ms_r1": 1.0695, "best_ms_r1": 0.8352, "gbps_r1": 15.9, "med_ms_r8": 0.4639, "best_ms_r8": 0.2913, "gbps_r8": 36.7, "nbytes": 17039360}
+{"label": "decode T=4096 UNFUSED matmul+softmax+matmul (additive mask)", "T": 4096, "med_ms_r1": 1.0916, "best_ms_r1": 0.8098, "gbps_r1": 15.4, "med_ms_r8": 0.3062, "best_ms_r8": 0.2075, "gbps_r8": 54.8, "nbytes": 16777216}
+{"section": "decode T=32768"}
+{"label": "decode T=32768 mask=None", "T": 32768, "med_ms_r1": 1.3166, "best_ms_r1": 0.733, "gbps_r1": 101.9, "med_ms_r8": 0.7043, "best_ms_r8": 0.4677, "gbps_r8": 190.6, "nbytes": 134217728}
+{"label": "decode T=32768 mask=additive bf16 [1,32,1,T]", "T": 32768, "med_ms_r1": 2.1364, "best_ms_r1": 1.0903, "gbps_r1": 63.8, "med_ms_r8": 1.0958, "best_ms_r8": 0.8185, "gbps_r8": 124.4, "nbytes": 136314880}
+{"label": "decode T=32768 mask=bool [1,1,1,T] (window)", "T": 32768, "med_ms_r1": 1.5364, "best_ms_r1": 0.8508, "gbps_r1": 87.4, "med_ms_r8": 0.9486, "best_ms_r8": 0.4566, "gbps_r8": 141.5, "nbytes": 134217728}
+{"label": "decode T=32768 mask=additive bf16 [1,1,1,T] broadcast", "T": 32768, "med_ms_r1": 2.2671, "best_ms_r1": 1.4569, "gbps_r1": 59.2, "med_ms_r8": 1.6874, "best_ms_r8": 1.075, "gbps_r8": 79.5, "nbytes": 134217728}
+{"label": "decode T=32768 rel-bias build (vendored style) + sdpa", "T": 32768, "med_ms_r1": 3.8186, "best_ms_r1": 2.6387, "gbps_r1": 35.7, "med_ms_r8": 2.2736, "best_ms_r8": 1.8167, "gbps_r8": 60.0, "nbytes": 136314880}
+{"label": "decode T=32768 UNFUSED matmul+softmax+matmul (additive mask)", "T": 32768, "med_ms_r1": 3.5847, "best_ms_r1": 2.8265, "gbps_r1": 37.4, "med_ms_r8": 2.0244, "best_ms_r8": 1.4912, "gbps_r8": 66.3, "nbytes": 134217728}
+{"label": "42-layer attention per token at ctx 4096", "ms_swa35_at512_nomask": 7.0, "ms_global7_add_mask": 1.84, "ms_global7_bias_build": 3.247, "total_ms_add": 8.84, "total_ms_bias": 10.247}
+{"label": "42-layer attention per token at ctx 32768", "ms_swa35_at512_nomask": 7.0, "ms_global7_add_mask": 7.671, "ms_global7_bias_build": 15.915, "total_ms_add": 14.671, "total_ms_bias": 22.915}
+{"section": "prefill T=2048"}
+{"label": "prefill T=2048 mask='causal'", "T": 2048, "med_ms_r1": 3.807, "best_ms_r1": 2.7821, "med_ms_r4": 3.1096, "best_ms_r4": 2.5008}
+{"label": "prefill T=2048 'causal' dense-TFLOPS", "tflops": 22.1}
+{"label": "prefill T=2048 mask=bool causal array", "T": 2048, "med_ms_r1": 6.7362, "best_ms_r1": 5.9099, "med_ms_r4": 6.0961, "best_ms_r4": 5.6087}
+{"label": "prefill T=2048 bool causal array dense-TFLOPS", "tflops": 11.27}
+{"label": "prefill T=2048 mask=bool window512 array", "T": 2048, "med_ms_r1": 6.3985, "best_ms_r1": 4.7609, "med_ms_r4": 5.3525, "best_ms_r4": 5.0821}
+{"label": "prefill T=2048 bool window512 array dense-TFLOPS", "tflops": 12.84}
+{"label": "prefill T=2048 mask=additive bf16 [1,32,T,T]", "T": 2048, "med_ms_r1": 4.9584, "best_ms_r1": 3.9302, "med_ms_r4": 4.9702, "best_ms_r4": 4.4931}
+{"label": "prefill T=2048 additive bf16 [1,32,T,T] dense-TFLOPS", "tflops": 13.83}
+{"label": "prefill T=2048 rel-bias build only [1,32,T,T] (vendored style)", "T": 2048, "med_ms_r1": 7.0845, "best_ms_r1": 6.3269, "med_ms_r4": 6.6397, "best_ms_r4": 6.2849}
+{"_sysinfo": {"mlx": "0.32.4", "device": "Apple M5 Max", "arch": "applegpu_g17s", "load1": 9.1, "load5": 15.6}, "_t": 1793239844.476117}
+{"section": "decode T=512"}
+{"label": "decode T=512 mask=None", "T": 512, "med_ms_r1": 0.4379, "best_ms_r1": 0.2489, "gbps_r1": 4.8, "med_ms_r8": 0.0817, "best_ms_r8": 0.0459, "gbps_r8": 25.7, "nbytes": 2097152}
+{"label": "decode T=512 mask=additive bf16 [1,32,1,T]", "T": 512, "med_ms_r1": 0.3727, "best_ms_r1": 0.2429, "gbps_r1": 5.7, "med_ms_r8": 0.0909, "best_ms_r8": 0.0547, "gbps_r8": 23.4, "nbytes": 2129920}
+{"label": "decode T=512 mask=bool [1,1,1,T] (window)", "T": 512, "med_ms_r1": 0.9069, "best_ms_r1": 0.3525, "gbps_r1": 2.3, "med_ms_r8": 0.1565, "best_ms_r8": 0.0619, "gbps_r8": 13.4, "nbytes": 2097152}
+{"label": "decode T=512 mask=additive bf16 [1,1,1,T] broadcast", "T": 512, "med_ms_r1": 0.9981, "best_ms_r1": 0.4302, "gbps_r1": 2.1, "med_ms_r8": 0.088, "best_ms_r8": 0.0562, "gbps_r8": 23.8, "nbytes": 2097152}
+{"label": "decode T=512 rel-bias build (vendored style) + sdpa", "T": 512, "med_ms_r1": 0.522, "best_ms_r1": 0.3466, "gbps_r1": 4.1, "med_ms_r8": 0.1698, "best_ms_r8": 0.1076, "gbps_r8": 12.5, "nbytes": 2129920}
+{"label": "decode T=512 UNFUSED matmul+softmax+matmul (additive mask)", "T": 512, "med_ms_r1": 0.5965, "best_ms_r1": 0.2968, "gbps_r1": 3.5, "med_ms_r8": 0.1056, "best_ms_r8": 0.0693, "gbps_r8": 19.9, "nbytes": 2097152}
+{"section": "decode T=4096"}
+{"label": "decode T=4096 mask=None", "T": 4096, "med_ms_r1": 0.3815, "best_ms_r1": 0.2586, "gbps_r1": 44.0, "med_ms_r8": 0.1241, "best_ms_r8": 0.0804, "gbps_r8": 135.1, "nbytes": 16777216}
+{"label": "decode T=4096 mask=additive bf16 [1,32,1,T]", "T": 4096, "med_ms_r1": 0.3873, "best_ms_r1": 0.2225, "gbps_r1": 44.0, "med_ms_r8": 0.1538, "best_ms_r8": 0.1073, "gbps_r8": 110.8, "nbytes": 17039360}
+{"label": "decode T=4096 mask=bool [1,1,1,T] (window)", "T": 4096, "med_ms_r1": 0.3442, "best_ms_r1": 0.2357, "gbps_r1": 48.7, "med_ms_r8": 0.0892, "best_ms_r8": 0.0633, "gbps_r8": 188.0, "nbytes": 16777216}
+{"label": "decode T=4096 mask=additive bf16 [1,1,1,T] broadcast", "T": 4096, "med_ms_r1": 0.3835, "best_ms_r1": 0.2471, "gbps_r1": 43.8, "med_ms_r8": 0.1209, "best_ms_r8": 0.0894, "gbps_r8": 138.8, "nbytes": 16777216}
+{"label": "decode T=4096 rel-bias build (vendored style) + sdpa", "T": 4096, "med_ms_r1": 0.9183, "best_ms_r1": 0.3915, "gbps_r1": 18.6, "med_ms_r8": 0.2363, "best_ms_r8": 0.1413, "gbps_r8": 72.1, "nbytes": 17039360}
+{"label": "decode T=4096 UNFUSED matmul+softmax+matmul (additive mask)", "T": 4096, "med_ms_r1": 1.4476, "best_ms_r1": 0.6694, "gbps_r1": 11.6, "med_ms_r8": 0.4799, "best_ms_r8": 0.1755, "gbps_r8": 35.0, "nbytes": 16777216}
+{"section": "decode T=32768"}
+{"label": "decode T=32768 mask=None", "T": 32768, "med_ms_r1": 0.809, "best_ms_r1": 0.6103, "gbps_r1": 165.9, "med_ms_r8": 0.4666, "best_ms_r8": 0.3824, "gbps_r8": 287.7, "nbytes": 134217728}
+{"label": "decode T=32768 mask=additive bf16 [1,32,1,T]", "T": 32768, "med_ms_r1": 0.6997, "best_ms_r1": 0.5446, "gbps_r1": 194.8, "med_ms_r8": 0.4066, "best_ms_r8": 0.3208, "gbps_r8": 335.2, "nbytes": 136314880}
+{"label": "decode T=32768 mask=bool [1,1,1,T] (window)", "T": 32768, "med_ms_r1": 0.7468, "best_ms_r1": 0.5062, "gbps_r1": 179.7, "med_ms_r8": 0.289, "best_ms_r8": 0.2007, "gbps_r8": 464.3, "nbytes": 134217728}
+{"label": "decode T=32768 mask=additive bf16 [1,1,1,T] broadcast", "T": 32768, "med_ms_r1": 0.8864, "best_ms_r1": 0.6477, "gbps_r1": 151.4, "med_ms_r8": 0.6051, "best_ms_r8": 0.4606, "gbps_r8": 221.8, "nbytes": 134217728}
+{"label": "decode T=32768 rel-bias build (vendored style) + sdpa", "T": 32768, "med_ms_r1": 2.2636, "best_ms_r1": 0.7601, "gbps_r1": 60.2, "med_ms_r8": 0.5551, "best_ms_r8": 0.4517, "gbps_r8": 245.6, "nbytes": 136314880}
+{"label": "decode T=32768 UNFUSED matmul+softmax+matmul (additive mask)", "T": 32768, "med_ms_r1": 1.5454, "best_ms_r1": 1.3184, "gbps_r1": 86.9, "med_ms_r8": 0.9078, "best_ms_r8": 0.7701, "gbps_r8": 147.9, "nbytes": 134217728}
+{"label": "42-layer attention per token at ctx 4096", "ms_swa35_at512_nomask": 2.859, "ms_global7_add_mask": 1.077, "ms_global7_bias_build": 1.654, "total_ms_add": 3.936, "total_ms_bias": 4.514}
+{"label": "42-layer attention per token at ctx 32768", "ms_swa35_at512_nomask": 2.859, "ms_global7_add_mask": 2.846, "ms_global7_bias_build": 3.886, "total_ms_add": 5.706, "total_ms_bias": 6.745}
+{"section": "prefill T=2048"}
+{"label": "prefill T=2048 mask='causal'", "T": 2048, "med_ms_r1": 1.5387, "best_ms_r1": 1.3965, "med_ms_r4": 1.374, "best_ms_r4": 1.1952}
+{"label": "prefill T=2048 'causal' dense-TFLOPS", "tflops": 50.01}
+{"label": "prefill T=2048 mask=bool causal array", "T": 2048, "med_ms_r1": 2.6596, "best_ms_r1": 2.2975, "med_ms_r4": 2.6159, "best_ms_r4": 2.2838}
+{"label": "prefill T=2048 bool causal array dense-TFLOPS", "tflops": 26.27}
+{"label": "prefill T=2048 mask=bool window512 array", "T": 2048, "med_ms_r1": 3.1964, "best_ms_r1": 2.9238, "med_ms_r4": 3.3182, "best_ms_r4": 2.9206}
+{"label": "prefill T=2048 bool window512 array dense-TFLOPS", "tflops": 20.71}
+{"label": "prefill T=2048 mask=additive bf16 [1,32,T,T]", "T": 2048, "med_ms_r1": 3.8616, "best_ms_r1": 3.3272, "med_ms_r4": 3.9944, "best_ms_r4": 3.5602}
+{"label": "prefill T=2048 additive bf16 [1,32,T,T] dense-TFLOPS", "tflops": 17.2}
+{"label": "prefill T=2048 rel-bias build only [1,32,T,T] (vendored style)", "T": 2048, "med_ms_r1": 5.8839, "best_ms_r1": 5.3247, "med_ms_r4": 5.5091, "best_ms_r4": 5.2791}
+{"_sysinfo": {"mlx": "0.32.4", "device": "Apple M5 Max", "arch": "applegpu_g17s", "load1": 9.1, "load5": 16.3}, "_t": 1793240243.4070451}
+{"section": "decode T=512"}
+{"label": "decode T=512 mask=None", "T": 512, "med_ms_r1": 0.2711, "best_ms_r1": 0.197, "gbps_r1": 7.7, "med_ms_r8": 0.0402, "best_ms_r8": 0.0336, "gbps_r8": 52.1, "nbytes": 2097152}
+{"label": "decode T=512 mask=additive bf16 [1,32,1,T]", "T": 512, "med_ms_r1": 0.2355, "best_ms_r1": 0.1846, "gbps_r1": 9.0, "med_ms_r8": 0.0444, "best_ms_r8": 0.0349, "gbps_r8": 48.0, "nbytes": 2129920}
+{"label": "decode T=512 mask=bool [1,1,1,T] (window)", "T": 512, "med_ms_r1": 0.22, "best_ms_r1": 0.1677, "gbps_r1": 9.5, "med_ms_r8": 0.0439, "best_ms_r8": 0.0367, "gbps_r8": 47.8, "nbytes": 2097152}
+{"label": "decode T=512 mask=additive bf16 [1,1,1,T] broadcast", "T": 512, "med_ms_r1": 0.2503, "best_ms_r1": 0.1818, "gbps_r1": 8.4, "med_ms_r8": 0.0468, "best_ms_r8": 0.0374, "gbps_r8": 44.8, "nbytes": 2097152}
+{"label": "decode T=512 rel-bias build (vendored style) + sdpa", "T": 512, "med_ms_r1": 0.3494, "best_ms_r1": 0.2451, "gbps_r1": 6.1, "med_ms_r8": 0.0961, "best_ms_r8": 0.0747, "gbps_r8": 22.2, "nbytes": 2129920}
+{"label": "decode T=512 UNFUSED matmul+softmax+matmul (additive mask)", "T": 512, "med_ms_r1": 0.2958, "best_ms_r1": 0.2093, "gbps_r1": 7.1, "med_ms_r8": 0.084, "best_ms_r8": 0.0635, "gbps_r8": 25.0, "nbytes": 2097152}
+{"section": "decode T=4096"}
+{"label": "decode T=4096 mask=None", "T": 4096, "med_ms_r1": 0.2861, "best_ms_r1": 0.1647, "gbps_r1": 58.6, "med_ms_r8": 0.0974, "best_ms_r8": 0.084, "gbps_r8": 172.3, "nbytes": 16777216}
+{"label": "decode T=4096 mask=additive bf16 [1,32,1,T]", "T": 4096, "med_ms_r1": 0.2887, "best_ms_r1": 0.2045, "gbps_r1": 59.0, "med_ms_r8": 0.1303, "best_ms_r8": 0.1145, "gbps_r8": 130.8, "nbytes": 17039360}
+{"label": "decode T=4096 mask=bool [1,1,1,T] (window)", "T": 4096, "med_ms_r1": 0.3284, "best_ms_r1": 0.2179, "gbps_r1": 51.1, "med_ms_r8": 0.0934, "best_ms_r8": 0.0745, "gbps_r8": 179.6, "nbytes": 16777216}
+{"label": "decode T=4096 mask=additive bf16 [1,1,1,T] broadcast", "T": 4096, "med_ms_r1": 0.3002, "best_ms_r1": 0.2358, "gbps_r1": 55.9, "med_ms_r8": 0.13, "best_ms_r8": 0.1142, "gbps_r8": 129.1, "nbytes": 16777216}
+{"label": "decode T=4096 rel-bias build (vendored style) + sdpa", "T": 4096, "med_ms_r1": 0.43, "best_ms_r1": 0.3014, "gbps_r1": 39.6, "med_ms_r8": 0.2055, "best_ms_r8": 0.1721, "gbps_r8": 82.9, "nbytes": 17039360}
+{"label": "decode T=4096 UNFUSED matmul+softmax+matmul (additive mask)", "T": 4096, "med_ms_r1": 0.4049, "best_ms_r1": 0.3167, "gbps_r1": 41.4, "med_ms_r8": 0.1529, "best_ms_r8": 0.132, "gbps_r8": 109.8, "nbytes": 16777216}
+{"section": "decode T=32768"}
+{"label": "decode T=32768 mask=None", "T": 32768, "med_ms_r1": 0.6664, "best_ms_r1": 0.5174, "gbps_r1": 201.4, "med_ms_r8": 0.3337, "best_ms_r8": 0.306, "gbps_r8": 402.2, "nbytes": 134217728}
+{"label": "decode T=32768 mask=additive bf16 [1,32,1,T]", "T": 32768, "med_ms_r1": 0.7528, "best_ms_r1": 0.6365, "gbps_r1": 181.1, "med_ms_r8": 0.4771, "best_ms_r8": 0.372, "gbps_r8": 285.7, "nbytes": 136314880}
+{"label": "decode T=32768 mask=bool [1,1,1,T] (window)", "T": 32768, "med_ms_r1": 0.6601, "best_ms_r1": 0.519, "gbps_r1": 203.3, "med_ms_r8": 0.3113, "best_ms_r8": 0.2789, "gbps_r8": 431.1, "nbytes": 134217728}
+{"label": "decode T=32768 mask=additive bf16 [1,1,1,T] broadcast", "T": 32768, "med_ms_r1": 0.9316, "best_ms_r1": 0.7782, "gbps_r1": 144.1, "med_ms_r8": 0.6406, "best_ms_r8": 0.5075, "gbps_r8": 209.5, "nbytes": 134217728}
+{"label": "decode T=32768 rel-bias build (vendored style) + sdpa", "T": 32768, "med_ms_r1": 1.2706, "best_ms_r1": 0.903, "gbps_r1": 107.3, "med_ms_r8": 0.8039, "best_ms_r8": 0.6596, "gbps_r8": 169.6, "nbytes": 136314880}
+{"label": "decode T=32768 UNFUSED matmul+softmax+matmul (additive mask)", "T": 32768, "med_ms_r1": 2.4034, "best_ms_r1": 1.9927, "gbps_r1": 55.8, "med_ms_r8": 1.4043, "best_ms_r8": 1.2634, "gbps_r8": 95.6, "nbytes": 134217728}
+{"label": "42-layer attention per token at ctx 4096", "ms_swa35_at512_nomask": 1.407, "ms_global7_add_mask": 0.912, "ms_global7_bias_build": 1.438, "total_ms_add": 2.319, "total_ms_bias": 2.845}
+{"label": "42-layer attention per token at ctx 32768", "ms_swa35_at512_nomask": 1.407, "ms_global7_add_mask": 3.34, "ms_global7_bias_build": 5.627, "total_ms_add": 4.747, "total_ms_bias": 7.034}
+{"section": "prefill T=2048"}
+{"label": "prefill T=2048 mask='causal'", "T": 2048, "med_ms_r1": 2.393, "best_ms_r1": 1.9603, "med_ms_r4": 2.2144, "best_ms_r4": 1.9393}
+{"label": "prefill T=2048 'causal' dense-TFLOPS", "tflops": 31.03}
+{"label": "prefill T=2048 mask=bool causal array", "T": 2048, "med_ms_r1": 5.1995, "best_ms_r1": 4.2747, "med_ms_r4": 5.287, "best_ms_r4": 4.8533}
+{"label": "prefill T=2048 bool causal array dense-TFLOPS", "tflops": 13.0}
+{"label": "prefill T=2048 mask=bool window512 array", "T": 2048, "med_ms_r1": 5.505, "best_ms_r1": 4.641, "med_ms_r4": 5.0401, "best_ms_r4": 4.8344}
+{"label": "prefill T=2048 bool window512 array dense-TFLOPS", "tflops": 13.63}
+{"label": "prefill T=2048 mask=additive bf16 [1,32,T,T]", "T": 2048, "med_ms_r1": 5.1584, "best_ms_r1": 4.4387, "med_ms_r4": 4.7676, "best_ms_r4": 4.2939}
+{"label": "prefill T=2048 additive bf16 [1,32,T,T] dense-TFLOPS", "tflops": 14.41}
+{"label": "prefill T=2048 rel-bias build only [1,32,T,T] (vendored style)", "T": 2048, "med_ms_r1": 9.4191, "best_ms_r1": 8.1065, "med_ms_r4": 8.5785, "best_ms_r4": 8.0756}

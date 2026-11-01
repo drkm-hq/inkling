@@ -1,0 +1,47 @@
+0.05.390.537 I srv  llama_server: initializing ...
+0.05.390.546 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.05.391.190 W srv  server_setup: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.05.393.124 I srv    load_model: loading model '~/.cache/huggingface/hub/models--unsloth--Inkling-Small-GGUF/snapshots/1a19ef82883cb7b9c581b93c30ea252dabbf658d/UD-IQ3_XXS/Inkling-Small-UD-IQ3_XXS-00001-of-00003.gguf'
+0.09.949.927 I cmn          init: llama threadpool init, n_threads = 6
+0.10.057.859 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 8192, kv_unified = 'false'
+0.10.086.198 W srv          init: chat template supports preserving reasoning, it is enabled by default (may use more tokens, disable via --no-reasoning-preserve)
+0.10.086.237 I srv  server_run_i: model loaded
+0.10.086.239 I srv  server_on_li: listening on http://127.0.0.1:8123
+0.10.578.504 I slot get_availabl: id  0 | task -1 | selected slot by LRU, n_tokens = 0, t_last = -1
+0.10.578.521 I slot launch_slot_: id  0 | task 0 | processing task, is_child = 0
+0.20.566.832 I slot print_timing: id  0 | task 0 | prompt eval time =    1331.89 ms /   226 tokens (    5.89 ms per token,   169.68 tokens per second)
+0.20.566.838 I slot print_timing: id  0 | task 0 |        eval time =    8655.60 ms /    96 tokens (   91.11 ms per token,    10.98 tokens per second)
+0.20.566.838 I slot print_timing: id  0 | task 0 |       total time =    9987.50 ms /   322 tokens
+0.20.566.839 I slot print_timing: id  0 | task 0 |    graphs reused =          0
+0.20.566.840 I slot print_timing: id  0 | task 0 |   graph reallocs =          0    /     0        (same size) / (changed size)
+0.20.566.921 I slot      release: id  0 | task 0 | stop processing: n_tokens = 321, truncated = 0
+0.20.589.064 I slot get_availabl: id  0 | task -1 | selected slot by LRU, n_tokens = 321, t_last = 32464410791
+0.20.603.516 I slot launch_slot_: id  0 | task 98 | processing task, is_child = 0
+0.36.747.249 I slot print_timing: id  0 | task 98 | prompt processing, n_tokens =   1556, progress = 0.75, t =  16.14 s / 96.38 tokens per second
+0.42.804.102 I slot print_timing: id  0 | task 98 | prompt processing, n_tokens =   2068, progress = 1.00, t =  22.20 s / 93.15 tokens per second
+0.49.917.654 I slot print_timing: id  0 | task 98 | prompt eval time =   22355.16 ms /  2072 tokens (   10.79 ms per token,    92.69 tokens per second)
+0.49.917.659 I slot print_timing: id  0 | task 98 |        eval time =    6958.17 ms /    96 tokens (   73.24 ms per token,    13.65 tokens per second)
+0.49.917.660 I slot print_timing: id  0 | task 98 |       total time =   29313.33 ms /  2168 tokens
+0.49.917.661 I slot print_timing: id  0 | task 98 |    graphs reused =          0
+0.49.917.662 I slot print_timing: id  0 | task 98 |   graph reallocs =         98    /     0        (same size) / (changed size)
+0.49.918.021 I slot      release: id  0 | task 98 | stop processing: n_tokens = 2167, truncated = 0
+0.49.951.942 I srv    operator(): operator(): cleaning up before exit...
+0.49.952.921 W ~llama_context:       MTL0 compute buffer size of 279.6613 MiB, does not match expectation of 179.1485 MiB
+       51.92 real       182.82 user         9.60 sys
+         99062824960  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+             6065724  page reclaims
+                2380  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   7  messages sent
+                   6  messages received
+                   1  signals received
+                  49  voluntary context switches
+              608673  involuntary context switches
+       1979176336110  instructions retired
+        493579558636  cycles elapsed
+          1249777744  peak memory footprint

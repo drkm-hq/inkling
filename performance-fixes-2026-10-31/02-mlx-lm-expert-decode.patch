@@ -1,0 +1,462 @@
+diff --git a/mlx_lm/models/inkling_mm_model.py b/mlx_lm/models/inkling_mm_model.py
+index cfd232b..d3724b3 100644
+--- a/mlx_lm/models/inkling_mm_model.py
++++ b/mlx_lm/models/inkling_mm_model.py
+@@ -10,7 +10,7 @@ import mlx.nn as nn
+ from .activations import swiglu
+ from .base import BaseModelArgs, scaled_dot_product_attention
+ from .cache import ArraysCache, CacheList, KVCache, RotatingKVCache
+-from .switch_layers import SwitchGLU
++from .switch_layers import QuantizedSwitchLinear, SwitchGLU
+ 
+ 
+ @dataclass
+@@ -583,6 +583,129 @@ def select_experts(logits, bias, global_scale, top_k, route_scale, *, use_kernel
+     return _select_experts(logits, bias, global_scale, top_k, route_scale)
+ 
+ 
++# Match the affine q2 dot-product and bf16 rounding order of MLX's qmv_fast.
++_EXPERT_GATE_UP_SRC = """
++    uint lane = thread_position_in_threadgroup.x % 32;
++    uint simd = thread_position_in_threadgroup.x / 32;
++    uint selected = threadgroup_position_in_grid.y;
++    uint expert = inds[selected];
++    uint n = selected / K;
++    uint first = threadgroup_position_in_grid.x * (SG * ROWS) + simd * ROWS;
++    float a[ROWS] = {0};
++    float b[ROWS] = {0};
++    const device uchar *uw = (const device uchar *)upw;
++    const device uchar *gw = (const device uchar *)gatew;
++    for (uint start = 0; start < D; start += 512) {
++        float v[16];
++        float sum = 0;
++        uint xi = n * D + start + lane * 16;
++        for (uint j = 0; j < 16; j += 4) {
++            sum += float(x[xi+j]) + float(x[xi+j+1]) + float(x[xi+j+2]) + float(x[xi+j+3]);
++            v[j] = float(x[xi+j]);
++            v[j+1] = float(x[xi+j+1]) / 4.0f;
++            v[j+2] = float(x[xi+j+2]) / 16.0f;
++            v[j+3] = float(x[xi+j+3]) / 64.0f;
++        }
++        for (uint r = 0; r < ROWS; ++r) {
++            uint row = expert * I + first + r;
++            uint wi = row * (D/4) + start/4 + lane*4;
++            uint si = row * (D/G) + (start + lane*16)/G;
++            float au = 0;
++            float ag = 0;
++            for (uint j = 0; j < 4; ++j) {
++                uchar u = uw[wi+j];
++                uchar g = gw[wi+j];
++                au += v[4*j]*(u&3) + v[4*j+1]*(u&12) + v[4*j+2]*(u&48) + v[4*j+3]*(u&192);
++                ag += v[4*j]*(g&3) + v[4*j+1]*(g&12) + v[4*j+2]*(g&48) + v[4*j+3]*(g&192);
++            }
++            a[r] += float(ups[si])*au + sum*float(upb[si]);
++            b[r] += float(gates[si])*ag + sum*float(gateb[si]);
++        }
++    }
++    for (uint r = 0; r < ROWS; ++r) {
++        float uu = simd_sum(a[r]);
++        float gg = simd_sum(b[r]);
++        if (lane == 0) {
++            T u = T(uu);
++            T g = T(gg);
++            auto z = 1 / (1 + metal::precise::exp(metal::abs(g)));
++            T sigmoid = g < T(0) ? z : 1-z;
++            out[selected*I+first+r] = T(T(g*sigmoid)*u);
++        }
++    }
++"""
++
++
++def _make_expert_gate_up_kernel():
++    if not mx.metal.is_available():
++        return None
++    return mx.fast.metal_kernel(
++        name="inkling_expert_gate_up_q2",
++        input_names=["x", "upw", "ups", "upb", "gatew", "gates", "gateb", "inds"],
++        output_names=["out"],
++        source=_EXPERT_GATE_UP_SRC,
++    )
++
++
++_expert_gate_up_kernel = _make_expert_gate_up_kernel()
++
++
++def _expert_gate_up(x, experts, inds):
++    up, gate = experts.up_proj, experts.gate_proj
++    if (
++        _expert_gate_up_kernel is None
++        or mx.default_device() != mx.gpu
++        or x.shape[0] != 1
++        or x.dtype != mx.bfloat16
++        or x.shape[-1] % 512 != 0
++        or inds.shape[-1] > 8
++        or type(up) is not QuantizedSwitchLinear
++        or type(gate) is not QuantizedSwitchLinear
++    ):
++        return None
++    if any(
++        p.bits != 2
++        or p.group_size != 64
++        or p.mode != "affine"
++        or p.global_scale is not None
++        or "bias" in p
++        or p.scales.dtype != x.dtype
++        or p.biases is None
++        or p.biases.dtype != x.dtype
++        for p in (up, gate)
++    ):
++        return None
++    if up.weight.shape != gate.weight.shape or up.output_dims % 4 != 0:
++        return None
++    n, d = x.shape
++    i, k = up.output_dims, inds.shape[-1]
++    return _expert_gate_up_kernel(
++        inputs=[
++            x,
++            up.weight,
++            up.scales,
++            up.biases,
++            gate.weight,
++            gate.scales,
++            gate.biases,
++            inds,
++        ],
++        template=[
++            ("T", x.dtype),
++            ("D", d),
++            ("I", i),
++            ("K", k),
++            ("G", 64),
++            ("ROWS", 2),
++            ("SG", 2),
++        ],
++        grid=((i // 4) * 64, n * k, 1),
++        threadgroup=(64, 1, 1),
++        output_shapes=[(n, k, i)],
++        output_dtypes=[x.dtype],
++    )[0]
++
++
+ class MoE(nn.Module):
+     """Top-k routed experts plus always-on shared experts.
+ 
+@@ -602,7 +725,7 @@ class MoE(nn.Module):
+             args.n_routed_experts + args.n_shared_experts,
+         )
+ 
+-    def __call__(self, x):
++    def __call__(self, x, *, return_expert_outputs=False):
+         B, L, D = x.shape
+         x = x.reshape(-1, D)
+         logits = x.astype(mx.float32) @ self.gate.weight.astype(mx.float32).T
+@@ -614,11 +737,70 @@ class MoE(nn.Module):
+             self.route_scale,
+             use_kernel=not self.training,
+         )
+-        y = self.experts(x, inds)
++        activated = None if self.training else _expert_gate_up(x, self.experts, inds)
++        if activated is None:
++            y = self.experts(x, inds)
++        else:
++            y = self.experts.down_proj(activated[..., None, :], inds).squeeze(-2)
++        if return_expert_outputs:
++            return y, weights
+         y = (y * weights[..., None].astype(y.dtype)).sum(axis=-2)
+         return y.reshape(B, L, D)
+ 
+ 
++# Preserve the bf16 accumulation of MLX's small-column expert reduction.
++_EXPERT_COMBINE_SCONV_SRC = """
++    uint c = thread_position_in_grid.x;
++    T sum = T(0);
++    for (uint e = 0; e < E; ++e) {
++        T product = T(y[e*C+c] * T(weights[e]));
++        sum = T(product + sum);
++    }
++    T combined = T(sum);
++    float result = float(combined);
++    for (uint k = 0; k < K; ++k) {
++        float input = k == K-1 ? float(combined) : float(state[k*C+c]);
++        result += input * float(w[c*K+k]);
++    }
++    T convolved = T(result);
++    out[c] = T(float(convolved) + float(residual[c]));
++    for (uint k = 0; k < K-1; ++k) {
++        new_state[k*C+c] = k == K-2 ? combined : state[(k+1)*C+c];
++    }
++"""
++
++
++def _make_expert_combine_sconv_kernel():
++    if not mx.metal.is_available():
++        return None
++    return mx.fast.metal_kernel(
++        name="inkling_expert_combine_sconv",
++        input_names=["y", "weights", "w", "state", "residual"],
++        output_names=["out", "new_state"],
++        source=_EXPERT_COMBINE_SCONV_SRC,
++    )
++
++
++_expert_combine_sconv_kernel = _make_expert_combine_sconv_kernel()
++
++
++def _expert_combine_sconv(y, weights, conv, cache, residual):
++    _, e, c = y.shape
++    k = conv.kernel_size
++    state = cache[conv.slot]
++    if state is None:
++        state = mx.zeros((1, k - 1, c), y.dtype)
++    out, cache[conv.slot] = _expert_combine_sconv_kernel(
++        inputs=[y, weights, conv.weight, state, residual],
++        template=[("T", y.dtype), ("E", e), ("C", c), ("K", k)],
++        grid=(c, 1, 1),
++        threadgroup=(min(c, 256), 1, 1),
++        output_shapes=[(1, 1, c), (1, k - 1, c)],
++        output_dtypes=[y.dtype, y.dtype],
++    )
++    return out
++
++
+ class DecoderLayer(nn.Module):
+     def __init__(self, args: TextArgs, layer_idx: int):
+         super().__init__()
+@@ -637,8 +819,26 @@ class DecoderLayer(nn.Module):
+                 conv_mask = conv_cache.make_mask(x.shape[1])
+         r = self.attn(self.attn_norm(x), kv_cache, conv_cache, conv_mask, rel_index)
+         h = self.attn_sconv(r, conv_cache, conv_mask, residual=x)
+-        r = self.mlp(self.mlp_norm(h))
+-        out = self.mlp_sconv(r, conv_cache, conv_mask, residual=h)
++        normalized = self.mlp_norm(h)
++        if (
++            not self.training
++            and _expert_combine_sconv_kernel is not None
++            and mx.default_device() == mx.gpu
++            and isinstance(self.mlp, MoE)
++            and h.shape[:2] == (1, 1)
++            and h.dtype == mx.bfloat16
++            and self.mlp.top_k + self.mlp.gate.weight.shape[0] - self.mlp.gate.bias.size
++            <= 8
++            and conv_cache is not None
++            and conv_mask is None
++            and conv_cache.lengths is None
++            and self.mlp_sconv.kernel_size == 4
++        ):
++            y, weights = self.mlp(normalized, return_expert_outputs=True)
++            out = _expert_combine_sconv(y, weights, self.mlp_sconv, conv_cache, h)
++        else:
++            r = self.mlp(normalized)
++            out = self.mlp_sconv(r, conv_cache, conv_mask, residual=h)
+         if conv_cache is not None:
+             conv_cache.advance(x.shape[1])
+         return out
+diff --git a/tests/test_inkling_gate_up.py b/tests/test_inkling_gate_up.py
+new file mode 100644
+index 0000000..4f44653
+--- /dev/null
++++ b/tests/test_inkling_gate_up.py
+@@ -0,0 +1,203 @@
++# Copyright © 2026 Apple Inc.
++
++import tempfile
++import unittest
++from pathlib import Path
++from unittest.mock import patch
++
++import mlx.core as mx
++import mlx.nn as nn
++from mlx.utils import tree_flatten
++
++from mlx_lm.models import inkling_mm_model as inkling
++from mlx_lm.models.cache import ArraysCache, make_prompt_cache
++from mlx_lm.models.switch_layers import QuantizedSwitchLinear, SwitchGLU
++from tests.test_inkling import random_model
++
++
++class TestInklingGateUp(unittest.TestCase):
++    def make_model(self):
++        model, _ = random_model(
++            seed=47,
++            dtype=mx.bfloat16,
++            hidden_size=512,
++            intermediate_size=128,
++            dense_intermediate_size=128,
++        )
++        nn.quantize(model, group_size=64, bits=2)
++        mx.eval(model.parameters())
++        return model
++
++    def test_exact_fused_activation(self):
++        if not mx.metal.is_available() or mx.default_device() != mx.gpu:
++            self.skipTest("Metal is required")
++        model = self.make_model()
++        experts = model.layers[1].mlp.experts
++        x = mx.random.normal((1, 512)).astype(mx.bfloat16)
++        for selected in ([0, 3, 8, 9], [6, 0, 7, 3, 5, 1, 8, 9], [3, 3, 8, 9]):
++            inds = mx.array([selected], mx.uint32)
++            y = inkling._expert_gate_up(x, experts, inds)
++            self.assertIsNotNone(y)
++            expanded = x[:, None, None]
++            expected = experts.activation(
++                experts.up_proj(expanded, inds), experts.gate_proj(expanded, inds)
++            ).squeeze(-2)
++            self.assertTrue(mx.array_equal(y, expected).item())
++
++    def test_decode_and_serialization(self):
++        model = self.make_model()
++        names = {k for k, _ in tree_flatten(model.parameters())}
++        ids = mx.array([[1, 7, 4, 12, 2, 6, 3]])
++
++        def run():
++            cache = make_prompt_cache(model)
++            out = [model(ids[:, :3], cache=cache)]
++            out += [model(ids[:, i : i + 1], cache=cache) for i in range(3, 7)]
++            logits = mx.concatenate(out, axis=1)
++            mx.eval(logits, [c.state for c in cache])
++            return logits, tree_flatten([c.state for c in cache])
++
++        fused, fused_state = run()
++        with (
++            patch.object(inkling, "_expert_gate_up_kernel", None),
++            patch.object(inkling, "_expert_combine_sconv_kernel", None),
++        ):
++            reference, reference_state = run()
++        self.assertTrue(mx.array_equal(fused, reference).item())
++        for (name, actual), (expected_name, expected) in zip(
++            fused_state, reference_state
++        ):
++            self.assertEqual(name, expected_name)
++            if isinstance(actual, mx.array):
++                self.assertTrue(mx.array_equal(actual, expected).item(), name)
++            else:
++                self.assertEqual(actual, expected, name)
++        self.assertEqual(names, {k for k, _ in tree_flatten(model.parameters())})
++        self.assertFalse(any("gate_up" in key for key in names))
++        with tempfile.TemporaryDirectory() as directory:
++            target = Path(directory) / "model.safetensors"
++            model.save_weights(str(target))
++            loaded = self.make_model()
++            loaded.load_weights(str(target))
++            self.assertTrue(mx.array_equal(model(ids), loaded(ids)).item())
++
++    def test_exact_strided_gate_up_small_intermediate(self):
++        if not mx.metal.is_available() or mx.default_device() != mx.gpu:
++            self.skipTest("Metal is required")
++        mx.random.seed(48)
++        x = mx.random.normal((512, 2)).astype(mx.bfloat16)[:, 0][None]
++        inds = mx.array([[2, 0, 1, 1, 2, 0]], mx.uint32)[:, ::2]
++        for intermediate in (4, 12):
++            with self.subTest(intermediate=intermediate):
++                experts = SwitchGLU(512, intermediate, 3)
++                for name in ("up_proj", "gate_proj"):
++                    projection = QuantizedSwitchLinear(
++                        512, intermediate, 3, bias=False, group_size=64, bits=2
++                    )
++                    # Keep the logical tensors while making their last two
++                    # axes non-contiguous, including the packed weight rows.
++                    for key in ("weight", "scales", "biases"):
++                        value = projection[key]
++                        if key != "weight":
++                            value = value.astype(mx.bfloat16)
++                        projection[key] = mx.swapaxes(
++                            mx.contiguous(mx.swapaxes(value, -1, -2)), -1, -2
++                        )
++                    experts[name] = projection
++                actual = inkling._expert_gate_up(x, experts, inds)
++                self.assertIsNotNone(actual)
++                expanded = x[:, None, None]
++                expected = experts.activation(
++                    experts.up_proj(expanded, inds), experts.gate_proj(expanded, inds)
++                ).squeeze(-2)
++                self.assertTrue(mx.array_equal(actual, expected).item())
++
++    def test_exact_combine_short_conv_boundaries(self):
++        if not mx.metal.is_available() or mx.default_device() != mx.gpu:
++            self.skipTest("Metal is required")
++        mx.random.seed(49)
++        for channels in (1, 3, 31, 257):
++            for selected in (1, 3, 8):
++                for warm_state in (False, True):
++                    with self.subTest(
++                        channels=channels, selected=selected, warm_state=warm_state
++                    ):
++                        conv = inkling.ShortConv(channels, 4, slot=0)
++                        conv.eval()
++                        conv.weight = (0.3 * mx.random.normal((channels, 4, 1))).astype(
++                            mx.bfloat16
++                        )
++                        actual_cache, expected_cache = ArraysCache(1), ArraysCache(1)
++                        if warm_state:
++                            state = mx.random.normal((1, 3, channels, 2)).astype(
++                                mx.bfloat16
++                            )[..., 0]
++                            actual_cache[0] = expected_cache[0] = state
++                        for _ in range(3):
++                            y = mx.random.normal((1, selected, channels, 2)).astype(
++                                mx.bfloat16
++                            )[..., 0]
++                            weights = mx.random.uniform(shape=(1, selected, 2))[..., 0]
++                            residual = mx.random.normal((1, 1, channels, 2)).astype(
++                                mx.bfloat16
++                            )[..., 0]
++                            actual = inkling._expert_combine_sconv(
++                                y, weights, conv, actual_cache, residual
++                            )
++                            combined = (y * weights[..., None].astype(y.dtype)).sum(
++                                axis=-2
++                            )[:, None]
++                            expected = conv(combined, expected_cache, residual=residual)
++                            self.assertEqual(actual.dtype, expected.dtype)
++                            self.assertTrue(mx.array_equal(actual, expected).item())
++                            self.assertEqual(actual_cache[0].dtype, mx.bfloat16)
++                            self.assertTrue(
++                                mx.array_equal(
++                                    actual_cache[0], expected_cache[0]
++                                ).item()
++                            )
++
++    def test_combine_short_conv_fallbacks(self):
++        model, _ = random_model(seed=50, dtype=mx.bfloat16)
++        x = mx.random.normal((1, 1, 64)).astype(mx.bfloat16)
++        for condition in ("lengths", "padding", "nine_experts"):
++            with self.subTest(condition=condition):
++                cache = make_prompt_cache(model)[1]
++                if condition == "lengths":
++                    cache[1].prepare(lengths=[1])
++                elif condition == "padding":
++                    cache[1].left_padding = mx.array([0])
++                top_k = 7 if condition == "nine_experts" else 2
++                with (
++                    patch.object(model.layers[1].mlp, "top_k", top_k),
++                    patch.object(
++                        inkling, "_expert_combine_sconv", side_effect=AssertionError
++                    ),
++                ):
++                    mx.eval(model.layers[1](x, cache=cache))
++
++    def test_fallbacks(self):
++        model = self.make_model()
++        experts = model.layers[1].mlp.experts
++        x = mx.ones((1, 512), mx.bfloat16)
++        inds = mx.array([[0, 3, 8, 9]], mx.uint32)
++        self.assertIsNone(inkling._expert_gate_up(x.astype(mx.float32), experts, inds))
++        self.assertIsNone(
++            inkling._expert_gate_up(mx.broadcast_to(x, (2, 512)), experts, inds)
++        )
++        with patch.object(experts.up_proj, "bits", 4):
++            self.assertIsNone(inkling._expert_gate_up(x, experts, inds))
++        with patch.object(experts.gate_proj, "group_size", 32):
++            self.assertIsNone(inkling._expert_gate_up(x, experts, inds))
++        with patch.object(experts.up_proj, "mode", "mxfp4"):
++            self.assertIsNone(inkling._expert_gate_up(x, experts, inds))
++        model.train()
++        with (
++            patch.object(inkling, "_expert_gate_up", side_effect=AssertionError),
++            patch.object(inkling, "_expert_combine_sconv", side_effect=AssertionError),
++        ):
++            mx.eval(model(mx.array([[1]])))
++
++
++if __name__ == "__main__":
++    unittest.main()

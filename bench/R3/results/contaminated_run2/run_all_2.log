@@ -1,0 +1,37 @@
+22:02:36 load 25.98 >= 8, waiting
+22:02:56 load 29.47 >= 8, waiting
+22:03:16 load 30.05 >= 8, waiting
+22:03:36 load 28.79 >= 8, waiting
+22:03:56 load 25.99 >= 8, waiting
+22:04:16 load 20.23 >= 8, waiting
+22:04:36 load 16.51 >= 8, waiting
+22:04:56 load 18.34 >= 8, waiting
+22:05:16 load 17.20 >= 8, waiting
+22:05:36 load 17.14 >= 8, waiting
+22:05:56 load 20.02 >= 8, waiting
+22:06:16 load 19.97 >= 8, waiting
+22:06:36 load 21.69 >= 8, waiting
+22:06:57 load 19.22 >= 8, waiting
+22:07:17 load 17.22 >= 8, waiting
+22:07:37 load 18.44 >= 8, waiting
+22:07:57 load 15.73 >= 8, waiting
+22:08:17 load 12.65 >= 8, waiting
+22:08:37 load 11.39 >= 8, waiting
+22:08:57 load 9.69 >= 8, waiting
+22:09:17 load 8.45 >= 8, waiting
+22:09:37 load 8.47 >= 8, waiting
+22:09:57 load 8.00 >= 8, waiting
+22:10:17 load 7.96, starting RUN=2
+=== START bw 22:10:17 load=7.96 15.97 18.15
+=== END bw rc=0 22:10:33
+=== START bench_sdpa 22:10:33 load=8.71 15.75 18.03
+=== END bench_sdpa rc=0 22:10:40
+=== START bench_misc 22:10:40 load=9.13 15.60 17.95
+=== END bench_misc rc=0 22:10:49
+=== START bench_moe 22:10:49 load=10.00 15.68 17.96
+=== END bench_moe rc=0 22:11:15
+=== START bench_layer 22:11:15 load=9.76 15.10 17.67
+ bench_misc rc=0 22:11:01
+=== START bench_moe 22:11:01 load=10.17 15.45 17.84
+=== END bench_moe rc=0 22:11:25
+=== START bench_layer 22:11:25 load=9.46 14.94 17.60

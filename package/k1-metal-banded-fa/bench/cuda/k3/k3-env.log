@@ -1,0 +1,36 @@
+$ cp /vol/unsloth/Inkling-Small-GGUF/UD-IQ3_XXS/*.gguf /work/model/ && ls -la /work/model && df -h /work
+total 95635663
+drwxr-xr-x 1 root root         100 Oct 29 06:13 .
+drwxr-xr-x 1 root root          60 Oct 29 06:13 ..
+-rw-r--r-- 1 root root    12986592 Oct 29 06:13 Inkling-Small-UD-IQ3_XXS-00001-of-00003.gguf
+-rw-r--r-- 1 root root 49408950848 Oct 29 06:13 Inkling-Small-UD-IQ3_XXS-00002-of-00003.gguf
+-rw-r--r-- 1 root root 48508980416 Oct 29 06:14 Inkling-Small-UD-IQ3_XXS-00003-of-00003.gguf
+Filesystem      Size  Used Avail Use% Mounted on
+none            8.0E   92G  8.0E   1% /
+
+[rc=0]
+$ nvidia-smi; nvcc --version | tail -2
+Thu Oct 29 06:14:29 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 610.57.04              KMD Version: 610.57.04     CUDA UMD Version: 13.3     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA H200                    On  |   00000000:8B:00.0 Off |                    0 |
+| N/A   36C    P0             77W /  700W |       4MiB / 143771MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+Cuda compilation tools, release 12.8, V12.8.93
+Build cuda_12.8.r12.8/compiler.35583870_0
+
+[rc=0]

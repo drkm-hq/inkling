@@ -1,0 +1,10 @@
+teacher = mlx_lm 0.1.dev1+g1f7057ca5 (~/.venvs/inkling) | forced = mlx_lm 0.1.dev1+g1f7057ca5 (~/.venvs/inkling)
+
+p_short_raw          prompt    226: argmax agreement 122/128; |dlogit| of the teacher's top-1 token: mean 0.8457, max 4.6250; max |dlogit| over common top-8 tokens: 6.0000
+   step 7: teacher 26 (logit 27.125, margin 0.250) vs forced argmax 11 (logit 26.625, margin 0.625); forced logit of teacher's token 26.000, teacher logit of forced token 26.875
+   step 17: teacher 30985 (logit 22.750, margin 1.000) vs forced argmax 623 (logit 22.375, margin 0.375); forced logit of teacher's token 22.000, teacher logit of forced token 21.750
+   step 20: teacher 279 (logit 21.500, margin 1.875) vs forced argmax 101829 (logit 22.375, margin 3.125); forced logit of teacher's token 18.125, teacher logit of forced token 19.375
+   step 31: teacher 30985 (logit 25.875, margin 2.375) vs forced argmax 623 (logit 24.500, margin 1.375); forced logit of teacher's token 23.125, teacher logit of forced token 23.500
+   step 39: teacher 30985 (logit 27.250, margin 0.500) vs forced argmax 623 (logit 27.125, margin 0.625); forced logit of teacher's token 26.500, teacher logit of forced token 26.750
+   step 47: teacher 30985 (logit 28.375, margin 0.500) vs forced argmax 623 (logit 27.375, margin 0.625); forced logit of teacher's token 26.750, teacher logit of forced token 27.875
+   logprobs vs reference on the same tokens: KL(ref||mlx-lm) mean 0.0694 median 0.0018 max 3.3069 nats; |dlogprob| of ref top-1 mean 0.0918 max 3.9763; over ref top-100 max 11.6797; top-1 agreement 95.3%

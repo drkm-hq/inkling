@@ -1,0 +1,168 @@
+{"_sysinfo": {"mlx": "0.32.4", "device": "Apple M5 Max", "arch": "applegpu_g17s", "load1": 82.0, "load5": 36.9}, "_t": 1793239022.195519}
+{"section": "routed experts bits=2"}
+{"label": "decode gather_qmm up    4096->2048 x6 2b", "bits": 2, "T": 1, "med_ms_r1": 0.2113, "best_ms_r1": 0.194, "gbps_r1": 74.4, "med_ms_r8": 0.0542, "best_ms_r8": 0.0509, "gbps_r8": 290.0, "nbytes": 15728640}
+{"label": "decode gather_qmm down  2048->4096 x6 2b", "bits": 2, "T": 1, "med_ms_r1": 0.2606, "best_ms_r1": 0.2004, "gbps_r1": 60.3, "med_ms_r8": 0.0601, "best_ms_r8": 0.053, "gbps_r8": 261.8, "nbytes": 15728640}
+{"label": "decode SwitchGLU (3 gather_qmm) x6 2b", "bits": 2, "T": 1, "med_ms_r1": 0.3479, "best_ms_r1": 0.2717, "gbps_r1": 135.6, "med_ms_r8": 0.1404, "best_ms_r8": 0.1029, "gbps_r8": 336.2, "nbytes": 47185920}
+{"label": "decode SwitchGLU fused gate+up (2 gather_qmm) x6 2b", "bits": 2, "T": 1, "med_ms_r1": 0.3563, "best_ms_r1": 0.2907, "gbps_r1": 132.4, "med_ms_r8": 0.1321, "best_ms_r8": 0.1017, "gbps_r8": 357.3, "nbytes": 47185920}
+{"label": "prefill T=512 SwitchGLU sorted x6 2b (per call)", "bits": 2, "T": 512, "med_ms_r1": 10.4605, "best_ms_r1": 9.9533, "gbps_r1": 192.5, "nbytes": 2013265920}
+{"label": "prefill T=512 2b per-token us", "us_per_token": 20.4}
+{"label": "prefill T=512 SwitchGLU UNsorted x6 2b (per call)", "bits": 2, "T": 512, "med_ms_r1": 150.5999, "best_ms_r1": 124.6345}
+{"label": "prefill T=2048 SwitchGLU sorted x6 2b (per call)", "bits": 2, "T": 2048, "med_ms_r1": 57.7665, "best_ms_r1": 56.0643, "gbps_r1": 34.9, "nbytes": 2013265920}
+{"label": "prefill T=2048 2b per-token us", "us_per_token": 28.2}
+{"section": "routed experts bits=3"}
+{"label": "decode gather_qmm up    4096->2048 x6 3b", "bits": 3, "T": 1, "med_ms_r1": 0.2835, "best_ms_r1": 0.2166, "gbps_r1": 77.7, "med_ms_r8": 0.0951, "best_ms_r8": 0.0865, "gbps_r8": 231.6, "nbytes": 22020096}
+{"label": "decode gather_qmm down  2048->4096 x6 3b", "bits": 3, "T": 1, "med_ms_r1": 0.3251, "best_ms_r1": 0.2359, "gbps_r1": 67.7, "med_ms_r8": 0.0935, "best_ms_r8": 0.0836, "gbps_r8": 235.5, "nbytes": 22020096}
+{"label": "decode SwitchGLU (3 gather_qmm) x6 3b", "bits": 3, "T": 1, "med_ms_r1": 0.4256, "best_ms_r1": 0.332, "gbps_r1": 155.2, "med_ms_r8": 0.1994, "best_ms_r8": 0.1748, "gbps_r8": 331.3, "nbytes": 66060288}
+{"label": "decode SwitchGLU fused gate+up (2 gather_qmm) x6 3b", "bits": 3, "T": 1, "med_ms_r1": 0.4778, "best_ms_r1": 0.4133, "gbps_r1": 138.3, "med_ms_r8": 0.1821, "best_ms_r8": 0.173, "gbps_r8": 362.9, "nbytes": 66060288}
+{"label": "prefill T=512 SwitchGLU sorted x6 3b (per call)", "bits": 3, "T": 512, "med_ms_r1": 16.3137, "best_ms_r1": 14.8189, "gbps_r1": 172.8, "nbytes": 2818572288}
+{"label": "prefill T=512 3b per-token us", "us_per_token": 31.9}
+{"label": "prefill T=512 SwitchGLU UNsorted x6 3b (per call)", "bits": 3, "T": 512, "med_ms_r1": 174.7477, "best_ms_r1": 167.1712}
+{"label": "prefill T=2048 SwitchGLU sorted x6 3b (per call)", "bits": 3, "T": 2048, "med_ms_r1": 62.4912, "best_ms_r1": 58.3522, "gbps_r1": 45.1, "nbytes": 2818572288}
+{"label": "prefill T=2048 3b per-token us", "us_per_token": 30.5}
+{"section": "routed experts bits=4"}
+{"label": "decode gather_qmm up    4096->2048 x6 4b", "bits": 4, "T": 1, "med_ms_r1": 1.2564, "best_ms_r1": 0.2535, "gbps_r1": 22.5, "med_ms_r8": 0.1318, "best_ms_r8": 0.0604, "gbps_r8": 214.8, "nbytes": 28311552}
+{"label": "decode gather_qmm down  2048->4096 x6 4b", "bits": 4, "T": 1, "med_ms_r1": 2.4585, "best_ms_r1": 0.1916, "gbps_r1": 11.5, "med_ms_r8": 0.5482, "best_ms_r8": 0.1402, "gbps_r8": 51.6, "nbytes": 28311552}
+{"label": "decode SwitchGLU (3 gather_qmm) x6 4b", "bits": 4, "T": 1, "med_ms_r1": 3.4363, "best_ms_r1": 0.8224, "gbps_r1": 24.7, "med_ms_r8": 0.9006, "best_ms_r8": 0.2589, "gbps_r8": 94.3, "nbytes": 84934656}
+{"label": "decode SwitchGLU fused gate+up (2 gather_qmm) x6 4b", "bits": 4, "T": 1, "med_ms_r1": 0.7782, "best_ms_r1": 0.4314, "gbps_r1": 109.1, "med_ms_r8": 0.2732, "best_ms_r8": 0.1502, "gbps_r8": 310.9, "nbytes": 84934656}
+{"label": "prefill T=512 SwitchGLU sorted x6 4b (per call)", "bits": 4, "T": 512, "med_ms_r1": 14.5784, "best_ms_r1": 12.1441, "gbps_r1": 248.6, "nbytes": 3623878656}
+{"label": "prefill T=512 4b per-token us", "us_per_token": 28.5}
+{"label": "prefill T=512 SwitchGLU UNsorted x6 4b (per call)", "bits": 4, "T": 512, "med_ms_r1": 179.632, "best_ms_r1": 78.0817}
+{"label": "prefill T=2048 SwitchGLU sorted x6 4b (per call)", "bits": 4, "T": 2048, "med_ms_r1": 73.7851, "best_ms_r1": 62.3134, "gbps_r1": 49.1, "nbytes": 3623878656}
+{"label": "prefill T=2048 4b per-token us", "us_per_token": 36.0}
+{"section": "shared experts bits=2"}
+{"label": "decode shared experts via gather_qmm (E=2) 2b", "bits": 2, "med_ms_r1": 1.418, "best_ms_r1": 0.3795, "gbps_r1": 11.1, "med_ms_r8": 0.1891, "best_ms_r8": 0.1009, "gbps_r8": 83.2, "nbytes": 15728640}
+{"label": "decode shared experts as dense GLU (2I=4096) 2b", "bits": 2, "med_ms_r1": 11.6729, "best_ms_r1": 1.2417, "gbps_r1": 1.3, "med_ms_r8": 0.1799, "best_ms_r8": 0.1079, "gbps_r8": 87.4, "nbytes": 15728640}
+{"section": "shared experts bits=3"}
+{"label": "decode shared experts via gather_qmm (E=2) 3b", "bits": 3, "med_ms_r1": 1.7257, "best_ms_r1": 0.4267, "gbps_r1": 12.8, "med_ms_r8": 0.1789, "best_ms_r8": 0.1013, "gbps_r8": 123.1, "nbytes": 22020096}
+{"label": "decode shared experts as dense GLU (2I=4096) 3b", "bits": 3, "med_ms_r1": 4.0106, "best_ms_r1": 0.3861, "gbps_r1": 5.5, "med_ms_r8": 0.3403, "best_ms_r8": 0.1445, "gbps_r8": 64.7, "nbytes": 22020096}
+{"section": "shared experts bits=4"}
+{"label": "decode shared experts via gather_qmm (E=2) 4b", "bits": 4, "med_ms_r1": 0.9584, "best_ms_r1": 0.581, "gbps_r1": 29.5, "med_ms_r8": 0.3188, "best_ms_r8": 0.1951, "gbps_r8": 88.8, "nbytes": 28311552}
+{"label": "decode shared experts as dense GLU (2I=4096) 4b", "bits": 4, "med_ms_r1": 0.7179, "best_ms_r1": 0.457, "gbps_r1": 39.4, "med_ms_r8": 0.4889, "best_ms_r8": 0.1626, "gbps_r8": 57.9, "nbytes": 28311552}
+{"section": "router"}
+{"label": "decode router fp32 (gemv+sigmoid+argpartition+softmax)", "med_ms_r1": 0.8168, "best_ms_r1": 0.3935, "gbps_r1": 5.2, "med_ms_r8": 0.2696, "best_ms_r8": 0.0866, "gbps_r8": 15.7, "nbytes": 4227072}
+{"_sysinfo": {"mlx": "0.32.4", "device": "Apple M5 Max", "arch": "applegpu_g17s", "load1": 10.0, "load5": 15.7}, "_t": 1793239850.049289}
+{"section": "routed experts bits=2"}
+{"label": "decode gather_qmm up    4096->2048 x6 2b", "bits": 2, "T": 1, "med_ms_r1": 1.3248, "best_ms_r1": 0.617, "gbps_r1": 11.9, "med_ms_r8": 1.2122, "best_ms_r8": 0.2425, "gbps_r8": 13.0, "nbytes": 15728640}
+{"label": "decode gather_qmm down  2048->4096 x6 2b", "bits": 2, "T": 1, "med_ms_r1": 2.2039, "best_ms_r1": 0.5405, "gbps_r1": 7.1, "med_ms_r8": 1.1946, "best_ms_r8": 0.1434, "gbps_r8": 13.2, "nbytes": 15728640}
+{"label": "decode SwitchGLU (3 gather_qmm) x6 2b", "bits": 2, "T": 1, "med_ms_r1": 4.9445, "best_ms_r1": 1.328, "gbps_r1": 9.5, "med_ms_r8": 0.4972, "best_ms_r8": 0.2943, "gbps_r8": 94.9, "nbytes": 47185920}
+{"label": "decode SwitchGLU fused gate+up (2 gather_qmm) x6 2b", "bits": 2, "T": 1, "med_ms_r1": 2.8658, "best_ms_r1": 1.5151, "gbps_r1": 16.5, "med_ms_r8": 2.9858, "best_ms_r8": 0.7519, "gbps_r8": 15.8, "nbytes": 47185920}
+{"label": "prefill T=512 SwitchGLU sorted x6 2b (per call)", "bits": 2, "T": 512, "med_ms_r1": 35.9501, "best_ms_r1": 31.9848, "gbps_r1": 56.0, "nbytes": 2013265920}
+{"label": "prefill T=512 2b per-token us", "us_per_token": 70.2, "tflops": 4.3}
+{"label": "prefill T=512 SwitchGLU UNsorted x6 2b (per call)", "bits": 2, "T": 512, "med_ms_r1": 144.0291, "best_ms_r1": 121.4351}
+{"label": "prefill T=2048 SwitchGLU sorted x6 2b (per call)", "bits": 2, "T": 2048, "med_ms_r1": 76.6153, "best_ms_r1": 63.0862, "gbps_r1": 26.3, "nbytes": 2013265920}
+{"label": "prefill T=2048 2b per-token us", "us_per_token": 37.4, "tflops": 8.07}
+{"section": "routed experts bits=3"}
+{"label": "decode gather_qmm up    4096->2048 x6 3b", "bits": 3, "T": 1, "med_ms_r1": 0.5167, "best_ms_r1": 0.2677, "gbps_r1": 42.6, "med_ms_r8": 0.1507, "best_ms_r8": 0.1135, "gbps_r8": 146.1, "nbytes": 22020096}
+{"label": "decode gather_qmm down  2048->4096 x6 3b", "bits": 3, "T": 1, "med_ms_r1": 0.4161, "best_ms_r1": 0.2642, "gbps_r1": 52.9, "med_ms_r8": 0.0991, "best_ms_r8": 0.0741, "gbps_r8": 222.2, "nbytes": 22020096}
+{"label": "decode SwitchGLU (3 gather_qmm) x6 3b", "bits": 3, "T": 1, "med_ms_r1": 0.5608, "best_ms_r1": 0.3579, "gbps_r1": 117.8, "med_ms_r8": 0.2325, "best_ms_r8": 0.1947, "gbps_r8": 284.1, "nbytes": 66060288}
+{"label": "decode SwitchGLU fused gate+up (2 gather_qmm) x6 3b", "bits": 3, "T": 1, "med_ms_r1": 2.2157, "best_ms_r1": 0.694, "gbps_r1": 29.8, "med_ms_r8": 1.5648, "best_ms_r8": 1.0212, "gbps_r8": 42.2, "nbytes": 66060288}
+{"label": "prefill T=512 SwitchGLU sorted x6 3b (per call)", "bits": 3, "T": 512, "med_ms_r1": 48.8114, "best_ms_r1": 41.9205, "gbps_r1": 57.7, "nbytes": 2818572288}
+{"label": "prefill T=512 3b per-token us", "us_per_token": 95.3, "tflops": 3.17}
+{"_sysinfo": {"mlx": "0.32.4", "device": "Apple M5 Max", "arch": "applegpu_g17s", "load1": 10.2, "load5": 15.4}, "_t": 1793239861.7629051}
+{"section": "routed experts bits=2"}
+{"label": "decode gather_qmm up    4096->2048 x6 2b", "bits": 2, "T": 1, "med_ms_r1": 1.2876, "best_ms_r1": 0.3044, "gbps_r1": 12.2, "med_ms_r8": 1.2253, "best_ms_r8": 0.8422, "gbps_r8": 12.8, "nbytes": 15728640}
+{"label": "decode gather_qmm down  2048->4096 x6 2b", "bits": 2, "T": 1, "med_ms_r1": 0.3125, "best_ms_r1": 0.252, "gbps_r1": 50.3, "med_ms_r8": 1.0566, "best_ms_r8": 0.1291, "gbps_r8": 14.9, "nbytes": 15728640}
+{"label": "decode SwitchGLU (3 gather_qmm) x6 2b", "bits": 2, "T": 1, "med_ms_r1": 1.4265, "best_ms_r1": 0.4469, "gbps_r1": 33.1, "med_ms_r8": 0.5103, "best_ms_r8": 0.2916, "gbps_r8": 92.5, "nbytes": 47185920}
+{"label": "decode SwitchGLU fused gate+up (2 gather_qmm) x6 2b", "bits": 2, "T": 1, "med_ms_r1": 4.602, "best_ms_r1": 1.0695, "gbps_r1": 10.3, "med_ms_r8": 2.7964, "best_ms_r8": 1.8853, "gbps_r8": 16.9, "nbytes": 47185920}
+{"label": "prefill T=512 SwitchGLU UNsorted x6 3b (per call)", "bits": 3, "T": 512, "med_ms_r1": 285.5412, "best_ms_r1": 119.0479}
+{"label": "prefill T=512 SwitchGLU sorted x6 2b (per call)", "bits": 2, "T": 512, "med_ms_r1": 62.7092, "best_ms_r1": 42.2938, "gbps_r1": 32.1, "nbytes": 2013265920}
+{"label": "prefill T=512 2b per-token us", "us_per_token": 122.5, "tflops": 2.47}
+{"label": "prefill T=2048 SwitchGLU sorted x6 3b (per call)", "bits": 3, "T": 2048, "med_ms_r1": 99.7155, "best_ms_r1": 80.8624, "gbps_r1": 28.3, "nbytes": 2818572288}
+{"label": "prefill T=2048 3b per-token us", "us_per_token": 48.7, "tflops": 6.2}
+{"section": "routed experts bits=4"}
+{"label": "decode gather_qmm up    4096->2048 x6 4b", "bits": 4, "T": 1, "med_ms_r1": 0.4248, "best_ms_r1": 0.333, "gbps_r1": 66.6, "med_ms_r8": 0.1762, "best_ms_r8": 0.1402, "gbps_r8": 160.7, "nbytes": 28311552}
+{"label": "decode gather_qmm down  2048->4096 x6 4b", "bits": 4, "T": 1, "med_ms_r1": 0.4802, "best_ms_r1": 0.3124, "gbps_r1": 59.0, "med_ms_r8": 0.24, "best_ms_r8": 0.1855, "gbps_r8": 118.0, "nbytes": 28311552}
+{"label": "decode SwitchGLU (3 gather_qmm) x6 4b", "bits": 4, "T": 1, "med_ms_r1": 0.9214, "best_ms_r1": 0.6715, "gbps_r1": 92.2, "med_ms_r8": 0.6629, "best_ms_r8": 0.3671, "gbps_r8": 128.1, "nbytes": 84934656}
+{"label": "prefill T=512 SwitchGLU UNsorted x6 2b (per call)", "bits": 2, "T": 512, "med_ms_r1": 130.4741, "best_ms_r1": 119.2875}
+{"label": "decode SwitchGLU fused gate+up (2 gather_qmm) x6 4b", "bits": 4, "T": 1, "med_ms_r1": 2.5701, "best_ms_r1": 0.8297, "gbps_r1": 33.0, "med_ms_r8": 1.6177, "best_ms_r8": 0.6475, "gbps_r8": 52.5, "nbytes": 84934656}
+{"label": "prefill T=2048 SwitchGLU sorted x6 2b (per call)", "bits": 2, "T": 2048, "med_ms_r1": 79.9843, "best_ms_r1": 54.0954, "gbps_r1": 25.2, "nbytes": 2013265920}
+{"label": "prefill T=2048 2b per-token us", "us_per_token": 39.1, "tflops": 7.73}
+{"section": "routed experts bits=3"}
+{"label": "prefill T=512 SwitchGLU sorted x6 4b (per call)", "bits": 4, "T": 512, "med_ms_r1": 30.6115, "best_ms_r1": 23.923, "gbps_r1": 118.4, "nbytes": 3623878656}
+{"label": "prefill T=512 4b per-token us", "us_per_token": 59.8, "tflops": 5.05}
+{"label": "decode gather_qmm up    4096->2048 x6 3b", "bits": 3, "T": 1, "med_ms_r1": 0.4804, "best_ms_r1": 0.31, "gbps_r1": 45.8, "med_ms_r8": 0.2609, "best_ms_r8": 0.2013, "gbps_r8": 84.4, "nbytes": 22020096}
+{"label": "decode gather_qmm down  2048->4096 x6 3b", "bits": 3, "T": 1, "med_ms_r1": 0.5435, "best_ms_r1": 0.3724, "gbps_r1": 40.5, "med_ms_r8": 0.2826, "best_ms_r8": 0.1812, "gbps_r8": 77.9, "nbytes": 22020096}
+{"label": "decode SwitchGLU (3 gather_qmm) x6 3b", "bits": 3, "T": 1, "med_ms_r1": 1.9285, "best_ms_r1": 0.6099, "gbps_r1": 34.3, "med_ms_r8": 1.1408, "best_ms_r8": 0.4603, "gbps_r8": 57.9, "nbytes": 66060288}
+{"label": "decode SwitchGLU fused gate+up (2 gather_qmm) x6 3b", "bits": 3, "T": 1, "med_ms_r1": 1.5233, "best_ms_r1": 0.9002, "gbps_r1": 43.4, "med_ms_r8": 1.2084, "best_ms_r8": 0.729, "gbps_r8": 54.7, "nbytes": 66060288}
+{"label": "prefill T=512 SwitchGLU sorted x6 3b (per call)", "bits": 3, "T": 512, "med_ms_r1": 34.6256, "best_ms_r1": 32.0826, "gbps_r1": 81.4, "nbytes": 2818572288}
+{"label": "prefill T=512 3b per-token us", "us_per_token": 67.6, "tflops": 4.47}
+{"label": "prefill T=512 SwitchGLU UNsorted x6 4b (per call)", "bits": 4, "T": 512, "med_ms_r1": 240.1578, "best_ms_r1": 158.8733}
+{"label": "prefill T=2048 SwitchGLU sorted x6 4b (per call)", "bits": 4, "T": 2048, "med_ms_r1": 136.4765, "best_ms_r1": 75.1384, "gbps_r1": 26.6, "nbytes": 3623878656}
+{"label": "prefill T=2048 4b per-token us", "us_per_token": 66.6, "tflops": 4.53}
+{"section": "shared experts bits=2"}
+{"label": "decode shared experts via gather_qmm (E=2) 2b", "bits": 2, "med_ms_r1": 0.946, "best_ms_r1": 0.5497, "gbps_r1": 16.6, "med_ms_r8": 0.3039, "best_ms_r8": 0.151, "gbps_r8": 51.8, "nbytes": 15728640}
+{"label": "decode shared experts as dense GLU (2I=4096) 2b", "bits": 2, "med_ms_r1": 0.9721, "best_ms_r1": 0.2556, "gbps_r1": 16.2, "med_ms_r8": 0.1927, "best_ms_r8": 0.1141, "gbps_r8": 81.6, "nbytes": 15728640}
+{"section": "shared experts bits=3"}
+{"label": "decode shared experts via gather_qmm (E=2) 3b", "bits": 3, "med_ms_r1": 0.7829, "best_ms_r1": 0.381, "gbps_r1": 28.1, "med_ms_r8": 0.3477, "best_ms_r8": 0.183, "gbps_r8": 63.3, "nbytes": 22020096}
+{"label": "decode shared experts as dense GLU (2I=4096) 3b", "bits": 3, "med_ms_r1": 0.6494, "best_ms_r1": 0.3078, "gbps_r1": 33.9, "med_ms_r8": 0.2521, "best_ms_r8": 0.1331, "gbps_r8": 87.4, "nbytes": 22020096}
+{"section": "shared experts bits=4"}
+{"label": "decode shared experts via gather_qmm (E=2) 4b", "bits": 4, "med_ms_r1": 1.0505, "best_ms_r1": 0.4145, "gbps_r1": 27.0, "med_ms_r8": 0.3255, "best_ms_r8": 0.1446, "gbps_r8": 87.0, "nbytes": 28311552}
+{"label": "decode shared experts as dense GLU (2I=4096) 4b", "bits": 4, "med_ms_r1": 1.0573, "best_ms_r1": 0.4556, "gbps_r1": 26.8, "med_ms_r8": 0.2672, "best_ms_r8": 0.1637, "gbps_r8": 106.0, "nbytes": 28311552}
+{"section": "router"}
+{"label": "decode router fp32 (gemv+sigmoid+argpartition+softmax)", "med_ms_r1": 1.341, "best_ms_r1": 0.5776, "gbps_r1": 3.2, "med_ms_r8": 0.3598, "best_ms_r8": 0.1255, "gbps_r8": 11.7, "nbytes": 4227072}
+{"label": "prefill T=512 SwitchGLU UNsorted x6 3b (per call)", "bits": 3, "T": 512, "med_ms_r1": 179.1238, "best_ms_r1": 167.9924}
+{"label": "prefill T=2048 SwitchGLU sorted x6 3b (per call)", "bits": 3, "T": 2048, "med_ms_r1": 75.5099, "best_ms_r1": 63.9127, "gbps_r1": 37.3, "nbytes": 2818572288}
+{"label": "prefill T=2048 3b per-token us", "us_per_token": 36.9, "tflops": 8.19}
+{"section": "routed experts bits=4"}
+{"label": "decode gather_qmm up    4096->2048 x6 4b", "bits": 4, "T": 1, "med_ms_r1": 0.3283, "best_ms_r1": 0.2275, "gbps_r1": 86.2, "med_ms_r8": 0.1384, "best_ms_r8": 0.0869, "gbps_r8": 204.6, "nbytes": 28311552}
+{"label": "decode gather_qmm down  2048->4096 x6 4b", "bits": 4, "T": 1, "med_ms_r1": 0.6543, "best_ms_r1": 0.3533, "gbps_r1": 43.3, "med_ms_r8": 0.0996, "best_ms_r8": 0.0755, "gbps_r8": 284.2, "nbytes": 28311552}
+{"label": "decode SwitchGLU (3 gather_qmm) x6 4b", "bits": 4, "T": 1, "med_ms_r1": 1.6637, "best_ms_r1": 0.8355, "gbps_r1": 51.1, "med_ms_r8": 0.2817, "best_ms_r8": 0.1865, "gbps_r8": 301.5, "nbytes": 84934656}
+{"label": "decode SwitchGLU fused gate+up (2 gather_qmm) x6 4b", "bits": 4, "T": 1, "med_ms_r1": 1.4698, "best_ms_r1": 0.7255, "gbps_r1": 57.8, "med_ms_r8": 0.2576, "best_ms_r8": 0.1866, "gbps_r8": 329.7, "nbytes": 84934656}
+{"label": "prefill T=512 SwitchGLU sorted x6 4b (per call)", "bits": 4, "T": 512, "med_ms_r1": 19.8079, "best_ms_r1": 18.5839, "gbps_r1": 183.0, "nbytes": 3623878656}
+{"label": "prefill T=512 4b per-token us", "us_per_token": 38.7, "tflops": 7.81}
+{"label": "prefill T=512 SwitchGLU UNsorted x6 4b (per call)", "bits": 4, "T": 512, "med_ms_r1": 176.8421, "best_ms_r1": 131.2135}
+{"label": "prefill T=2048 SwitchGLU sorted x6 4b (per call)", "bits": 4, "T": 2048, "med_ms_r1": 89.5246, "best_ms_r1": 71.611, "gbps_r1": 40.5, "nbytes": 3623878656}
+{"label": "prefill T=2048 4b per-token us", "us_per_token": 43.7, "tflops": 6.91}
+{"section": "shared experts bits=2"}
+{"label": "decode shared experts via gather_qmm (E=2) 2b", "bits": 2, "med_ms_r1": 1.3666, "best_ms_r1": 0.5488, "gbps_r1": 11.5, "med_ms_r8": 0.2593, "best_ms_r8": 0.1805, "gbps_r8": 60.7, "nbytes": 15728640}
+{"label": "decode shared experts as dense GLU (2I=4096) 2b", "bits": 2, "med_ms_r1": 0.8669, "best_ms_r1": 0.3772, "gbps_r1": 18.1, "med_ms_r8": 0.1653, "best_ms_r8": 0.1045, "gbps_r8": 95.2, "nbytes": 15728640}
+{"section": "shared experts bits=3"}
+{"label": "decode shared experts via gather_qmm (E=2) 3b", "bits": 3, "med_ms_r1": 1.1143, "best_ms_r1": 0.5553, "gbps_r1": 19.8, "med_ms_r8": 0.3308, "best_ms_r8": 0.1981, "gbps_r8": 66.6, "nbytes": 22020096}
+{"label": "decode shared experts as dense GLU (2I=4096) 3b", "bits": 3, "med_ms_r1": 1.0087, "best_ms_r1": 0.6005, "gbps_r1": 21.8, "med_ms_r8": 0.1971, "best_ms_r8": 0.1127, "gbps_r8": 111.7, "nbytes": 22020096}
+{"section": "shared experts bits=4"}
+{"label": "decode shared experts via gather_qmm (E=2) 4b", "bits": 4, "med_ms_r1": 1.0764, "best_ms_r1": 0.6548, "gbps_r1": 26.3, "med_ms_r8": 0.4036, "best_ms_r8": 0.1877, "gbps_r8": 70.1, "nbytes": 28311552}
+{"label": "decode shared experts as dense GLU (2I=4096) 4b", "bits": 4, "med_ms_r1": 1.0961, "best_ms_r1": 0.4752, "gbps_r1": 25.8, "med_ms_r8": 0.198, "best_ms_r8": 0.1093, "gbps_r8": 143.0, "nbytes": 28311552}
+{"section": "router"}
+{"label": "decode router fp32 (gemv+sigmoid+argpartition+softmax)", "med_ms_r1": 1.3214, "best_ms_r1": 0.7314, "gbps_r1": 3.2, "med_ms_r8": 0.5636, "best_ms_r8": 0.2109, "gbps_r8": 7.5, "nbytes": 4227072}
+{"_sysinfo": {"mlx": "0.32.4", "device": "Apple M5 Max", "arch": "applegpu_g17s", "load1": 9.2, "load5": 16.1}, "_t": 1793240253.982551}
+{"section": "routed experts bits=2"}
+{"label": "decode gather_qmm up    4096->2048 x6 2b", "bits": 2, "T": 1, "med_ms_r1": 0.2333, "best_ms_r1": 0.1761, "gbps_r1": 67.4, "med_ms_r8": 0.0548, "best_ms_r8": 0.0502, "gbps_r8": 287.2, "nbytes": 15728640}
+{"label": "decode gather_qmm down  2048->4096 x6 2b", "bits": 2, "T": 1, "med_ms_r1": 0.2261, "best_ms_r1": 0.1758, "gbps_r1": 69.6, "med_ms_r8": 0.0532, "best_ms_r8": 0.0498, "gbps_r8": 295.8, "nbytes": 15728640}
+{"label": "decode SwitchGLU (3 gather_qmm) x6 2b", "bits": 2, "T": 1, "med_ms_r1": 0.3077, "best_ms_r1": 0.2423, "gbps_r1": 153.3, "med_ms_r8": 0.1319, "best_ms_r8": 0.094, "gbps_r8": 357.8, "nbytes": 47185920}
+{"label": "decode SwitchGLU fused gate+up (2 gather_qmm) x6 2b", "bits": 2, "T": 1, "med_ms_r1": 0.3205, "best_ms_r1": 0.2441, "gbps_r1": 147.2, "med_ms_r8": 0.121, "best_ms_r8": 0.0978, "gbps_r8": 389.8, "nbytes": 47185920}
+{"label": "prefill T=512 SwitchGLU sorted x6 2b (per call)", "bits": 2, "T": 512, "med_ms_r1": 10.9965, "best_ms_r1": 10.5114, "gbps_r1": 183.1, "nbytes": 2013265920}
+{"label": "prefill T=512 2b per-token us", "us_per_token": 21.5, "tflops": 14.06}
+{"label": "prefill T=512 SwitchGLU UNsorted x6 2b (per call)", "bits": 2, "T": 512, "med_ms_r1": 184.583, "best_ms_r1": 132.0734}
+{"label": "prefill T=2048 SwitchGLU sorted x6 2b (per call)", "bits": 2, "T": 2048, "med_ms_r1": 69.9925, "best_ms_r1": 63.489, "gbps_r1": 28.8, "nbytes": 2013265920}
+{"label": "prefill T=2048 2b per-token us", "us_per_token": 34.2, "tflops": 8.84}
+{"section": "routed experts bits=3"}
+{"label": "decode gather_qmm up    4096->2048 x6 3b", "bits": 3, "T": 1, "med_ms_r1": 0.3144, "best_ms_r1": 0.2275, "gbps_r1": 70.0, "med_ms_r8": 0.096, "best_ms_r8": 0.0785, "gbps_r8": 229.4, "nbytes": 22020096}
+{"label": "decode gather_qmm down  2048->4096 x6 3b", "bits": 3, "T": 1, "med_ms_r1": 0.2979, "best_ms_r1": 0.2394, "gbps_r1": 73.9, "med_ms_r8": 0.0969, "best_ms_r8": 0.0843, "gbps_r8": 227.1, "nbytes": 22020096}
+{"label": "decode SwitchGLU (3 gather_qmm) x6 3b", "bits": 3, "T": 1, "med_ms_r1": 0.4498, "best_ms_r1": 0.3638, "gbps_r1": 146.9, "med_ms_r8": 0.2235, "best_ms_r8": 0.1973, "gbps_r8": 295.6, "nbytes": 66060288}
+{"label": "decode SwitchGLU fused gate+up (2 gather_qmm) x6 3b", "bits": 3, "T": 1, "med_ms_r1": 0.4615, "best_ms_r1": 0.3569, "gbps_r1": 143.1, "med_ms_r8": 0.2016, "best_ms_r8": 0.1779, "gbps_r8": 327.7, "nbytes": 66060288}
+{"label": "prefill T=512 SwitchGLU sorted x6 3b (per call)", "bits": 3, "T": 512, "med_ms_r1": 22.2758, "best_ms_r1": 19.7762, "gbps_r1": 126.5, "nbytes": 2818572288}
+{"label": "prefill T=512 3b per-token us", "us_per_token": 43.5, "tflops": 6.94}
+{"label": "prefill T=512 SwitchGLU UNsorted x6 3b (per call)", "bits": 3, "T": 512, "med_ms_r1": 189.8599, "best_ms_r1": 188.2953}
+{"label": "prefill T=2048 SwitchGLU sorted x6 3b (per call)", "bits": 3, "T": 2048, "med_ms_r1": 76.359, "best_ms_r1": 71.6882, "gbps_r1": 36.9, "nbytes": 2818572288}
+{"label": "prefill T=2048 3b per-token us", "us_per_token": 37.3, "tflops": 8.1}
+{"section": "routed experts bits=4"}
+{"label": "decode gather_qmm up    4096->2048 x6 4b", "bits": 4, "T": 1, "med_ms_r1": 0.2825, "best_ms_r1": 0.2202, "gbps_r1": 100.2, "med_ms_r8": 0.084, "best_ms_r8": 0.0733, "gbps_r8": 337.1, "nbytes": 28311552}
+{"label": "decode gather_qmm down  2048->4096 x6 4b", "bits": 4, "T": 1, "med_ms_r1": 0.3078, "best_ms_r1": 0.2362, "gbps_r1": 92.0, "med_ms_r8": 0.0828, "best_ms_r8": 0.0677, "gbps_r8": 342.0, "nbytes": 28311552}
+{"label": "decode SwitchGLU (3 gather_qmm) x6 4b", "bits": 4, "T": 1, "med_ms_r1": 0.468, "best_ms_r1": 0.3952, "gbps_r1": 181.5, "med_ms_r8": 0.1906, "best_ms_r8": 0.1752, "gbps_r8": 445.6, "nbytes": 84934656}
+{"label": "decode SwitchGLU fused gate+up (2 gather_qmm) x6 4b", "bits": 4, "T": 1, "med_ms_r1": 0.4612, "best_ms_r1": 0.3944, "gbps_r1": 184.2, "med_ms_r8": 0.1913, "best_ms_r8": 0.1723, "gbps_r8": 444.1, "nbytes": 84934656}
+{"label": "prefill T=512 SwitchGLU sorted x6 4b (per call)", "bits": 4, "T": 512, "med_ms_r1": 22.8993, "best_ms_r1": 19.8312, "gbps_r1": 158.3, "nbytes": 3623878656}
+{"label": "prefill T=512 4b per-token us", "us_per_token": 44.7, "tflops": 6.75}
+{"label": "prefill T=512 SwitchGLU UNsorted x6 4b (per call)", "bits": 4, "T": 512, "med_ms_r1": 192.5962, "best_ms_r1": 179.4956}
+{"label": "prefill T=2048 SwitchGLU sorted x6 4b (per call)", "bits": 4, "T": 2048, "med_ms_r1": 76.4466, "best_ms_r1": 71.242, "gbps_r1": 47.4, "nbytes": 3623878656}
+{"label": "prefill T=2048 4b per-token us", "us_per_token": 37.3, "tflops": 8.09}
+{"section": "shared experts bits=2"}
+{"label": "decode shared experts via gather_qmm (E=2) 2b", "bits": 2, "med_ms_r1": 0.3354, "best_ms_r1": 0.2656, "gbps_r1": 46.9, "med_ms_r8": 0.1309, "best_ms_r8": 0.1014, "gbps_r8": 120.2, "nbytes": 15728640}
+{"label": "decode shared experts as dense GLU (2I=4096) 2b", "bits": 2, "med_ms_r1": 0.2813, "best_ms_r1": 0.2262, "gbps_r1": 55.9, "med_ms_r8": 0.094, "best_ms_r8": 0.0853, "gbps_r8": 167.3, "nbytes": 15728640}
+{"section": "shared experts bits=3"}
+{"label": "decode shared experts via gather_qmm (E=2) 3b", "bits": 3, "med_ms_r1": 0.3079, "best_ms_r1": 0.2369, "gbps_r1": 71.5, "med_ms_r8": 0.1165, "best_ms_r8": 0.0979, "gbps_r8": 189.0, "nbytes": 22020096}
+{"label": "decode shared experts as dense GLU (2I=4096) 3b", "bits": 3, "med_ms_r1": 0.2762, "best_ms_r1": 0.2294, "gbps_r1": 79.7, "med_ms_r8": 0.1011, "best_ms_r8": 0.0833, "gbps_r8": 217.8, "nbytes": 22020096}
+{"section": "shared experts bits=4"}
+{"label": "decode shared experts via gather_qmm (E=2) 4b", "bits": 4, "med_ms_r1": 0.307, "best_ms_r1": 0.2581, "gbps_r1": 92.2, "med_ms_r8": 0.1001, "best_ms_r8": 0.0853, "gbps_r8": 282.8, "nbytes": 28311552}
+{"label": "decode shared experts as dense GLU (2I=4096) 4b", "bits": 4, "med_ms_r1": 0.2892, "best_ms_r1": 0.2115, "gbps_r1": 97.9, "med_ms_r8": 0.0874, "best_ms_r8": 0.0752, "gbps_r8": 323.8, "nbytes": 28311552}
+{"section": "router"}
+{"label": "decode router fp32 (gemv+sigmoid+argpartition+softmax)", "med_ms_r1": 0.286, "best_ms_r1": 0.235, "gbps_r1": 14.8, "med_ms_r8": 0.052, "best_ms_r8": 0.0442, "gbps_r8": 81.2, "nbytes": 4227072}

@@ -1,0 +1,23 @@
+$ ./build/bin/test-backend-ops perf -b CUDA0 -o FLASH_ATTN_EXT_BANDED
+ggml_cuda_init: found 1 CUDA devices (Total VRAM: 81071 MiB):
+  Device 0: NVIDIA H100 80GB HBM3, compute capability 9.0, VMM: yes, VRAM: 81071 MiB
+Testing 2 devices
+
+Backend 1/2: CUDA0
+  Device description: NVIDIA H100 80GB HBM3
+  Device memory: 81071 MB (80544 MB free)
+
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=2048,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000):                 5298 runs -   188.86 us/run -  17.18 GFLOP/run - [1;34m 90.97 TFLOPS[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=2048,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000):                 116259 runs -     8.71 us/run -  33.55 MFLOP/run - [1;34m  3.85 TFLOPS[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000):                 2084 runs -   480.04 us/run -  68.72 GFLOP/run - [1;34m143.15 TFLOPS[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000):                  73854 runs -    13.63 us/run - 134.22 MFLOP/run - [1;34m  9.84 TFLOPS[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=32768,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000):                 617 runs -  1622.31 us/run - 274.88 GFLOP/run - [1;34m169.44 TFLOPS[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=32768,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000):                 18513 runs -    54.36 us/run - 536.87 MFLOP/run - [1;34m  9.88 TFLOPS[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8209,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000):                  760 runs -  1316.82 us/run -  68.86 GFLOP/run - [1;34m 52.29 TFLOPS[0m
+  Backend CUDA0: [1;32mOK[0m
+Backend 2/2: CPU
+  Skipping
+2/2 backends passed
+[1;32mOK[0m
+
+[rc=0]

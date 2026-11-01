@@ -1,0 +1,6 @@
+$ git am /patches/k3-0001.patch && git log --oneline -2
+Applying: server : do not apply the SWA back-off to a recurrent-tail pos_min
+54cec317 server : do not apply the SWA back-off to a recurrent-tail pos_min
+3582c5ee Fix merge conflicts
+
+[rc=0]

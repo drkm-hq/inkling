@@ -1,0 +1,242 @@
+{
+  "arch": "90",
+  "pr": 25731,
+  "expected_head": "3582c5ee05115892e4e96520be0026c3ceb9f829",
+  "stages": {
+    "a": {
+      "build_rc": 0,
+      "build_s": 101.6,
+      "warnings_patched_files": [],
+      "build_errors": [
+        "-- UI: download dist.tar.gz.sha256 from b1890 failed: \"HTTP response code said error\""
+      ],
+      "banded": {
+        "ok": 14,
+        "fail": 0,
+        "not_supported": 0,
+        "fails": [],
+        "summary": [
+          13,
+          13
+        ],
+        "backend_ok": true
+      },
+      "banded_s": 40.8,
+      "bias": {
+        "cuda-small": {
+          "rc": 0,
+          "pass": 11,
+          "fail": 0,
+          "fails": []
+        },
+        "cuda-medium": {
+          "rc": 0,
+          "pass": 6,
+          "fail": 0,
+          "fails": []
+        },
+        "cuda-hard": {
+          "rc": 0,
+          "pass": 2,
+          "fail": 0,
+          "fails": []
+        },
+        "cuda-overflow": {
+          "rc": 0,
+          "pass": 2,
+          "fail": 0,
+          "fails": []
+        },
+        "cpu-small": {
+          "rc": 0,
+          "pass": 11,
+          "fail": 0,
+          "fails": []
+        }
+      },
+      "plain_fa": {
+        "ok": 4041,
+        "fail": 0,
+        "not_supported": 1339,
+        "fails": [],
+        "summary": [
+          4040,
+          4040
+        ],
+        "backend_ok": true
+      },
+      "plain_fa_s": 336.3
+    },
+    "b": {
+      "am_rc": 0,
+      "build_rc": 0,
+      "build_s": 24.4,
+      "warnings_patched_files": [],
+      "build_errors": [
+        "-- UI: download dist.tar.gz.sha256 from b1892 failed: \"HTTP response code said error\""
+      ],
+      "banded": {
+        "ok": 48,
+        "fail": 19,
+        "not_supported": 5,
+        "fails": [
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000002932 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000006018 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16384,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000005077 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16403,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000005735 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16896,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000005330 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=17024,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000009788 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=32768,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000001687 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=1536,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000002629 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=2048,rel_extent=1024,mask_kind=0,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000009437 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8209,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000001138 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=1025,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000004527 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=4097,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000009350 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8193,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000003624 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1024,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000009940 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8192,rel_extent=512,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000009650 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8209,rel_extent=1024,mask_kind=0,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000001148 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=16,n_head_kv=1,n_q=512,n_kv=2048,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000004659 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=64,n_head=32,n_head_kv=8,n_q=512,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000001900 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=2049,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=2,rel_ne3=2,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000001827 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=1.700000,rel_range=4.000000): FAIL"
+        ],
+        "summary": [
+          48,
+          67
+        ],
+        "backend_ok": false
+      },
+      "banded_s": 162.5,
+      "bias": {
+        "cuda-small": {
+          "rc": 0,
+          "pass": 11,
+          "fail": 0,
+          "fails": []
+        },
+        "cuda-medium": {
+          "rc": 0,
+          "pass": 6,
+          "fail": 0,
+          "fails": []
+        },
+        "cuda-hard": {
+          "rc": 0,
+          "pass": 2,
+          "fail": 0,
+          "fails": []
+        },
+        "cuda-overflow": {
+          "rc": 0,
+          "pass": 2,
+          "fail": 0,
+          "fails": []
+        },
+        "cpu-small": {
+          "rc": 0,
+          "pass": 11,
+          "fail": 0,
+          "fails": []
+        }
+      },
+      "perf_s": 8.3
+    },
+    "c": {
+      "am_rc": 0,
+      "build_rc": 0,
+      "build_s": 100.1,
+      "warnings_patched_files": [],
+      "build_errors": [
+        "-- UI: download dist.tar.gz.sha256 from b1893 failed: \"HTTP response code said error\""
+      ],
+      "banded": {
+        "ok": 55,
+        "fail": 25,
+        "not_supported": 5,
+        "fails": [
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000002543 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=7680): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000005535 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16384,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=15872): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000004709 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16403,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=15891): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000005172 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16896,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=16384): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000005393 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=17024,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=16512): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000009510 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=32768,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=32256): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000001696 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=1536,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=1024): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000002694 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=2048,rel_extent=1024,mask_kind=0,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=1536): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000010207 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8209,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=7697): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000001149 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=1025,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=513): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000004648 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=4097,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=3585): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000009437 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8193,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=7681): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000003779 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1024,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=3076): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000010255 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8192,rel_extent=512,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=7680): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000010105 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8209,rel_extent=1024,mask_kind=0,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=7697): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000001359 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=16,n_head_kv=1,n_q=512,n_kv=2048,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=1536): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000004488 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=64,n_head=32,n_head_kv=8,n_q=512,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=3584): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000001885 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=2049,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=2,rel_ne3=2,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=1537): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000001837 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=1.700000,rel_range=4.000000,kv_pad=0,q_off=7680): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000010061 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8209,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=239,q_off=7697): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000041706 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=32794,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=230,q_off=32282): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000005434 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=4096): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000009620 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=7780): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000011276 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=13192): FAIL",
+          "[FLASH_ATTN_EXT_BANDED] ERR = 0.000005776 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=4096,rel_extent=1024,mask_kind=0,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=-300): FAIL"
+        ],
+        "summary": [
+          55,
+          80
+        ],
+        "backend_ok": false
+      },
+      "banded_s": 237.5,
+      "bias": {
+        "cuda-small": {
+          "rc": 0,
+          "pass": 11,
+          "fail": 0,
+          "fails": []
+        },
+        "cuda-medium": {
+          "rc": 0,
+          "pass": 6,
+          "fail": 0,
+          "fails": []
+        },
+        "cuda-hard": {
+          "rc": 0,
+          "pass": 2,
+          "fail": 0,
+          "fails": []
+        },
+        "cuda-overflow": {
+          "rc": 0,
+          "pass": 2,
+          "fail": 0,
+          "fails": []
+        },
+        "cpu-small": {
+          "rc": 0,
+          "pass": 11,
+          "fail": 0,
+          "fails": []
+        }
+      },
+      "perf_s": 8.3,
+      "plain_fa": {
+        "ok": 4041,
+        "fail": 0,
+        "not_supported": 1339,
+        "fails": [],
+        "summary": [
+          4040,
+          4040
+        ],
+        "backend_ok": true
+      },
+      "plain_fa_s": 332.4
+    }
+  },
+  "nvidia_smi": "Thu Oct 29 05:56:24 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 610.57.04              KMD Version: 610.57.04     CUDA UMD Version: 13.3     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA H100 80GB HBM3          On  |   00000000:C7:00.0 Off |                    0 |\n| N/A   33C    P0             69W /  700W |       4MiB /  81559MiB |      0%      Default |\n|                                         |                        |             Disabled |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|  No running processes found                                                             |\n+-----------------------------------------------------------------------------------------+\n",
+  "nvcc": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2025 NVIDIA Corporation\nBuilt on Fri_Feb_21_20:23:50_PST_2025\nCuda compilation tools, release 12.8, V12.8.93\nBuild cuda_12.8.r12.8/compiler.35583870_0\n",
+  "fetched_pr_head": "3582c5ee05115892e4e96520be0026c3ceb9f829",
+  "head": "3582c5ee05115892e4e96520be0026c3ceb9f829",
+  "elapsed_s": 1376.5
+}

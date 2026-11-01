@@ -1,0 +1,101 @@
+diff --git a/mlx_vlm/models/inkling/language.py b/mlx_vlm/models/inkling/language.py
+--- a/mlx_vlm/models/inkling/language.py
++++ b/mlx_vlm/models/inkling/language.py
+@@ -160,6 +160,7 @@
+     S = int(S)
+     sliding = int(sliding)
+     rel_extent = int(rel_extent)
++    gx, gy = (128, 1) if LQ == 1 else (64, 4)
+     if (
+         shape_ref is not None
+         and shape_ref.ndim >= 3
+@@ -176,8 +177,8 @@
+                 ("REL_EXTENT", rel_extent),
+                 ("SLIDING", sliding),
+             ],
+-            grid=(_rup(S, 8), _rup(LQ, 8), B * H),
+-            threadgroup=(8, 8, 1),
++            grid=(_rup(S, gx), _rup(LQ, gy), B * H),
++            threadgroup=(gx, gy, 1),
+             output_shapes=[(B, H, LQ, S)],
+             output_dtypes=[dtype],
+         )[0]
+@@ -195,8 +196,8 @@
+                 ("REL_EXTENT", rel_extent),
+                 ("SLIDING", sliding),
+             ],
+-            grid=(_rup(S, 8), _rup(LQ, 8), B * H),
+-            threadgroup=(8, 8, 1),
++            grid=(_rup(S, gx), _rup(LQ, gy), B * H),
++            threadgroup=(gx, gy, 1),
+             output_shapes=[(B, H, LQ, S)],
+             output_dtypes=[dtype],
+         )[0]
+diff --git a/mlx_vlm/tests/test_inkling_fast_path.py b/mlx_vlm/tests/test_inkling_fast_path.py
+--- a/mlx_vlm/tests/test_inkling_fast_path.py
++++ b/mlx_vlm/tests/test_inkling_fast_path.py
+@@ -621,3 +621,64 @@
+     rotating = RotatingKVCache(8)
+     with pytest.raises(NotImplementedError):
+         maybe_quantize_kv_cache([rotating], 0, 32, 8, "uniform")
++
++
++@pytest.mark.parametrize("dtype", [mx.float16, mx.bfloat16, mx.float32])
++@pytest.mark.parametrize(
++    "B,H,L,S,E,window,offset",
++    [
++        (1, 32, 1, 512, 512, 512, 511),
++        (1, 32, 1, 32768, 1024, 0, 32767),
++        (1, 4, 1, 7, 8, 8, 6),
++        (2, 3, 1, 129, 16, 0, 127),
++        (1, 4, 3, 19, 8, 8, 16),
++        (2, 3, 7, 27, 16, 0, 20),
++        (1, 32, 128, 2048, 512, 512, 1920),
++    ],
++)
++@pytest.mark.parametrize("carrier", [False, True])
++def test_tuned_mask_dispatch_matches_original(
++    dtype, B, H, L, S, E, window, offset, carrier
++):
++    mx.random.seed(15)
++    packed = mx.random.normal((B, L, H * 16 + 32)).astype(dtype)
++    rel = packed[..., : H * 16].reshape(B, L, H, 16)
++    proj = mx.random.normal((16, E * 2)).astype(dtype)[:, ::2]
++    shape = mx.zeros((B, 1, S, 16), dtype=dtype)
++    actual = lang.banded_additive_mask(
++        rel, proj, offset, S, window, E, shape_ref=shape if carrier else None
++    )
++    if carrier and offset == S - L:
++        expected = lang._mask_v2_kernel(
++            inputs=[rel, proj, shape],
++            template=[
++                ("T", dtype),
++                ("D_REL", 16),
++                ("REL_EXTENT", E),
++                ("SLIDING", window),
++            ],
++            grid=(lang._rup(S, 8), lang._rup(L, 8), B * H),
++            threadgroup=(8, 8, 1),
++            output_shapes=[(B, H, L, S)],
++            output_dtypes=[dtype],
++        )[0]
++    else:
++        expected = lang._mask_kernel(
++            inputs=[rel, proj],
++            template=[
++                ("T", dtype),
++                ("B", B),
++                ("H", H),
++                ("LQ", L),
++                ("S", S),
++                ("Q_OFF", offset),
++                ("D_REL", 16),
++                ("REL_EXTENT", E),
++                ("SLIDING", window),
++            ],
++            grid=(lang._rup(S, 8), lang._rup(L, 8), B * H),
++            threadgroup=(8, 8, 1),
++            output_shapes=[(B, H, L, S)],
++            output_dtypes=[dtype],
++        )[0]
++    assert mx.array_equal(actual, expected).item()

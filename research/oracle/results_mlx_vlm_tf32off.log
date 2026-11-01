@@ -1,0 +1,11 @@
+  gpu: full forward logits                                               max_abs=1.302e-06  max_rel=7.949e-07
+  gpu: embedding + embed_norm                                            max_abs=3.708e-07  max_rel=9.348e-08
+  gpu: layer 0 output (hybrid_sliding, dense)                            max_abs=2.035e-06  max_rel=3.163e-07
+  gpu: layer 1 output (hybrid, sparse)                                   max_abs=1.527e-05  max_rel=6.334e-07
+  gpu: layer 2 output (hybrid_sliding, sparse)                           max_abs=2.225e-05  max_rel=6.482e-07
+  gpu: cached decode (7 + 5x1) logits                                    max_abs=1.399e-06  max_rel=8.543e-07
+  gpu: chunked prefill (5,3,1,1,1,1) logits                              max_abs=1.302e-06  max_rel=7.949e-07
+  gpu: mlx drafter chain hidden vs oracle variant=mlx (pre-norm hidden, raw embed) max_abs=3.084e-06  max_rel=3.632e-07
+  gpu: mlx drafter logits vs oracle variant=mlx (final_norm before head) max_abs=6.718e-07  max_rel=3.067e-07
+  gpu: mlx drafter logits vs oracle variant=transformers (post-norm hidden, raw embed, no head norm) max_abs=2.744e+00  max_rel=6.875e-01
+  gpu: mlx drafter logits vs oracle variant=vllm (post-norm hidden, backbone embed_norm, no head norm) max_abs=2.521e+00  max_rel=6.690e-01

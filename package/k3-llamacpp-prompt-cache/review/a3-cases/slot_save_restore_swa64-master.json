@@ -1,0 +1,34 @@
+{
+ "obs": [
+  [
+   0,
+   0,
+   300
+  ],
+  [
+   1,
+   300,
+   30
+  ],
+  [
+   1,
+   296,
+   4
+  ]
+ ],
+ "extra": {
+  "restore": {
+   "id_slot": 1,
+   "filename": "a3_slot0.bin",
+   "n_restored": 300,
+   "n_read": 474644,
+   "timings": {
+    "restore_ms": 0.529
+   }
+  }
+ },
+ "deviations": {
+  "extension on the restored slot": 0.006600856781005859,
+  "identical on the restored slot": 1.7881393432617188e-06
+ }
+}

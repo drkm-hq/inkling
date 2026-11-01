@@ -1,0 +1,22 @@
+W1029 02:38:10.556000 50532 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+[02:38:11] {"kind": "meta", "tag": "ab-before-2", "model": "~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit/snapshots/f8a0af554e168077bdaf48e1fb6682fb395c807c/", "mlx": "0.32.4", "mlx_vlm": "0.7.11", "mlx_vlm_file": "~/.venvs/inkling-base/lib/python3.12/site-packages/mlx_vlm/__init__.py", "git": null, "python": "~/.venvs/inkling-base/bin/python", "device": "Apple M5 Max", "argv": ["<workdir>/package/k4-mlx-vlm-fast-path/bench/equiv_bench.py", "--no-lock", "--tag", "ab-before-2", "--prompts", "p_short,p_32k", "--repeats", "2", "--max-tokens", "128"], "pid": 50532, "load1": 5.6494140625, "env_tf32": null}
+[02:38:22] load: lazy 0.7s, chunked eval 10.8s, 82.3 GiB of parameters, active 82.4 GiB, peak 82.4 GiB
+[02:38:22] parameter dtypes: {'mlx.core.bfloat16': 1014, 'mlx.core.uint32': 250, 'mlx.core.float32': 160}
+[02:38:22] make_cache kv kinds: ['KVCache']
+[02:38:22] prompt p_short: 833 chars, 239 tokens
+[02:38:22] prompt p_32k: 128212 chars, 32807 tokens
+[02:38:22] gen kwargs: {'max_tokens': 128, 'temperature': 0.0, 'top_p': 1.0, 'top_k': 0, 'verbose': False}
+[02:38:22] warm-up with p_short
+[02:38:38] warmup p_short rep0: prompt 239 tok, prefill 6.79s (35.2 tok/s), TTFT 8.13s, decode 128 tok 17.78 tok/s wall (17.92 api), peak 89.4 GB api / 83.2 GiB, load1 6.1, aborted=None
+[02:38:38]   text64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[02:38:45] run p_short rep1: prompt 239 tok, prefill 1.32s (180.7 tok/s), TTFT 1.33s, decode 128 tok 21.92 tok/s wall (22.09 api), peak 89.4 GB api / 83.2 GiB, load1 5.9, aborted=None
+[02:38:45]   text64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[02:38:52] run p_short rep2: prompt 239 tok, prefill 1.32s (181.2 tok/s), TTFT 1.32s, decode 128 tok 22.32 tok/s wall (22.49 api), peak 89.4 GB api / 83.2 GiB, load1 5.5, aborted=None
+[02:38:52]   text64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[02:38:52] SUMMARY p_short: prompt 239 tok | prefill 180.9 tok/s (spread 0.3%) | TTFT 1.32s | decode 22.12 tok/s (spread 1.8%) | peak 83.2 GiB | identical=True
+[02:41:04] run p_32k rep1: prompt 32807 tok, prefill 120.74s (271.7 tok/s), TTFT 120.80s, decode 128 tok 11.51 tok/s wall (11.60 api), peak 112.6 GB api / 104.8 GiB, load1 7.2, aborted=None
+[02:41:04]   text64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" The text is clearly Moby-Dick (Melville). The narrator is Ishmael ("Call'
+[02:43:47] run p_32k rep2: prompt 32807 tok, prefill 149.61s (219.3 tok/s), TTFT 149.78s, decode 128 tok 9.29 tok/s wall (9.36 api), peak 112.7 GB api / 105.0 GiB, load1 6.8, aborted=None
+[02:43:47]   text64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" The text is clearly Moby-Dick (Melville). The narrator is Ishmael ("Call'
+[02:43:47] SUMMARY p_32k: prompt 32807 tok | prefill 245.5 tok/s (spread 21.4%) | TTFT 135.29s | decode 10.40 tok/s (spread 21.4%) | peak 105.0 GiB | identical=True
+[02:43:47] done; maxrss 55.8 GiB

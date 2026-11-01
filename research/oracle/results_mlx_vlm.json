@@ -1,0 +1,90 @@
+{
+ "gpu: full forward logits": {
+  "max_abs": 1.302202639431177e-06,
+  "max_rel": 7.949450389013086e-07
+ },
+ "gpu: embedding + embed_norm": {
+  "max_abs": 3.7076341996566953e-07,
+  "max_rel": 9.348083423407079e-08
+ },
+ "gpu: layer 0 output (hybrid_sliding, dense)": {
+  "max_abs": 2.035114416543138e-06,
+  "max_rel": 3.1629163061232723e-07
+ },
+ "gpu: layer 1 output (hybrid, sparse)": {
+  "max_abs": 1.5266455674733947e-05,
+  "max_rel": 6.333866725782789e-07
+ },
+ "gpu: layer 2 output (hybrid_sliding, sparse)": {
+  "max_abs": 2.2251862541011747e-05,
+  "max_rel": 6.48169426953972e-07
+ },
+ "gpu: cached decode (7 + 5x1) logits": {
+  "max_abs": 1.3994715502285704e-06,
+  "max_rel": 8.543239986241194e-07
+ },
+ "gpu: chunked prefill (5,3,1,1,1,1) logits": {
+  "max_abs": 1.302202639431177e-06,
+  "max_rel": 7.949450389013086e-07
+ },
+ "cpu: full forward logits": {
+  "max_abs": 1.3547680666470274e-06,
+  "max_rel": 8.27034227110312e-07
+ },
+ "cpu: embedding + embed_norm": {
+  "max_abs": 4.067838781374178e-07,
+  "max_rel": 1.0256269694776639e-07
+ },
+ "cpu: layer 0 output (hybrid_sliding, dense)": {
+  "max_abs": 2.362096988228757e-06,
+  "max_rel": 3.6711032165964915e-07
+ },
+ "cpu: layer 1 output (hybrid, sparse)": {
+  "max_abs": 1.283297430987318e-05,
+  "max_rel": 5.324244913549498e-07
+ },
+ "cpu: layer 2 output (hybrid_sliding, sparse)": {
+  "max_abs": 2.2382514980101575e-05,
+  "max_rel": 6.519751720424522e-07
+ },
+ "cpu: cached decode (7 + 5x1) logits": {
+  "max_abs": 1.152837483059388e-06,
+  "max_rel": 7.037633084646861e-07
+ },
+ "cpu: chunked prefill (5,3,1,1,1,1) logits": {
+  "max_abs": 1.5185802630657275e-06,
+  "max_rel": 9.270353244137665e-07
+ },
+ "cpu: mlx drafter chain hidden vs oracle variant=mlx (pre-norm hidden, raw embed)": {
+  "max_abs": 3.2853025118129153e-06,
+  "max_rel": 3.868931191642299e-07
+ },
+ "cpu: mlx drafter logits vs oracle variant=mlx (final_norm before head)": {
+  "max_abs": 9.150238295951851e-07,
+  "max_rel": 4.1782884471462234e-07
+ },
+ "cpu: mlx drafter logits vs oracle variant=transformers (post-norm hidden, raw embed, no head norm)": {
+  "max_abs": 2.7441969788616745,
+  "max_rel": 0.6874738849662946
+ },
+ "cpu: mlx drafter logits vs oracle variant=vllm (post-norm hidden, backbone embed_norm, no head norm)": {
+  "max_abs": 2.520944148782337,
+  "max_rel": 0.668959060353152
+ },
+ "gpu: mlx drafter chain hidden vs oracle variant=mlx (pre-norm hidden, raw embed)": {
+  "max_abs": 3.084305896905448e-06,
+  "max_rel": 3.632227853050538e-07
+ },
+ "gpu: mlx drafter logits vs oracle variant=mlx (final_norm before head)": {
+  "max_abs": 6.717537801570472e-07,
+  "max_rel": 3.067440396824135e-07
+ },
+ "gpu: mlx drafter logits vs oracle variant=transformers (post-norm hidden, raw embed, no head norm)": {
+  "max_abs": 2.7441967404430954,
+  "max_rel": 0.6874738252378757
+ },
+ "gpu: mlx drafter logits vs oracle variant=vllm (post-norm hidden, backbone embed_norm, no head norm)": {
+  "max_abs": 2.520943910363758,
+  "max_rel": 0.6689589970862728
+ }
+}

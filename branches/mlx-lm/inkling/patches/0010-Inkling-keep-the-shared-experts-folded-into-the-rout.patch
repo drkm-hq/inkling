@@ -1,0 +1,295 @@
+From dc0a8b155540f2a37a9b188999a6b88123a3b2eb Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Thu, 29 Oct 2026 03:26:06 -0400
+Subject: [PATCH 10/10] Inkling: keep the shared experts folded into the routed
+ gather
+
+Measured back to back in one GPU hold on the 2-bit checkpoint (bench/K2
+hold 3, p_short and p_8k, 3 runs each), the dense shared-expert layout of
+the previous commit was 7-13% slower at both prefill and decode than one
+gather_qmm chain over the 258 experts, so the fold stays. The docstring and
+the tests added since are kept.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ mlx_lm/models/inkling_mm_model.py | 77 ++++++++++++-------------------
+ tests/test_inkling.py             | 76 +++++++++++++-----------------
+ 2 files changed, 62 insertions(+), 91 deletions(-)
+
+diff --git a/mlx_lm/models/inkling_mm_model.py b/mlx_lm/models/inkling_mm_model.py
+index a579479..a007429 100644
+--- a/mlx_lm/models/inkling_mm_model.py
++++ b/mlx_lm/models/inkling_mm_model.py
+@@ -481,6 +481,10 @@ def _select_experts(logits, bias, global_scale, top_k, route_scale):
+     active = mx.concatenate([mx.take_along_axis(routed, inds, axis=-1), shared], -1)
+     weights = mx.softmax(-mx.logaddexp(0.0, -active), axis=-1, precise=True)
+     weights = weights * (route_scale * global_scale)
++    shared_inds = mx.arange(n_routed, logits.shape[1])[None]
++    inds = mx.concatenate(
++        [inds, mx.broadcast_to(shared_inds, (*inds.shape[:-1], shared.shape[-1]))], -1
++    )
+     return inds, weights
+ 
+ 
+@@ -492,8 +496,6 @@ _ROUTE_SRC = """
+     uint lane = thread_position_in_threadgroup.x;
+     uint n = threadgroup_position_in_grid.x;
+     constexpr uint PER = (R + 31) / 32;
+-    // Outputs: inds [N, K] (the routed experts, best first) and weights [N, K + S]
+-    // (the routed weights, then the shared experts' weights).
+     const device float* lg = logits + n * (R + S);
+     float score[PER];
+     bool taken[PER];
+@@ -518,12 +520,15 @@ _ROUTE_SRC = """
+             taken[best_t] = true;
+         }
+         if (lane == 0) {
+-            inds[n * K + k] = j;
++            inds[n * (K + S) + k] = j;
+         }
+         active[k] = lg[j];
+     }
+     for (uint i = 0; i < S; ++i) {
+         active[K + i] = lg[R + i];
++        if (lane == 0) {
++            inds[n * (K + S) + K + i] = R + i;
++        }
+     }
+     if (lane == 0) {
+         float lp[K + S];
+@@ -559,9 +564,8 @@ _route_kernel = _make_route_kernel()
+ 
+ 
+ def select_experts(logits, bias, global_scale, top_k, route_scale):
+-    """From fp32 router logits ``[N, n_routed + n_shared]``: the routed expert
+-    indices ``[N, top_k]`` and the weights ``[N, top_k + n_shared]`` of the routed
+-    experts followed by the shared ones."""
++    """Expert indices ``[N, top_k + n_shared]`` (the shared experts last) and
++    their routing weights from fp32 router logits ``[N, n_routed + n_shared]``."""
+     N, n_total = logits.shape
+     n_routed = bias.shape[0]
+     if _route_kernel is not None and mx.default_device() == mx.gpu:
+@@ -570,36 +574,19 @@ def select_experts(logits, bias, global_scale, top_k, route_scale):
+             template=[("R", n_routed), ("S", n_total - n_routed), ("K", top_k)],
+             grid=(32 * N, 1, 1),
+             threadgroup=(32, 1, 1),
+-            output_shapes=[(N, top_k), (N, top_k + n_total - n_routed)],
++            output_shapes=[(N, top_k + n_total - n_routed)] * 2,
+             output_dtypes=[mx.uint32, mx.float32],
+         )
+     return _select_experts(logits, bias, global_scale, top_k, route_scale)
+ 
+ 
+-class SharedExperts(nn.Module):
+-    """The always-on shared experts as one dense SwiGLU: their weights are
+-    concatenated at load (``sanitize``), expert-major along the intermediate
+-    axis, so the fixed-index expert gather becomes three plain matmuls. Each
+-    expert's routing weight scales its block of the activation."""
+-
+-    def __init__(self, args: TextArgs):
+-        super().__init__()
+-        self.n_shared = args.n_shared_experts
+-        dims = args.n_shared_experts * args.intermediate_size
+-        self.gate_proj = nn.Linear(args.hidden_size, dims, bias=False)
+-        self.up_proj = nn.Linear(args.hidden_size, dims, bias=False)
+-        self.down_proj = nn.Linear(dims, args.hidden_size, bias=False)
+-
+-    def __call__(self, x, weights):
+-        h = swiglu(self.gate_proj(x), self.up_proj(x))
+-        h = h.reshape(h.shape[0], self.n_shared, -1) * weights[..., None].astype(
+-            h.dtype
+-        )
+-        return self.down_proj(h.reshape(h.shape[0], -1))
+-
+-
+ class MoE(nn.Module):
+-    """Top-k routed experts plus always-on shared experts."""
++    """Top-k routed experts plus always-on shared experts.
++
++    The shared experts are stored after the routed ones in ``experts`` and are
++    selected for every token, so one ``SwitchGLU`` call serves both (measured
++    faster than a separate dense SwiGLU for them at decode and at prefill).
++    """
+ 
+     def __init__(self, args: TextArgs):
+         super().__init__()
+@@ -607,9 +594,10 @@ class MoE(nn.Module):
+         self.route_scale = args.route_scale
+         self.gate = Router(args)
+         self.experts = SwitchGLU(
+-            args.hidden_size, args.intermediate_size, args.n_routed_experts
++            args.hidden_size,
++            args.intermediate_size,
++            args.n_routed_experts + args.n_shared_experts,
+         )
+-        self.shared_experts = SharedExperts(args)
+ 
+     def __call__(self, x):
+         B, L, D = x.shape
+@@ -619,8 +607,7 @@ class MoE(nn.Module):
+             logits, self.gate.bias, self.gate.global_scale, self.top_k, self.route_scale
+         )
+         y = self.experts(x, inds)
+-        y = (y * weights[:, : self.top_k, None].astype(y.dtype)).sum(axis=-2)
+-        y = y + self.shared_experts(x, weights[:, self.top_k :])
++        y = (y * weights[..., None].astype(y.dtype)).sum(axis=-2)
+         return y.reshape(B, L, D)
+ 
+ 
+@@ -725,7 +712,7 @@ class Model(nn.Module):
+     def sanitize(self, weights):
+         """Accepts the mlx-community layout (split gate/up, ``[C, K, 1]`` convs)
+         and the HF source layout (interleaved ``w13`` rows, ``[C, 1, K]`` convs),
+-        fuses q/k/v/r and the k|v convs, and lays the shared experts out dense."""
++        then fuses q/k/v/r, k|v convs and routed|shared experts."""
+         args = self.args.text_config
+         drop = ("model.visual.", "model.audio.", "model.mtp.")
+         weights = {k: v for k, v in weights.items() if not k.startswith(drop)}
+@@ -795,18 +782,14 @@ class Model(nn.Module):
+                 fuse(attn, ["wq_du", "wk_dv", "wv_dv", "wr_du"], "qkvr_proj")
+             if f"{attn}k_sconv.weight" in weights:
+                 fuse(attn, ["k_sconv", "v_sconv"], "kv_sconv")
+-            shared = prefix + "mlp.shared_experts."
+-            for k in [k for k in weights if k.startswith(shared)]:
+-                v = weights[k]
+-                if v.ndim != 3:
+-                    continue
+-                # [n_shared, out, in] -> dense: gate/up stack the experts along
+-                # the rows, down along the input columns (exact for quantized
+-                # tensors: each expert keeps its own groups)
+-                if ".down_proj." in k:
+-                    weights[k] = v.transpose(1, 0, 2).reshape(v.shape[1], -1)
+-                else:
+-                    weights[k] = v.reshape(-1, v.shape[2])
++            mlp = prefix + "mlp."
++            if f"{mlp}shared_experts.gate_proj.weight" in weights:
++                for proj in ("gate_proj", "up_proj", "down_proj"):
++                    fuse(
++                        mlp,
++                        [f"experts.{proj}", f"shared_experts.{proj}"],
++                        f"experts.{proj}",
++                    )
+         return weights
+ 
+     @property
+diff --git a/tests/test_inkling.py b/tests/test_inkling.py
+index ec5a9b2..a5b26b8 100644
+--- a/tests/test_inkling.py
++++ b/tests/test_inkling.py
+@@ -206,12 +206,14 @@ class TestInkling(unittest.TestCase):
+             ]:
+                 inds, w = fn(logits, bias, global_scale, top_k, route_scale)
+                 inds, w = np.array(inds), np.array(w)
+-                self.assertEqual(inds.shape, (N, top_k), name)
+-                self.assertEqual(w.shape, (N, top_k + S), name)
+-                # Same expert sets, same weights per expert (shared ones last)
++                self.assertEqual(inds.shape, (N, top_k + S), name)
++                np.testing.assert_array_equal(
++                    inds[:, top_k:], np.broadcast_to(np.arange(R, R + S), (N, S))
++                )
++                # Same expert sets, same weights per expert
+                 for n in range(N):
+-                    self.assertEqual(set(inds[n]), set(ref_inds[n]), name)
+-                    got = dict(zip(list(inds[n]) + list(range(R, R + S)), w[n]))
++                    self.assertEqual(set(inds[n, :top_k]), set(ref_inds[n]), name)
++                    got = dict(zip(inds[n], w[n]))
+                     ref = dict(zip(list(ref_inds[n]) + list(range(R, R + S)), ref_w[n]))
+                     for e in ref:
+                         self.assertAlmostEqual(got[e], ref[e], places=5, msg=name)
+@@ -220,7 +222,7 @@ class TestInkling(unittest.TestCase):
+             inds, w = inkling.select_experts(
+                 mx.zeros((2, 10)), mx.zeros((8,)), mx.array([1.0]), 3, 8.0
+             )
+-            self.assertEqual(np.array(inds)[1].tolist(), [0, 1, 2])
++            self.assertEqual(np.array(inds)[1, :3].tolist(), [0, 1, 2])
+             self.assertTrue(mx.allclose(w, mx.full((2, 5), 8.0 / 5)))
+ 
+     def test_sanitize_layouts(self):
+@@ -267,8 +269,6 @@ class TestInkling(unittest.TestCase):
+         for n, w in [("gate_proj", gate), ("up_proj", up), ("down_proj", down)]:
+             mlx_layout[f"{prefix}mlp.experts.{n}.weight"] = w[:E]
+             mlx_layout[f"{prefix}mlp.shared_experts.{n}.weight"] = w[E:]
+-        shared_gate = gate[E:].reshape(S * I, H)
+-        shared_down = down[E:].transpose(1, 0, 2).reshape(H, S * I)
+         hf[f"{prefix}mlp.gate.weight"] = mx.random.normal((E + S, H)).astype(
+             mx.bfloat16
+         )
+@@ -288,23 +288,11 @@ class TestInkling(unittest.TestCase):
+         self.assertTrue(mx.array_equal(a[f"{prefix}attn.qkvr_proj.weight"], fused))
+         self.assertTrue(mx.array_equal(a[f"{prefix}attn.kv_sconv.weight"], kv_w))
+         self.assertTrue(
+-            mx.array_equal(a[f"{prefix}mlp.experts.gate_proj.weight"], gate[:E])
+-        )
+-        self.assertTrue(
+-            mx.array_equal(a[f"{prefix}mlp.experts.up_proj.weight"], up[:E])
++            mx.array_equal(a[f"{prefix}mlp.experts.gate_proj.weight"], gate)
+         )
++        self.assertTrue(mx.array_equal(a[f"{prefix}mlp.experts.up_proj.weight"], up))
+         self.assertTrue(
+-            mx.array_equal(a[f"{prefix}mlp.experts.down_proj.weight"], down[:E])
+-        )
+-        self.assertTrue(
+-            mx.array_equal(
+-                a[f"{prefix}mlp.shared_experts.gate_proj.weight"], shared_gate
+-            )
+-        )
+-        self.assertTrue(
+-            mx.array_equal(
+-                a[f"{prefix}mlp.shared_experts.down_proj.weight"], shared_down
+-            )
++            mx.array_equal(a[f"{prefix}mlp.experts.down_proj.weight"], down)
+         )
+         self.assertEqual(a[f"{prefix}mlp.gate.weight"].dtype, mx.float32)
+         self.assertTrue(
+@@ -313,30 +301,30 @@ class TestInkling(unittest.TestCase):
+             )
+         )
+ 
+-    def test_sanitize_quantized_shared_experts(self):
+-        # Laying quantized shared experts out dense is exact: gate/up stack rows,
+-        # down stacks input columns, and every expert keeps its own groups
++    def test_sanitize_quantized_fold(self):
++        # Appending quantized shared experts to quantized routed experts is exact
+         model, args = random_model()
+-        S, I, H = 2, 64, 128
+-        gate = mx.random.normal((S, I, H))
+-        down = mx.random.normal((S, H, I))
+-        prefix = "model.llm.layers.1.mlp.shared_experts."
++        E, S, I, H = 8, 2, 64, 128
++        gate = mx.random.normal((E + S, I, H))
++        prefix = "model.llm.layers.1.mlp."
+         weights = {}
+-        for name, w in [("gate_proj", gate), ("down_proj", down)]:
+-            q, sc, b_ = mx.quantize(w, group_size=64, bits=2)
+-            weights[f"{prefix}{name}.weight"] = q
+-            weights[f"{prefix}{name}.scales"] = sc
+-            weights[f"{prefix}{name}.biases"] = b_
++        for part, sl in [("experts", slice(0, E)), ("shared_experts", slice(E, E + S))]:
++            w, s, b = mx.quantize(gate[sl], group_size=64, bits=2)
++            weights[f"{prefix}{part}.gate_proj.weight"] = w
++            weights[f"{prefix}{part}.gate_proj.scales"] = s
++            weights[f"{prefix}{part}.gate_proj.biases"] = b
+         out = model.sanitize(weights)
+-        q, sc, b_ = mx.quantize(gate.reshape(S * I, H), group_size=64, bits=2)
+-        self.assertTrue(mx.array_equal(out[f"{prefix}gate_proj.weight"], q))
+-        self.assertTrue(mx.array_equal(out[f"{prefix}gate_proj.scales"], sc))
+-        self.assertTrue(mx.array_equal(out[f"{prefix}gate_proj.biases"], b_))
+-        dense_down = down.transpose(1, 0, 2).reshape(H, S * I)
+-        q, sc, b_ = mx.quantize(dense_down, group_size=64, bits=2)
+-        self.assertTrue(mx.array_equal(out[f"{prefix}down_proj.weight"], q))
+-        self.assertTrue(mx.array_equal(out[f"{prefix}down_proj.scales"], sc))
+-        self.assertTrue(mx.array_equal(out[f"{prefix}down_proj.biases"], b_))
++        w, s, b = mx.quantize(gate, group_size=64, bits=2)
++        self.assertTrue(mx.array_equal(out[f"{prefix}experts.gate_proj.weight"], w))
++        self.assertTrue(mx.array_equal(out[f"{prefix}experts.gate_proj.scales"], s))
++        self.assertTrue(mx.array_equal(out[f"{prefix}experts.gate_proj.biases"], b))
++        # Mismatched quantization is refused
++        bad = dict(weights)
++        bad[f"{prefix}shared_experts.gate_proj.scales"] = weights[
++            f"{prefix}shared_experts.gate_proj.scales"
++        ][..., :1]
++        with self.assertRaises(ValueError):
++            model.sanitize(bad)
+ 
+     def test_key_distances(self):
+         b, h, d, W = 1, 2, 8, 6

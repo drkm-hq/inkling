@@ -1,0 +1,56 @@
+== p_short: prompt_n=226 K1kernel:96 tok REF:96 tok; K1kernel decode 96/5628ms (17.06 tok/s), REF 96/8656ms (11.09 tok/s); prefill K1kernel 94.3 tok/s, REF 169.7 tok/s
+   DIVERGE at token 11
+   smallest top1-top2 logprob margins on the common prefix (margin, step): [(0.0705, 11), (0.2263, 2), (0.408, 7), (0.7218, 0), (1.9567, 4)]
+   max |logprob diff| of the chosen token over 12 steps: 0.5042 at step 11
+   K1kernel step 11: chosen id=200008 top5=(200008,'',-0.7334), (200001,'',-0.8039), (200004,'',-4.6348), (200006,'',-5.0734), (28326,'Based',-5.2499)
+   REF step 11: chosen id=200001 top5=(200001,'',-0.3863), (200008,'',-1.2377), (200004,'',-5.5147), (200010,'',-6.9969), (28326,'Based',-7.1775)
+   margins at the divergence: K1kernel prefers 200008 over 200001 by 0.0705; REF prefers 200001 over 200008 by 0.8514
+   K1kernel text: ' Answer: The narrator is Ishmael and the ship\n\nThe user wants me to identify the narrator and the ship name from the provided text, which is clearly the table of contents of Herman Melville\'s *Moby-Dick*. The chapters listed include "Loomings," "The Carpet-Bag," "The Spouter-Inn," "Nantucket," "The '
+   REF text: ' Answer: The narrator is Ishmael and the ship\n\nThe user wants me to identify the narrator and the ship name from the provided text, which is clearly the table of contents of Moby-Dick by Herman Melville. The chapters listed include "Loomings", "The Carpet-Bag", "The Spouter-Inn", etc., which are the'
+== p_2k: prompt_n=2072 K1kernel:96 tok REF:96 tok; K1kernel decode 96/5623ms (17.07 tok/s), REF 96/6958ms (13.80 tok/s); prefill K1kernel 213.8 tok/s, REF 92.7 tok/s
+   DIVERGE at token 21
+   smallest top1-top2 logprob margins on the common prefix (margin, step): [(0.1821, 5), (0.3019, 21), (0.5996, 13), (0.6215, 9), (0.8903, 20)]
+   max |logprob diff| of the chosen token over 22 steps: 0.6977 at step 21
+   K1kernel step 21: chosen id=402 top5=(402,' on',-1.2451), (27067,' Based',-1.5469), (28326,'Based',-2.0887), (279,'\n\n',-2.1230), (4707,'\n\n\n\n',-2.8557)
+   REF step 21: chosen id=27067 top5=(27067,' Based',-1.3273), (28326,'Based',-1.7140), (402,' on',-1.9428), (279,'\n\n',-2.1790), (4707,'\n\n\n\n',-2.6994)
+   margins at the divergence: K1kernel prefers 402 over 27067 by 0.3019; REF prefers 27067 over 402 by 0.6155
+   K1kernel text: ' The narrator is Ishmael; the ship is the Pequod.\n\nBased on the table of contents, Based on the table of contents, Based\n\nBased on the table of contents, Based on the table of contents, Based\n\nBased on the table of contents, Based on the table of contents, Based\n\nBased on the table of contents,Based'
+   REF text: ' The narrator is Ishmael; the ship is the Pequod.\n\nBased on the table of contents, Based Based on the table of contents, Based Based on the table of contents, Based Based on the table of contents, Based Based on the table of contents, Based Based on the table of contents, Based Based on the table of'
+
+== p_short: per-step logprob of the kernel's chosen token, kernel vs reference, common prefix 11 steps
+  step  0 tok   30985 lp_kernel=-0.4378 lp_ref=-0.4843 diff=0.0465 margin_kernel=0.843 margin_ref=0.722
+  step  1 tok      25 lp_kernel=-0.1956 lp_ref=-0.1692 diff=-0.0264 margin_kernel=2.732 margin_ref=2.842
+  step  2 tok     623 lp_kernel=-0.6829 lp_ref=-0.7188 diff=0.0359 margin_kernel=0.332 margin_ref=0.226
+  step  3 tok  101829 lp_kernel=-0.1538 lp_ref=-0.1355 diff=-0.0182 margin_kernel=3.327 margin_ref=3.524
+  step  4 tok     382 lp_kernel=-0.196 lp_ref=-0.1948 diff=-0.0012 margin_kernel=2.02 margin_ref=1.957
+  step  5 tok   83078 lp_kernel=-0.0879 lp_ref=-0.0875 diff=-0.0004 margin_kernel=4.111 margin_ref=4.059
+  step  6 tok  191886 lp_kernel=-0.0044 lp_ref=-0.0049 diff=0.0005 margin_kernel=6.488 margin_ref=6.463
+  step  7 tok     326 lp_kernel=-0.8275 lp_ref=-0.7487 diff=-0.0789 margin_kernel=0.488 margin_ref=0.408
+  step  8 tok     290 lp_kernel=-0.051 lp_ref=-0.0441 diff=-0.0069 margin_kernel=4.157 margin_ref=4.448
+  step  9 tok   12407 lp_kernel=-0.057 lp_ref=-0.0563 diff=-0.0007 margin_kernel=2.873 margin_ref=2.88
+  step 10 tok     279 lp_kernel=-0.139 lp_ref=-0.277 diff=0.138 margin_kernel=3.517 margin_ref=2.257
+  step 11 tok  200008 lp_kernel=-0.7334 lp_ref=-1.2377 diff=0.5042 margin_kernel=0.071 margin_ref=0.851
+
+== p_2k: per-step logprob of the kernel's chosen token, kernel vs reference, common prefix 21 steps
+  step  0 tok     623 lp_kernel=-0.335 lp_ref=-0.2763 diff=-0.0586 margin_kernel=1.921 margin_ref=2.205
+  step  1 tok  101829 lp_kernel=-0.0379 lp_ref=-0.0342 diff=-0.0037 margin_kernel=4.692 margin_ref=4.811
+  step  2 tok     382 lp_kernel=-0.0565 lp_ref=-0.0539 diff=-0.0026 margin_kernel=3.03 margin_ref=3.111
+  step  3 tok   83078 lp_kernel=-0.0916 lp_ref=-0.1069 diff=0.0153 margin_kernel=4.082 margin_ref=3.927
+  step  4 tok  191886 lp_kernel=-0.001 lp_ref=-0.001 diff=-0.0 margin_kernel=8.124 margin_ref=8.187
+  step  5 tok      26 lp_kernel=-0.7559 lp_ref=-0.9106 diff=0.1548 margin_kernel=0.488 margin_ref=0.182
+  step  6 tok     290 lp_kernel=-0.0927 lp_ref=-0.1001 diff=0.0074 margin_kernel=2.405 margin_ref=2.336
+  step  7 tok   12407 lp_kernel=-0.0638 lp_ref=-0.0634 diff=-0.0004 margin_kernel=2.726 margin_ref=2.732
+  step  8 tok     382 lp_kernel=-0.1586 lp_ref=-0.0965 diff=-0.062 margin_kernel=2.195 margin_ref=2.52
+  step  9 tok     290 lp_kernel=-0.2651 lp_ref=-0.4404 diff=0.1753 margin_kernel=1.275 margin_ref=0.621
+  step 10 tok  164344 lp_kernel=-0.0029 lp_ref=-0.002 diff=-0.001 margin_kernel=6.422 margin_ref=6.833
+  step 11 tok     368 lp_kernel=-0.002 lp_ref=-0.0036 diff=0.0016 margin_kernel=6.85 margin_ref=6.283
+  step 12 tok     364 lp_kernel=-0.0461 lp_ref=-0.0451 diff=-0.001 margin_kernel=3.488 margin_ref=3.451
+  step 13 tok   28326 lp_kernel=-0.9019 lp_ref=-0.8169 diff=-0.085 margin_kernel=0.6 margin_ref=0.717
+  step 14 tok     402 lp_kernel=-0.0613 lp_ref=-0.0669 diff=0.0057 margin_kernel=4.479 margin_ref=4.301
+  step 15 tok     290 lp_kernel=-0.1243 lp_ref=-0.1388 diff=0.0145 margin_kernel=2.409 margin_ref=2.279
+  step 16 tok    3293 lp_kernel=-0.5278 lp_ref=-0.1567 diff=-0.3711 margin_kernel=2.135 margin_ref=2.64
+  step 17 tok     328 lp_kernel=-0.0006 lp_ref=-0.0004 diff=-0.0001 margin_kernel=8.213 margin_ref=8.377
+  step 18 tok   15825 lp_kernel=-0.0021 lp_ref=-0.0014 diff=-0.0007 margin_kernel=6.808 margin_ref=7.167
+  step 19 tok      11 lp_kernel=-0.238 lp_ref=-0.2331 diff=-0.005 margin_kernel=2.167 margin_ref=2.29
+  step 20 tok   27067 lp_kernel=-1.3389 lp_ref=-0.9473 diff=-0.3916 margin_kernel=0.94 margin_ref=0.89
+  step 21 tok     402 lp_kernel=-1.2451 lp_ref=-1.9428 diff=0.6977 margin_kernel=0.302 margin_ref=0.387

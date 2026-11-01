@@ -1,0 +1,161 @@
+From 7d500937bdf465a93274114ed68b3e077a8806a5 Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Wed, 28 Oct 2026 22:37:58 -0400
+Subject: [PATCH 01/11] Evaluate eagerly loaded parameters in bounded chunks
+
+load_model_weights evaluated every parameter of an eagerly loaded model in
+one mx.eval, which runs as a single Metal command buffer. For an 80+ GB
+checkpoint (Inkling-Small 2-bit is 82 GiB) that command buffer exceeds the
+GPU watchdog budget on a 128 GB M5 Max and the load aborts with
+"GPU Timeout" from inside load_model_weights. The new eval_parameters helper
+walks the parameter tree and evaluates at most EVAL_CHUNK_BYTES (4 GiB) per
+mx.eval; the end state is identical, and any model smaller than the chunk
+still takes exactly one eval. Tests spy on mx.eval to check that every
+parameter array is evaluated exactly once under small chunk bounds, that an
+eager load_model_weights covers all loaded parameters, and that lazy loads
+still evaluate nothing.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ mlx_vlm/tests/test_load_eval_chunks.py | 84 ++++++++++++++++++++++++++
+ mlx_vlm/utils.py                       | 30 ++++++++-
+ 2 files changed, 113 insertions(+), 1 deletion(-)
+ create mode 100644 mlx_vlm/tests/test_load_eval_chunks.py
+
+diff --git a/mlx_vlm/tests/test_load_eval_chunks.py b/mlx_vlm/tests/test_load_eval_chunks.py
+new file mode 100644
+index 0000000..4d87bb6
+--- /dev/null
++++ b/mlx_vlm/tests/test_load_eval_chunks.py
+@@ -0,0 +1,84 @@
++"""Eager loads evaluate the parameters in bounded chunks.
++
++A single ``mx.eval`` over every parameter of an 80+ GB checkpoint is one
++command buffer; on some machines it trips the Metal GPU watchdog and the load
++aborts with ``GPU Timeout``. ``eval_parameters`` bounds each eval by bytes.
++"""
++
++import mlx.core as mx
++import mlx.nn as nn
++import pytest
++from mlx.utils import tree_flatten
++
++from mlx_vlm import utils
++
++
++class _Tiny(nn.Module):
++    def __init__(self):
++        super().__init__()
++        self.a = nn.Linear(16, 16, bias=True)
++        self.b = nn.Linear(16, 8, bias=False)
++        self.scale = mx.ones((4,))
++
++
++def _spy_eval(monkeypatch):
++    calls = []
++    real_eval = mx.eval
++
++    def spy(*args):
++        calls.append(
++            [a for _, a in tree_flatten(list(args)) if isinstance(a, mx.array)]
++        )
++        return real_eval(*args)
++
++    monkeypatch.setattr(mx, "eval", spy)
++    return calls
++
++
++def _flat(params):
++    return [a for _, a in tree_flatten(params) if isinstance(a, mx.array)]
++
++
++@pytest.mark.parametrize("chunk_bytes", [1, 200, utils.EVAL_CHUNK_BYTES])
++def test_eval_parameters_covers_every_array_once(monkeypatch, chunk_bytes):
++    model = _Tiny()
++    params = _flat(model.parameters())
++    calls = _spy_eval(monkeypatch)
++    utils.eval_parameters(model.parameters(), chunk_bytes=chunk_bytes)
++    seen = [id(a) for call in calls for a in call]
++    assert sorted(seen) == sorted(id(a) for a in params)
++    assert len(seen) == len(set(seen))
++    for call in calls[:-1]:
++        # A chunk closes as soon as it reaches the byte bound.
++        assert sum(a.nbytes for a in call) >= chunk_bytes
++        assert sum(a.nbytes for a in call[:-1]) < chunk_bytes
++    if chunk_bytes == 1:
++        assert all(len(call) == 1 for call in calls)
++    if chunk_bytes == utils.EVAL_CHUNK_BYTES:
++        assert len(calls) == 1
++
++
++def test_load_model_weights_evaluates_everything(monkeypatch, tmp_path):
++    model = _Tiny()
++    weights = {
++        k: mx.random.normal(v.shape) * 2  # lazy: not evaluated until loaded
++        for k, v in tree_flatten(model.parameters())
++    }
++    monkeypatch.setattr(utils, "EVAL_CHUNK_BYTES", 100)
++    calls = _spy_eval(monkeypatch)
++    utils.load_model_weights(model, {}, dict(weights), tmp_path)
++    loaded = dict(tree_flatten(model.parameters()))
++    evaluated = {id(a) for call in calls for a in call}
++    assert {id(a) for a in loaded.values()} <= evaluated
++    assert len(calls) > 1
++    for k, v in weights.items():
++        assert mx.array_equal(loaded[k], v).item(), k
++    assert model.model_path == tmp_path
++
++
++def test_lazy_load_does_not_eval(monkeypatch, tmp_path):
++    model = _Tiny()
++    weights = dict(tree_flatten(model.parameters()))
++    calls = _spy_eval(monkeypatch)
++    utils.load_model_weights(model, {}, weights, tmp_path, lazy=True)
++    assert calls == []
+diff --git a/mlx_vlm/utils.py b/mlx_vlm/utils.py
+index fd84120..eec8549 100644
+--- a/mlx_vlm/utils.py
++++ b/mlx_vlm/utils.py
+@@ -738,13 +738,41 @@ def load_model_weights(
+         )
+ 
+     if not lazy:
+-        mx.eval(model.parameters())
++        eval_parameters(model.parameters())
+ 
+     model.model_path = model_path
+     model.eval()
+     return model
+ 
+ 
++# Bytes of parameters evaluated per ``mx.eval`` when a model is loaded eagerly.
++# One ``mx.eval`` over a whole 80+ GB checkpoint runs as a single command
++# buffer, which can exceed the Metal GPU watchdog budget and abort the load
++# with ``GPU Timeout``; bounded chunks keep every command buffer short.
++EVAL_CHUNK_BYTES = 4 * 2**30
++
++
++def eval_parameters(parameters, chunk_bytes: Optional[int] = None) -> None:
++    """Evaluate every array in ``parameters``, at most ``chunk_bytes`` per eval.
++
++    Equivalent to ``mx.eval(parameters)`` once it returns; models smaller than
++    ``chunk_bytes`` (default ``EVAL_CHUNK_BYTES``) still take one ``mx.eval``.
++    """
++    if chunk_bytes is None:
++        chunk_bytes = EVAL_CHUNK_BYTES
++    chunk, nbytes = [], 0
++    for _, value in tree_flatten(parameters):
++        if not isinstance(value, mx.array):
++            continue
++        chunk.append(value)
++        nbytes += value.nbytes
++        if nbytes >= chunk_bytes:
++            mx.eval(chunk)
++            chunk, nbytes = [], 0
++    if chunk:
++        mx.eval(chunk)
++
++
+ def _load_safetensors(path: str) -> dict:
+     try:
+         return mx.load(path)

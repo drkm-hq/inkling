@@ -1,0 +1,120 @@
+Inkling performance patches - 2026-10-31
+
+These are unified diffs for git apply. The three projects have separate patch
+sequences. Use a working checkout of the listed contribution tip for each project.
+The original review snapshot and upstream checkouts were preserved.
+
+The prerequisite correctness patches are included in prerequisites/. They are
+byte-for-byte copies from inkling-review-fixes-2026-10-31. Skip a prerequisite
+only if it has already been applied. The snapshot README/benchmark patch is not
+needed for these source changes.
+
+BASES AND APPLICATION ORDER
+
+K1 - llama.cpp
+  Contribution tip: 7c25a0a9b55bd336e0bf050f11a17c78f9337100
+  Original branch: metal-banded-fa
+  Original upstream base: 3582c5ee05115892e4e96520be0026c3ceb9f829
+  Apply:
+    01-metal-ssm-conv-decode-channels.patch
+
+  Packs single-token short-convolution channels into Metal threadgroups and
+  checks the channel boundary. Includes odd/tail channel regression cases in
+  tests/test-backend-ops.cpp. No correctness prerequisite patch is needed.
+
+K2 - mlx-lm
+  Contribution tip: f98688c1cc1339d596430293483466910ceed2f9
+  Original branch: inkling-pr
+  Original upstream base: 1f7057ca530f8a594d4aab50bac41a2ed5e5c5c7
+  Apply in this order:
+    prerequisites/02-mlx-lm-fixes.patch
+    02-mlx-lm-expert-decode.patch
+
+  The performance patch includes both expert gate/up fusion and the expert
+  reduction/convolution/residual fusion. It reads existing checkpoint tensors
+  without repacking or adding persistent full expert-weight copies. Gate/up
+  fusion is restricted to eligible single-token bf16 affine q2/group64 decode;
+  the reduction/convolution path has its own shape, cache and dtype guards.
+  Other cases retain the existing operations. Includes
+  tests/test_inkling_gate_up.py; the prerequisite adds tests/test_inkling.py.
+
+K4 - mlx-vlm
+  Contribution tip: ee1be2540c9ec3266dabdd86d46764404a8a80e7
+  Original branch: inkling-fast-path
+  Original upstream base: 138d7617d39653b39a5cbc379b1b5907a4481d67
+  Apply in this order:
+    prerequisites/03-mlx-vlm-cache-fixes.patch
+    prerequisites/04-mlx-vlm-quantization-fix.patch
+    03-mlx-vlm-paired-kv-conv.patch
+    04-mlx-vlm-conv-keynorm.patch
+    05-mlx-vlm-mask-dispatch.patch
+
+  Patch 03 combines K/V short-convolution dispatch for eligible one-token
+  inference and adds mlx_vlm/tests/test_inkling_sconv_pair.py.
+  Patch 04 folds K RMSNorm into that path when the head width and layout are
+  supported, and adds mlx_vlm/tests/test_inkling_convnorm.py.
+  Patch 05 changes the mask threadgroup geometry for decode/prefill and adds
+  exact comparisons with the original dispatch to
+  mlx_vlm/tests/test_inkling_fast_path.py. It changes only that test file and
+  mlx_vlm/models/inkling/language.py relative to patches 03+04.
+
+HOW TO APPLY
+
+Run these commands from each target checkout for each patch in its sequence,
+substituting the patch's absolute path:
+
+  git apply --check --whitespace=error-all /absolute/path/to/patch
+  git apply --whitespace=error-all /absolute/path/to/patch
+
+All three sequences were checked and applied to fresh archives of the exact
+contribution tips above, including the prerequisite patches. These checks do
+not establish compatibility with a newer upstream tip. Rebase and rerun the
+targeted checks when changing the base.
+
+BUILD AND TEST PREREQUISITES
+
+The Metal paths require a supported Apple Silicon Mac and Metal availability.
+For K1, use the contribution's documented CMake/C++ and Apple Metal build tools.
+For K2/K4, use Python 3.11 or newer with the dependencies declared by the target
+checkout, including its MLX runtime, and pytest for K4. Run tests from the source
+checkout so imports resolve to the patched files. GPU work and builds should be
+serialized when collecting comparable performance measurements.
+
+Targeted K1 checks after rebuilding:
+
+  cmake -S . -B build-inkling-perf -DCMAKE_BUILD_TYPE=Release -DGGML_METAL=ON -DLLAMA_BUILD_TESTS=ON
+  cmake --build build-inkling-perf --target test-backend-ops
+  build-inkling-perf/bin/test-backend-ops -b MTL0 -o SSM_CONV,SSM_CONV_BIAS_SILU
+
+Targeted K2 checks:
+
+  python -m unittest tests.test_inkling tests.test_inkling_gate_up tests.test_models.TestModels.test_inkling_mm_model
+
+Targeted K4 checks:
+
+  python -m pytest -q mlx_vlm/tests/test_inkling_sconv_pair.py mlx_vlm/tests/test_inkling_convnorm.py mlx_vlm/tests/test_inkling_fast_path.py mlx_vlm/tests/test_inkling_kernel_gates.py
+
+These are focused regression commands. Application instructions and test
+coverage do not establish a whole-model throughput improvement; measurement
+results are reported separately.
+
+OPTIONAL K1 EXPERIMENT
+
+The experimental/ patches are separate from the main sequence. A whole-model
+performance gain has not been established for this combination. Apply them
+only when evaluating this experiment, after the main K1 patch 01:
+
+  experimental/02-metal-relative-projection-fusion.patch
+  experimental/03-inkling-expand-relative-input.patch
+
+The first patch fuses a supported relative-projection CONT/MUL_MAT sequence;
+the second explicitly expands the relative input before that sequence in the
+Inkling graph. Their application order was checked on the same K1 base.
+The first patch also adds graph-order boundary cases to
+tests/test-metal-graph-optimize.cpp. Rebuild and run test-metal-graph-optimize;
+rebuild test-backend-ops and select the dedicated CONT_MUL_MAT test cases:
+
+  build-inkling-perf/bin/test-backend-ops test -b MTL0 -o CONT_MUL_MAT
+
+The second patch also needs an actual Inkling model check for activation and
+output agreement; operator tests alone do not exercise graph ordering.

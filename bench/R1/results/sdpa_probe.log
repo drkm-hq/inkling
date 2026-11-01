@@ -1,0 +1,10 @@
+LQ=    1 S=   512: array_mask=(0.187 ms, +0.00 GB), array_mask_force_fused=(0.168 ms, +0.00 GB), bool_mask=(0.187 ms, +0.00 GB), none=(0.165 ms, +0.00 GB), unfused_reference=(0.274 ms, +0.00 GB), max_abs_diff_vs_unfused=0.000977
+LQ=    1 S=  8192: array_mask=(0.256 ms, +0.00 GB), array_mask_force_fused=(0.277 ms, +0.00 GB), bool_mask=(0.209 ms, +0.00 GB), none=(0.198 ms, +0.00 GB), unfused_reference=(0.877 ms, +0.13 GB), max_abs_diff_vs_unfused=0.000488
+LQ=    1 S= 32768: array_mask=(0.530 ms, +0.00 GB), array_mask_force_fused=(0.501 ms, +0.00 GB), bool_mask=(0.387 ms, +0.00 GB), none=(0.501 ms, +0.00 GB), unfused_reference=(2.849 ms, +0.27 GB), max_abs_diff_vs_unfused=0.000488
+LQ=    8 S=  2048: array_mask=(0.336 ms, +0.00 GB), array_mask_force_fused=(0.301 ms, +0.00 GB), bool_mask=(0.260 ms, +0.00 GB), none=(0.259 ms, +0.00 GB), causal_str=(0.347 ms, +0.01 GB), unfused_reference=(0.382 ms, +0.00 GB), max_abs_diff_vs_unfused=0.000488
+LQ=  512 S=   512: array_mask=(0.309 ms, +0.00 GB), array_mask_force_fused=(0.302 ms, +0.00 GB), bool_mask=(0.333 ms, +0.01 GB), none=(0.269 ms, +0.00 GB), causal_str=(0.258 ms, +0.00 GB), unfused_reference=(0.450 ms, +0.00 GB), max_abs_diff_vs_unfused=0.0156
+LQ= 2048 S=  2048: array_mask=(1.926 ms, +0.00 GB), array_mask_force_fused=(1.908 ms, +0.00 GB), bool_mask=(2.596 ms, +0.00 GB), none=(1.570 ms, +0.00 GB), causal_str=(0.894 ms, +0.00 GB), unfused_reference=(4.831 ms, +0.34 GB), max_abs_diff_vs_unfused=0.0156
+LQ= 2048 S=  2559: array_mask=(2.320 ms, +0.00 GB), array_mask_force_fused=(2.334 ms, +0.00 GB), bool_mask=(3.390 ms, +0.00 GB), none=(1.826 ms, +0.00 GB), causal_str=(1.265 ms, +0.00 GB), unfused_reference=(6.272 ms, +0.39 GB)
+LQ= 2048 S=  8192: array_mask=(7.845 ms, +0.00 GB), array_mask_force_fused=(7.900 ms, +0.00 GB), bool_mask=(10.597 ms, +0.00 GB), none=(6.504 ms, +0.00 GB), causal_str=(5.918 ms, +0.00 GB), unfused_reference=(21.064 ms, +1.24 GB)
+LQ= 8192 S=  8192: array_mask=(55.036 ms, +0.00 GB), array_mask_force_fused=(127.985 ms, +0.00 GB), bool_mask=(111.101 ms, +0.00 GB), none=(81.763 ms, +0.00 GB), causal_str=(36.853 ms, +0.07 GB)
+wrote sdpa_probe.json

@@ -1,0 +1,118 @@
+From cc6a6fe26fa13b3095fb2b274b5692285be9760f Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Thu, 29 Oct 2026 02:54:57 -0400
+Subject: [PATCH 09/10] Warn when kv_bits cannot apply, CPU exactness test,
+ acknowledgment
+
+maybe_quantize_kv_cache stayed silent when no cache of the model supports
+quantization (CacheList models such as Inkling); it now warns once. The
+Inkling tests gain a CPU-device fp32 check of decode and chunked prefill
+against the full forward at 1e-5 (exact matmuls, no TF32) and a test for the
+warning; the short-conv docstring states that kernel and compiled taps agree
+after rounding to the activation dtype.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ ACKNOWLEDGMENTS.md                |  1 +
+ mlx_lm/generate.py                |  7 ++++++
+ mlx_lm/models/inkling_mm_model.py |  3 ++-
+ tests/test_inkling.py             | 38 +++++++++++++++++++++++++++++++
+ 4 files changed, 48 insertions(+), 1 deletion(-)
+
+diff --git a/ACKNOWLEDGMENTS.md b/ACKNOWLEDGMENTS.md
+index 87d1578..b9f191e 100644
+--- a/ACKNOWLEDGMENTS.md
++++ b/ACKNOWLEDGMENTS.md
+@@ -32,3 +32,4 @@ MoonshotAI's `Kimi K2.5`, Upstage's `Solar Open`, LG AI Research's `K-Exaone MoE
+ Meituan's `LongCat Flash Lite` Helped add support for the following model architectures: 
+ Z.ai & THUKEG's `GLM5 (GLM MoE DSA)`
+ - Ethan Elasky: Added support for talkie-lm's `Talkie`.
++- the submitter Alonso: Added support for Thinking Machines' `Inkling` (`inkling_mm_model`).
+diff --git a/mlx_lm/generate.py b/mlx_lm/generate.py
+index 96ee5b0..8fc60f6 100644
+--- a/mlx_lm/generate.py
++++ b/mlx_lm/generate.py
+@@ -7,6 +7,7 @@ import functools
+ import json
+ import sys
+ import time
++import warnings
+ from collections import deque
+ from dataclasses import asdict, dataclass
+ from typing import (
+@@ -316,6 +317,12 @@ class GenerationResponse:
+ def maybe_quantize_kv_cache(prompt_cache, quantized_kv_start, kv_group_size, kv_bits):
+     if kv_bits is None:
+         return
++    if not any(hasattr(c, "to_quantized") for c in prompt_cache):
++        warnings.warn(
++            "kv_bits is set but none of the model's caches support quantization; "
++            "the KV cache stays unquantized."
++        )
++        return
+     for e, c in enumerate(prompt_cache):
+         if hasattr(c, "to_quantized") and c.offset >= quantized_kv_start:
+             prompt_cache[e] = c.to_quantized(group_size=kv_group_size, bits=kv_bits)
+diff --git a/mlx_lm/models/inkling_mm_model.py b/mlx_lm/models/inkling_mm_model.py
+index b39c174..a579479 100644
+--- a/mlx_lm/models/inkling_mm_model.py
++++ b/mlx_lm/models/inkling_mm_model.py
+@@ -189,7 +189,8 @@ class ShortConv(nn.Module):
+     layer's ``ArraysCache``. The weight keeps the ``nn.Conv1d`` layout
+     ``[channels, K, 1]`` of the checkpoints. A few tokens at a time go through
+     one kernel (convolution, residual and state update); longer inputs through
+-    the compiled taps.
++    the compiled taps. Both accumulate in fp32 and agree after the rounding to
++    the activation dtype (their fp32 sums differ in the last bits).
+     """
+ 
+     def __init__(self, channels: int, kernel_size: int, slot: int):
+diff --git a/tests/test_inkling.py b/tests/test_inkling.py
+index fee1440..ec5a9b2 100644
+--- a/tests/test_inkling.py
++++ b/tests/test_inkling.py
+@@ -396,6 +396,44 @@ class TestInkling(unittest.TestCase):
+             mx.allclose(mx.concatenate(steps, 1), full, rtol=2e-2, atol=2e-2)
+         )
+ 
++    def test_cpu_exactness(self):
++        # On the CPU device fp32 matmuls are exact (the GPU may use TF32), so the
++        # cached decode and the chunked prefill match the full forward at fp32
++        # precision; the pure-MLX paths of the kernels are exercised here
++        model, args = random_model()
++        ids = mx.random.randint(0, 60, (2, 12))
++        default = mx.default_device()
++        mx.set_default_device(mx.cpu)
++        try:
++            full = model(ids)
++            cache = make_prompt_cache(model)
++            steps = [model(ids[:, :7], cache=cache)]
++            steps += [model(ids[:, t : t + 1], cache=cache) for t in range(7, 12)]
++            decode = mx.concatenate(steps, 1)
++            cache = make_prompt_cache(model)
++            chunks = [(0, 5), (5, 8), (8, 9), (9, 10), (10, 11), (11, 12)]
++            chunked = mx.concatenate(
++                [model(ids[:, a:b], cache=cache) for a, b in chunks], 1
++            )
++            mx.eval(full, decode, chunked)
++        finally:
++            mx.set_default_device(default)
++        self.assertTrue(mx.allclose(decode, full, rtol=1e-5, atol=1e-6))
++        self.assertTrue(mx.allclose(chunked, full, rtol=1e-5, atol=1e-6))
++
++    def test_kv_bits_warns(self):
++        import warnings
++
++        from mlx_lm.generate import generate_step
++
++        model, args = random_model(dtype=mx.float16)
++        prompt = mx.random.randint(0, 60, (5,))
++        with warnings.catch_warnings(record=True) as caught:
++            warnings.simplefilter("always")
++            for _ in generate_step(prompt, model, max_tokens=2, kv_bits=4):
++                pass
++        self.assertTrue(any("kv_bits" in str(w.message) for w in caught))
++
+     def test_flat_text_config(self):
+         args = inkling.ModelArgs.from_dict(
+             {"model_type": "inkling_text", **tiny_text_config()}

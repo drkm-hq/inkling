@@ -1,0 +1,41 @@
+{
+ "obs": [
+  [
+   0,
+   0,
+   300
+  ],
+  [
+   1,
+   0,
+   300
+  ],
+  [
+   0,
+   0,
+   325
+  ],
+  [
+   1,
+   0,
+   325
+  ],
+  [
+   0,
+   0,
+   345
+  ],
+  [
+   1,
+   0,
+   325
+  ]
+ ],
+ "extra": {},
+ "deviations": {
+  "slot 0 extension": 0.0,
+  "slot 1 extension": 0.0,
+  "slot 0 second extension": 0.0,
+  "slot 1 identical": 0.0
+ }
+}

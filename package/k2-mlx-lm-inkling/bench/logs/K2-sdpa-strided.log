@@ -1,0 +1,8 @@
+  35 x sdpa S=  512 buffer cap=  512 (contiguous)                0.608 ms (best 0.544)
+  35 x sdpa S=  512 buffer cap=  767 (strided view)              0.551 ms (best 0.420)
+  35 x sdpa S=  512 buffer cap=  513 (strided view)              0.433 ms (best 0.399)
+  35 x sdpa S= 8192 buffer cap= 8192 (contiguous)                2.748 ms (best 2.547)
+  35 x sdpa S= 8192 buffer cap= 8448 (strided view)              2.984 ms (best 2.605)
+  35 x sdpa S=32768 buffer cap=32768 (contiguous)                17.693 ms (best 11.776)
+  35 x sdpa S=32768 buffer cap=33024 (strided view)              35.632 ms (best 27.133)
+  35 x sdpa S=512, rows 200:712 of a 767 buffer                  0.870 ms (best 0.657)

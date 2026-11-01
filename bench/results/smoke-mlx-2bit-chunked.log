@@ -1,0 +1,55 @@
+model: ~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit/snapshots/f8a0af554e168077bdaf48e1fb6682fb395c807c/
+start: 2026-10-29T02:09:10Z
+W1028 22:09:15.565000 39805 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+lazy load 1.0s
+  evaluated 4.4 GiB (0.4s)
+  evaluated 8.4 GiB (0.7s)
+  evaluated 12.4 GiB (1.0s)
+  evaluated 16.8 GiB (1.4s)
+  evaluated 20.9 GiB (1.7s)
+  evaluated 24.9 GiB (2.0s)
+  evaluated 29.3 GiB (2.4s)
+  evaluated 33.3 GiB (2.7s)
+  evaluated 37.3 GiB (3.0s)
+  evaluated 41.3 GiB (3.3s)
+  evaluated 45.8 GiB (3.8s)
+  evaluated 49.8 GiB (4.4s)
+  evaluated 53.8 GiB (4.9s)
+  evaluated 58.3 GiB (5.6s)
+  evaluated 62.3 GiB (6.3s)
+  evaluated 66.3 GiB (6.9s)
+  evaluated 70.8 GiB (8.4s)
+  evaluated 74.8 GiB (9.8s)
+  evaluated 78.8 GiB (11.3s)
+full eval 12.7s, 82.3 GiB, active 82.4 GiB, peak 82.4 GiB
+==========
+Files: [] 
+
+Prompt: <|message_system|><|content_text|>Thinking effort level: 0.9<|end_message|><|message_user|><|content_text|>The capital of France is<|end_message|><|message_model|>
+Prefill:   0%|          | 0/20 [00:00<?, ?tok/s]Prefill:  95%|█████████▌| 19/20 [00:10<00:00,  1.90tok/s]Prefill:  95%|█████████▌| 19/20 [00:10<00:00,  1.90tok/s]
+<|content_thinking|>The user is asking "The capital of France is" which is a straightforward factual question. The answer is Paris. I should provide the answer clearly and concisely. Since it's a simple question, I don't need to overcomplicate
+==========
+Prompt: 20 tokens, 1.984 tokens-per-sec
+Generation: 48 tokens, 44.865 tokens-per-sec
+Peak memory: 88.519 GB
+TEXT: <|content_thinking|>The user is asking "The capital of France is" which is a straightforward factual question. The answer is Paris. I should provide the answer clearly and concisely. Since it's a simple question, I don't need to overcomplicate
+peak memory 82.4 GiB
+       33.99 real         7.79 user        48.00 sys
+         52939161600  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+             5357336  page reclaims
+                 186  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                2169  voluntary context switches
+              772845  involuntary context switches
+        234885607737  instructions retired
+        209295560186  cycles elapsed
+         89555532392  peak memory footprint
+end: 2026-10-29T02:09:44Z

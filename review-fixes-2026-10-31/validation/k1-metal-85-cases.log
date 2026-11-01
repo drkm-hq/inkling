@@ -1,0 +1,258 @@
+ggml_metal_device_init: testing tensor API for f16 support
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'dummy_kernel', name = 'dummy_kernel'
+ggml_metal_library_compile_pipeline: loaded dummy_kernel                                  0x10564b2b0 | th_max = 1024 | th_width =   32
+ggml_metal_device_init: testing tensor API for bfloat support
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'dummy_kernel', name = 'dummy_kernel'
+ggml_metal_library_compile_pipeline: loaded dummy_kernel                                  0x10564adb0 | th_max = 1024 | th_width =   32
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_compile_all: compiled 'fa_aux' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'fa_f16' library in 0.031 sec
+ggml_metal_library_compile_all: compiled 'fa_f32' library in 0.015 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_0' library in 0.036 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_1' library in 0.040 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_0' library in 0.029 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_1' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'fa_q8_0' library in 0.041 sec
+ggml_metal_library_compile_all: compiled 'fa_tensor' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f16' library in 0.018 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f32' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_0' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_1' library in 0.025 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_0' library in 0.044 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_1' library in 0.039 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q8_0' library in 0.034 sec
+ggml_metal_library_compile_all: compiled 'mul_mv' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'mul_mv_mma' library in 0.028 sec
+ggml_metal_library_compile_all: compiled 'mul_mm' library in 0.021 sec
+ggml_metal_library_compile_all: compiled 'quantize' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'softmax' library in 0.040 sec
+ggml_metal_library_compile_all: compiled 'norm' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'unary' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'binbcast' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'reduce' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'tri' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'ssm' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'wkv' library in 0.036 sec
+ggml_metal_library_compile_all: compiled 'gated_delta_net' library in 0.025 sec
+ggml_metal_library_compile_all: compiled 'solve_tri' library in 0.027 sec
+ggml_metal_library_compile_all: compiled 'rope' library in 0.026 sec
+ggml_metal_library_compile_all: compiled 'conv' library in 0.016 sec
+ggml_metal_library_compile_all: compiled 'upscale' library in 0.016 sec
+ggml_metal_library_compile_all: compiled 'argsort' library in 0.016 sec
+ggml_metal_library_compile_all: compiled 'pool' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'misc' library in 0.007 sec
+ggml_metal_library_compile_all: loaded 36 libraries from embedded data in 0.044 sec (max single = 0.044 sec)
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0 (Apple M5 Max)
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple10  (1010)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal4  (5002)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = true
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  = 115448.73 MB
+ggml_metal_init: allocating
+ggml_metal_init: found device: Apple M5 Max
+ggml_metal_init: picking default device: Apple M5 Max
+ggml_metal_init: use fusion         = true
+ggml_metal_init: use concurrency    = true
+ggml_metal_init: use graph optimize = true
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_pad', name = 'kernel_flash_attn_ext_pad_mask=1_ncpsg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_pad_mask=1_ncpsg=32      0x1056560b0 | th_max = 1024 | th_width =   32
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_f32_dk64_dv64', name = 'kernel_flash_attn_ext_vec_f32_dk64_dv64_mask=1_sink=0_bias=0_scap=0_kvpad=1_sparse=0_rel=0_ns10=64_ns20=64_nsg=1_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_f32_dk64_dv64_mask=1_sink=0_bias=0_scap=0_kvpad=1_sparse=0_rel=0_ns10=64_ns20=64_nsg=1_nwg=32      0x105656430 | th_max = 1024 | th_width =   32
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_reduce', name = 'kernel_flash_attn_ext_vec_reduce_dv=64_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_reduce_dv=64_nwg=32      0x105657db0 | th_max = 1024 | th_width =   32
+Testing 3 devices
+
+Backend 1/3: MTL0
+  Device description: Apple M5 Max
+  Device memory: 110100 MB (110099 MB free)
+
+  FLASH_ATTN_EXT_BANDED(d=64,n_head=2,n_head_kv=1,n_q=8,n_kv=8,rel_extent=8,mask_kind=1,kv_type=f32,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=0): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_f16_dk128_dv128', name = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_mask=1_sink=0_bias=0_scap=0_kvpad=1_sparse=0_rel=1_ns10=128_ns20=128_nsg=1_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_f16_dk128_dv128_mask=1_sink=0_bias=0_scap=0_kvpad=1_sparse=0_rel=1_ns10=128_ns20=128_nsg=1_nwg=32      0x70ae18000 | th_max = 1024 | th_width =   32
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_reduce', name = 'kernel_flash_attn_ext_vec_reduce_dv=128_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_reduce_dv=128_nwg=32      0x70ae18a80 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=2,n_q=16,n_kv=16,rel_extent=8,mask_kind=1,kv_type=f16,rel_type=f16,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=0): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_f32_dk64_dv64', name = 'kernel_flash_attn_ext_vec_f32_dk64_dv64_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=64_ns20=64_nsg=1_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_f32_dk64_dv64_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=64_ns20=64_nsg=1_nwg=32      0x70ae18380 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=64,n_head=8,n_head_kv=2,n_q=1,n_kv=64,rel_extent=8,mask_kind=1,kv_type=f32,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=63): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_blk', name = 'kernel_flash_attn_ext_blk_nqptg=8_ncpsg=64'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_blk_nqptg=8_ncpsg=64      0x70ae18700 | th_max = 1024 | th_width =   32
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_bf16_dk128_dv128', name = 'kernel_flash_attn_ext_bf16_dk128_dv128_mask=1_sinks=0_bias=0_scap=0_kvpad=0_rel=2_bcm=0_ns10=128_ns20=128_nsg=4'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_bf16_dk128_dv128_mask=1_sinks=0_bias=0_scap=0_kvpad=0_rel=2_bcm=0_ns10=128_ns20=128_nsg=4      0x70ae19500 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=2,n_q=64,n_kv=64,rel_extent=8,mask_kind=2,kv_type=bf16,rel_type=bf16,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=0): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_f16_dk64_dv64', name = 'kernel_flash_attn_ext_f16_dk64_dv64_mask=1_sinks=0_bias=0_scap=0_kvpad=0_rel=0_bcm=0_ns10=64_ns20=64_nsg=4'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_f16_dk64_dv64_mask=1_sinks=0_bias=0_scap=0_kvpad=0_rel=0_bcm=0_ns10=64_ns20=64_nsg=4      0x70ae18e00 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=64,n_head=8,n_head_kv=1,n_q=64,n_kv=64,rel_extent=512,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=0): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_f16_dk128_dv128', name = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_mask=1_sink=0_bias=0_scap=0_kvpad=1_sparse=0_rel=1_ns10=256_ns20=256_nsg=1_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_f16_dk128_dv128_mask=1_sink=0_bias=0_scap=0_kvpad=1_sparse=0_rel=1_ns10=256_ns20=256_nsg=1_nwg=32      0x70ae19180 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=2,n_q=17,n_kv=33,rel_extent=8,mask_kind=1,kv_type=f16,rel_type=f16,strided=1,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=16): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_blk', name = 'kernel_flash_attn_ext_blk_nqptg=32_ncpsg=64'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_blk_nqptg=32_ncpsg=64      0x70ae19880 | th_max = 1024 | th_width =   32
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_tensor_f16_dk128_dv128', name = 'kernel_flash_attn_ext_tensor_f16_dk128_dv128_mask=1_sinks=0_bias=0_scap=0_rel=0'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_tensor_f16_dk128_dv128_mask=1_sinks=0_bias=0_scap=0_rel=0      0x70ae1a300 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=7680): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16384,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=15872): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_pad', name = 'kernel_flash_attn_ext_pad_mask=1_ncpsg=64'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_pad_mask=1_ncpsg=64      0x70ae19f80 | th_max = 1024 | th_width =   32
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_f16_dk128_dv128', name = 'kernel_flash_attn_ext_f16_dk128_dv128_mask=1_sinks=0_bias=0_scap=0_kvpad=1_rel=0_bcm=0_ns10=128_ns20=128_nsg=4'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_f16_dk128_dv128_mask=1_sinks=0_bias=0_scap=0_kvpad=1_rel=0_bcm=0_ns10=128_ns20=128_nsg=4      0x70ae1aa00 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16403,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=15891): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16896,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=16384): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=17024,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=16512): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q2_ne2', name = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q2_ne2_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=128_ns20=128_nsg=4_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_f16_dk128_dv128_q2_ne2_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=128_ns20=128_nsg=4_nwg=32      0x70ae1ad80 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=1,n_kv=17024,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=17023): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=32768,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=32256): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=512,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=0): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=1536,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=1024): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_tensor_f16_dk128_dv128', name = 'kernel_flash_attn_ext_tensor_f16_dk128_dv128_mask=0_sinks=0_bias=0_scap=0_rel=0'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_tensor_f16_dk128_dv128_mask=0_sinks=0_bias=0_scap=0_rel=0      0x70ae1a680 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=2048,rel_extent=1024,mask_kind=0,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=1536): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=1024,rel_extent=512,mask_kind=2,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=512): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8209,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=7697): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4', name = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=128_ns20=128_nsg=4_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=128_ns20=128_nsg=4_nwg=32      0x70ae19c00 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=8191): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4', name = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4_mask=1_sink=0_bias=0_scap=0_kvpad=1_sparse=0_rel=0_ns10=128_ns20=128_nsg=4_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4_mask=1_sink=0_bias=0_scap=0_kvpad=1_sparse=0_rel=0_ns10=128_ns20=128_nsg=4_nwg=32      0x70ae1b100 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=8209,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=8208): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q2_ne2', name = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q2_ne2_mask=1_sink=0_bias=0_scap=0_kvpad=1_sparse=0_rel=0_ns10=128_ns20=128_nsg=4_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_f16_dk128_dv128_q2_ne2_mask=1_sink=0_bias=0_scap=0_kvpad=1_sparse=0_rel=0_ns10=128_ns20=128_nsg=4_nwg=32      0x70ae1b480 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=7,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=4093): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_kv_q8_0_f16', name = 'kernel_flash_attn_ext_kv_q8_0_f16'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_kv_q8_0_f16             0x70ae90380 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=q8_0,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=7680): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_q8_0_dk128_dv128_q1_ne4', name = 'kernel_flash_attn_ext_vec_q8_0_dk128_dv128_q1_ne4_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=4_ns20=4_nsg=4_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_q8_0_dk128_dv128_q1_ne4_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=4_ns20=4_nsg=4_nwg=32      0x70ae90700 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=q8_0,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=8191): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=513,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=1): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=577,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=65): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=1025,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=513): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=4097,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=3585): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8193,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=7681): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_f16_dk128_dv128', name = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_mask=1_sink=0_bias=0_scap=0_kvpad=1_sparse=0_rel=0_ns10=128_ns20=128_nsg=1_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_f16_dk128_dv128_mask=1_sink=0_bias=0_scap=0_kvpad=1_sparse=0_rel=0_ns10=128_ns20=128_nsg=1_nwg=32      0x70ae90e00 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=1,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=0): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=33,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=32): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=65,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=64): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4', name = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4_mask=1_sink=0_bias=0_scap=0_kvpad=1_sparse=0_rel=0_ns10=128_ns20=128_nsg=1_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4_mask=1_sink=0_bias=0_scap=0_kvpad=1_sparse=0_rel=0_ns10=128_ns20=128_nsg=1_nwg=32      0x70ae91180 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=1025,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=1024): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=4097,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=4096): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=2,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=4098): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_f16_dk128_dv128', name = 'kernel_flash_attn_ext_f16_dk128_dv128_mask=1_sinks=0_bias=0_scap=0_kvpad=1_rel=0_bcm=1_ns10=128_ns20=128_nsg=4'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_f16_dk128_dv128_mask=1_sinks=0_bias=0_scap=0_kvpad=1_rel=0_bcm=1_ns10=128_ns20=128_nsg=4      0x70ae91500 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=20,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=4080): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=64,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=4036): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1024,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=3076): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8192,rel_extent=512,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=7680): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=8192,rel_extent=512,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=8191): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=64,n_kv=100,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=36): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=7,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=6): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=4096,rel_extent=1024,mask_kind=2,kv_type=f16,rel_type=f32,strided=0,window=512,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=3584): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=8192,rel_extent=1024,mask_kind=2,kv_type=f16,rel_type=f32,strided=0,window=512,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=8191): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=7,n_kv=4100,rel_extent=1024,mask_kind=2,kv_type=f16,rel_type=f32,strided=0,window=512,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=4093): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4', name = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4_mask=0_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=128_ns20=128_nsg=4_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4_mask=0_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=128_ns20=128_nsg=4_nwg=32      0x70ae90000 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=8192,rel_extent=1024,mask_kind=0,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=8191): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_pad', name = 'kernel_flash_attn_ext_pad_mask=0_ncpsg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_pad_mask=0_ncpsg=32      0x70ae91880 | th_max = 1024 | th_width =   32
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q2_ne2', name = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q2_ne2_mask=0_sink=0_bias=0_scap=0_kvpad=1_sparse=0_rel=0_ns10=128_ns20=128_nsg=4_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_f16_dk128_dv128_q2_ne2_mask=0_sink=0_bias=0_scap=0_kvpad=1_sparse=0_rel=0_ns10=128_ns20=128_nsg=4_nwg=32      0x70ae91f80 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=7,n_kv=4100,rel_extent=1024,mask_kind=0,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=4093): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_pad', name = 'kernel_flash_attn_ext_pad_mask=0_ncpsg=64'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_pad_mask=0_ncpsg=64      0x70ae90a80 | th_max = 1024 | th_width =   32
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_f16_dk128_dv128', name = 'kernel_flash_attn_ext_f16_dk128_dv128_mask=0_sinks=0_bias=0_scap=0_kvpad=1_rel=0_bcm=0_ns10=128_ns20=128_nsg=4'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_f16_dk128_dv128_mask=0_sinks=0_bias=0_scap=0_kvpad=1_rel=0_bcm=0_ns10=128_ns20=128_nsg=4      0x70ae92680 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8209,rel_extent=1024,mask_kind=0,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=7697): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_f16_dk128_dv128', name = 'kernel_flash_attn_ext_f16_dk128_dv128_mask=1_sinks=0_bias=0_scap=0_kvpad=0_rel=0_bcm=0_ns10=128_ns20=128_nsg=4'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_f16_dk128_dv128_mask=1_sinks=0_bias=0_scap=0_kvpad=0_rel=0_bcm=0_ns10=128_ns20=128_nsg=4      0x70ae91c00 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=1,n_head_kv=1,n_q=512,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=3584): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=16,n_head_kv=1,n_q=512,n_kv=2048,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=1536): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_tensor_f16_dk64_dv64', name = 'kernel_flash_attn_ext_tensor_f16_dk64_dv64_mask=1_sinks=0_bias=0_scap=0_rel=0'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_tensor_f16_dk64_dv64_mask=1_sinks=0_bias=0_scap=0_rel=0      0x70ae92300 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=64,n_head=32,n_head_kv=8,n_q=512,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=3584): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_f16_dk64_dv64_q1_ne4', name = 'kernel_flash_attn_ext_vec_f16_dk64_dv64_q1_ne4_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=64_ns20=64_nsg=2_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_f16_dk64_dv64_q1_ne4_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=64_ns20=64_nsg=2_nwg=32      0x70ae92d80 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=64,n_head=32,n_head_kv=8,n_q=1,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=4095): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_bf16_dk128_dv128', name = 'kernel_flash_attn_ext_bf16_dk128_dv128_mask=1_sinks=0_bias=0_scap=0_kvpad=1_rel=0_bcm=0_ns10=128_ns20=128_nsg=4'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_bf16_dk128_dv128_mask=1_sinks=0_bias=0_scap=0_kvpad=1_rel=0_bcm=0_ns10=128_ns20=128_nsg=4      0x70ae92a00 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8209,rel_extent=1024,mask_kind=1,kv_type=bf16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=7697): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_bf16_dk128_dv128', name = 'kernel_flash_attn_ext_vec_bf16_dk128_dv128_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=128_ns20=128_nsg=2_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_bf16_dk128_dv128_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=128_ns20=128_nsg=2_nwg=32      0x70ae93100 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=bf16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=4095): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_q8_0_dk128_dv128_q2_ne2', name = 'kernel_flash_attn_ext_vec_q8_0_dk128_dv128_q2_ne2_mask=1_sink=0_bias=0_scap=0_kvpad=1_sparse=0_rel=0_ns10=4_ns20=4_nsg=4_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_q8_0_dk128_dv128_q2_ne2_mask=1_sink=0_bias=0_scap=0_kvpad=1_sparse=0_rel=0_ns10=4_ns20=4_nsg=4_nwg=32      0x70ae93480 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=7,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=q8_0,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=4093): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_kv_q4_0_f16', name = 'kernel_flash_attn_ext_kv_q4_0_f16'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_kv_q4_0_f16             0x70ae1bb80 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=q4_0,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=3584): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_q4_0_dk128_dv128_q1_ne4', name = 'kernel_flash_attn_ext_vec_q4_0_dk128_dv128_q1_ne4_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=4_ns20=4_nsg=2_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_q4_0_dk128_dv128_q1_ne4_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=4_ns20=4_nsg=2_nwg=32      0x70ae93800 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=q4_0,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=4095): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_f32_dk128_dv128', name = 'kernel_flash_attn_ext_f32_dk128_dv128_mask=1_sinks=0_bias=0_scap=0_kvpad=0_rel=0_bcm=0_ns10=128_ns20=128_nsg=4'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_f32_dk128_dv128_mask=1_sinks=0_bias=0_scap=0_kvpad=0_rel=0_bcm=0_ns10=128_ns20=128_nsg=4      0x70afac380 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=1024,rel_extent=1024,mask_kind=1,kv_type=f32,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=512): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_tensor_f16_dk128_dv128', name = 'kernel_flash_attn_ext_tensor_f16_dk128_dv128_mask=1_sinks=0_bias=0_scap=0_rel=1'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_tensor_f16_dk128_dv128_mask=1_sinks=0_bias=0_scap=0_rel=1      0x70afac700 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f16,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=3584): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4', name = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=2_ns10=128_ns20=128_nsg=2_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=2_ns10=128_ns20=128_nsg=2_nwg=32      0x70afac000 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=bf16,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=4095): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_f16_dk128_dv128', name = 'kernel_flash_attn_ext_f16_dk128_dv128_mask=1_sinks=0_bias=0_scap=0_kvpad=1_rel=2_bcm=0_ns10=128_ns20=128_nsg=4'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_f16_dk128_dv128_mask=1_sinks=0_bias=0_scap=0_kvpad=1_rel=2_bcm=0_ns10=128_ns20=128_nsg=4      0x70afaca80 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=64,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=bf16,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=4036): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=64,n_kv=1024,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=2,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=960): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=2049,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=2,rel_ne3=2,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=1537): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4', name = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=128_ns20=128_nsg=1_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=128_ns20=128_nsg=1_nwg=32      0x70afad500 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=2048,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=2,rel_ne3=2,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=2047): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=1,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=3584): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4', name = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=256_ns20=256_nsg=2_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=256_ns20=256_nsg=2_nwg=32      0x70afad180 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=1,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=4095): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_idx', name = 'kernel_flash_attn_ext_vec_idx'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_idx                 0x70afad880 | th_max = 1024 | th_width =   32
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_f16_dk128_dv128', name = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=1_rel=0_ns10=128_ns20=128_nsg=2_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_f16_dk128_dv128_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=1_rel=0_ns10=128_ns20=128_nsg=2_nwg=32      0x70afadf80 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=4096,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=4095): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_f16_dk128_dv128', name = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=1_rel=0_ns10=128_ns20=128_nsg=1_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_f16_dk128_dv128_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=1_rel=0_ns10=128_ns20=128_nsg=1_nwg=32      0x70aface00 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=7,n_kv=2048,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=2048,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=2041): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=1.700000,rel_range=4.000000,kv_pad=0,q_off=7680): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=1.700000,rel_range=4.000000,kv_pad=0,q_off=8191): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=512,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=3.000000,rel_range=8.000000,kv_pad=0,q_off=0): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=1024,rel_extent=512,mask_kind=2,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=3.000000,rel_range=8.000000,kv_pad=0,q_off=512): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=2,n_q=1,n_kv=1048576,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=1048575): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8209,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=239,q_off=7697): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=8209,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=239,q_off=8208): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_f16_dk128_dv128', name = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=1_ns10=256_ns20=256_nsg=1_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_f16_dk128_dv128_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=1_ns10=256_ns20=256_nsg=1_nwg=32      0x70afae300 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=2,n_q=17,n_kv=33,rel_extent=8,mask_kind=2,kv_type=f16,rel_type=f16,strided=1,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=31,q_off=16): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=32794,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=230,q_off=32282): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=777,rel_extent=512,mask_kind=2,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=247,q_off=776): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=0): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=4096): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=7780): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=13192): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=4096,rel_extent=1024,mask_kind=0,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=-300): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4', name = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=128_ns20=128_nsg=2_nwg=32'
+ggml_metal_library_compile_pipeline: loaded kernel_flash_attn_ext_vec_f16_dk128_dv128_q1_ne4_mask=1_sink=0_bias=0_scap=0_kvpad=0_sparse=0_rel=0_ns10=128_ns20=128_nsg=2_nwg=32      0x70afaea00 | th_max = 1024 | th_width =   32
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=2048): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=20,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=0,q_off=1000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=7,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000,kv_pad=60,q_off=1000): [1;32mOK[0m
+ggml_metal_free: deallocating
+  85/85 tests passed
+  Backend MTL0: [1;32mOK[0m
+Backend 2/3: BLAS
+  Skipping
+Backend 3/3: CPU
+  Skipping
+3/3 backends passed
+[1;32mOK[0m

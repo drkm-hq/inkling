@@ -1,0 +1,28 @@
+0.04.922.768 I cmn          init: llama threadpool init, n_threads = 6
+0.04.981.639 I 
+0.04.981.679 I system_info: n_threads = 6 (n_threads_batch = 6) / 18 | MTL : EMBED_LIBRARY = 1 | CPU : NEON = 1 | ARM_FMA = 1 | FP16_VA = 1 | MATMUL_INT8 = 1 | DOTPROD = 1 | SME = 1 | SME2 = 1 | ACCELERATE = 1 | REPACK = 1 | 
+0.04.981.815 I perplexity: saving all logits to <workdir>/package/k1-metal-banded-fa/review/e2e/ref-logits-p8k-c2048.bin
+0.04.981.823 I perplexity: tokenizing the input ..
+0.05.010.901 I perplexity: tokenization took 29.074 ms
+0.05.010.916 I perplexity: calculating perplexity over 4 chunks, n_ctx=2048, batch_size=2048, n_seq=1
+0.37.632.251 I perplexity: 32.56 seconds per pass - ETA 2.18.856.636 I Final estimate: PPL = 9.9712 +/- 0.53618
+2.18.856.827 W ~llama_context:       MTL0 compute buffer size of 416.4055 MiB, does not match expectation of 409.4036 MiB
+2.18.856.830 W ~llama_context:        CPU compute buffer size of 103.7923 MiB, does not match expectation of 101.7923 MiB
+      139.66 real       499.80 user        20.19 sys
+        100225122304  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+             6135976  page reclaims
+                  15  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                   4  voluntary context switches
+             2101208  involuntary context switches
+       4024835293755  instructions retired
+       1378057749989  cycles elapsed
+          2412059616  peak memory footprint

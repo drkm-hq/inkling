@@ -1,0 +1,506 @@
+From 97ba1bf480fb8a6c55f7e6e849fb93231170b231 Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Wed, 28 Oct 2026 22:38:53 -0400
+Subject: [PATCH 3/7] ggml : explicit q_offset for the banded flash attention
+
+The banded op derived the position of the queries from n_kv - n_q, which
+forced the model to pass K/V/mask views of exactly pos_max + 1 rows. Those
+views are rarely aligned to the kernel block sizes, so on Metal the
+prefill ubatches fell off the tensor-API kernel onto the half8x8 kernel
+plus a pad pass (1.5x the time at 8K, measured in test-backend-ops), and
+the mask had to be re-copied per layer.
+
+ggml_flash_attn_ext_banded now takes q_offset (op_params[5]), the kv index
+of the first query: rel_dist = q_idx + q_offset - kv_idx. Honoured by the
+CPU op, the CUDA scalar kernel (kernel argument), the CUDA MMA path (the
+banded ABI carries it in the unused m0 slope, exact below 2^24) and Metal.
+
+The model passes the cache's own 256-padded n_kv views and the KQ mask as
+they are (the padded cells are masked) with q_offset = n_kv_flash -
+n_tokens, so every prefill ubatch takes the aligned kernel and the
+per-layer ggml_cont of the mask view is gone.
+
+test-backend-ops gains a kv_pad parameter for the banded cases: masked rows
+past the logical n_kv with the band anchored by q_offset.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ ggml/include/ggml.h                    |  7 +++--
+ ggml/src/ggml-cpu/ops.cpp              |  7 +++--
+ ggml/src/ggml-cuda/fattn-banded.cu     |  8 +++--
+ ggml/src/ggml-cuda/fattn-common.cuh    | 12 +++++---
+ ggml/src/ggml-cuda/fattn-mma-f16.cuh   | 25 ++++++++-------
+ ggml/src/ggml-metal/ggml-metal-ops.cpp |  8 +++--
+ ggml/src/ggml.c                        |  6 +++-
+ src/models/inkling.cpp                 | 26 +++++-----------
+ tests/test-backend-ops.cpp             | 42 +++++++++++++++++---------
+ tests/test-flash-attn-bias.cpp         |  4 +--
+ 10 files changed, 85 insertions(+), 60 deletions(-)
+
+diff --git a/ggml/include/ggml.h b/ggml/include/ggml.h
+index 3dcf3622f..2ce5c7d1d 100644
+--- a/ggml/include/ggml.h
++++ b/ggml/include/ggml.h
+@@ -2518,8 +2518,10 @@ extern "C" {
+             float                 logit_softcap);
+ 
+     // flash attention with an additive banded relative-position bias, applied after scale, no dense bias tensor:
+-    //   rel_logits: [rel_extent, n_head, n_batch, ne3]; rel_dist = q_idx + (n_kv - n_batch) - kv_idx
++    //   rel_logits: [rel_extent, n_head, n_batch, ne3]; rel_dist = q_idx + q_offset - kv_idx
+     //   score += rel_logits[rel_dist, head, q_idx, batch] iff 0 <= rel_dist < rel_extent
++    //   q_offset: the kv index of the first query (n_kv - n_batch when the queries are the tail of the KV);
++    //             it anchors the band independently of the KV extent, so k, v and mask may end with masked padding
+     GGML_API struct ggml_tensor * ggml_flash_attn_ext_banded(
+             struct ggml_context * ctx,
+             struct ggml_tensor  * q,
+@@ -2528,7 +2530,8 @@ extern "C" {
+             struct ggml_tensor  * mask,
+             struct ggml_tensor  * rel_logits,
+             float                 scale,
+-            int64_t               rel_extent);
++            int64_t               rel_extent,
++            int32_t               q_offset);
+ 
+     GGML_DEPRECATED(GGML_API void ggml_flash_attn_ext_set_prec(
+             struct ggml_tensor * a,
+diff --git a/ggml/src/ggml-cpu/ops.cpp b/ggml/src/ggml-cpu/ops.cpp
+index 36c7850b1..7bd6f0116 100644
+--- a/ggml/src/ggml-cpu/ops.cpp
++++ b/ggml/src/ggml-cpu/ops.cpp
+@@ -8856,6 +8856,9 @@ static void ggml_compute_forward_flash_attn_ext_f16_one_chunk(
+     const ggml_tensor * sinks = dst->src[4];
+     const ggml_tensor * rel   = dst->src[5];
+ 
++    // banded op: the kv index of the first query, see ggml_flash_attn_ext_banded
++    const int32_t q_offset = rel ? ggml_get_op_params_i32(dst, 5) : 0;
++
+     GGML_TENSOR_LOCALS(int64_t, neq, q,   ne)
+     GGML_TENSOR_LOCALS(size_t,  nbq, q,   nb)
+     GGML_TENSOR_LOCALS(int64_t, nek, k,   ne)
+@@ -8987,8 +8990,8 @@ static void ggml_compute_forward_flash_attn_ext_f16_one_chunk(
+             }
+ 
+             if (rel) {
+-                // the offset aligns a short decode Q block to the tail of K (FA4 seqlen_k - seqlen_q convention)
+-                const int64_t rel_dist = iq1 + (nek1 - neq1) - ic;
++                // q_offset places the queries in the KV (its tail, n_kv - n_q, in the FA4 seqlen_k - seqlen_q convention)
++                const int64_t rel_dist = iq1 + q_offset - ic;
+                 if (rel_dist >= 0 && rel_dist < rel->ne[0]) {
+                     s += ggml_flash_attn_ext_banded_load(rel, iq1, iq2, iq3, rel_dist);
+                 }
+diff --git a/ggml/src/ggml-cuda/fattn-banded.cu b/ggml/src/ggml-cuda/fattn-banded.cu
+index 175760f23..c0cd7ec13 100644
+--- a/ggml/src/ggml-cuda/fattn-banded.cu
++++ b/ggml/src/ggml-cuda/fattn-banded.cu
+@@ -39,6 +39,7 @@ static __global__ void flash_attn_ext_banded_f32(
+         int64_t n_head_kv,
+         int64_t n_batch,
+         int64_t rel_extent,
++        int64_t q_offset,
+         int64_t mask_ne2,
+         int64_t mask_ne3,
+         uint64_t q_nb1,
+@@ -88,7 +89,6 @@ static __global__ void flash_attn_ext_banded_f32(
+ 
+     float row_max = -INFINITY;
+     float row_sum = 0.0f;
+-    const int64_t q_offset = n_kv - n_q;
+ 
+     for (int64_t ik = 0; ik < n_kv; ++ik) {
+         // skip masked positions before touching K/V
+@@ -226,6 +226,10 @@ void ggml_cuda_flash_attn_ext_banded(ggml_backend_cuda_context & ctx, ggml_tenso
+     // the tensor extent (not op_params) is authoritative after graph cloning
+     const int64_t rel_extent = rel->ne[0];
+ 
++    // the kv index of the first query, see ggml_flash_attn_ext_banded
++    int32_t q_offset;
++    memcpy(&q_offset, (const int32_t *) dst->op_params + 5, sizeof(q_offset));
++
+     constexpr int warps_per_block = 4;
+     const dim3 blocks((q->ne[1] + warps_per_block - 1) / warps_per_block, q->ne[2], q->ne[3]);
+     const dim3 threads(warps_per_block * WARP_SIZE, 1, 1);
+@@ -236,7 +240,7 @@ void ggml_cuda_flash_attn_ext_banded(ggml_backend_cuda_context & ctx, ggml_tenso
+         (const char *) q->data, (const char *) k->data, (const char *) v->data, \
+         m ? (const char *) m->data : nullptr, (const char *) rel->data, (float *) dst->data, \
+         scale, k->type, v->type, rel->type, q->ne[1], k->ne[1], q->ne[2], k->ne[2], q->ne[3], \
+-        rel_extent, m ? m->ne[2] : 1, m ? m->ne[3] : 1, \
++        rel_extent, q_offset, m ? m->ne[2] : 1, m ? m->ne[3] : 1, \
+         q->nb[1], q->nb[2], q->nb[3], k->nb[0], k->nb[1], k->nb[2], k->nb[3], \
+         v->nb[0], v->nb[1], v->nb[2], v->nb[3], \
+         m ? m->nb[1] : 0, m ? m->nb[2] : 0, m ? m->nb[3] : 0, \
+diff --git a/ggml/src/ggml-cuda/fattn-common.cuh b/ggml/src/ggml-cuda/fattn-common.cuh
+index 9d672273c..f8a4ac855 100644
+--- a/ggml/src/ggml-cuda/fattn-common.cuh
++++ b/ggml/src/ggml-cuda/fattn-common.cuh
+@@ -1233,11 +1233,15 @@ void launch_fattn(
+     memcpy(&max_bias,      (const float *) KQV->op_params + 1, sizeof(float));
+     memcpy(&logit_softcap, (const float *) KQV->op_params + 2, sizeof(float));
+ 
+-    // banded op reuses the MMA ABI: negative max_bias tags the branch, sinks_ptr carries rel_logits, -max_bias is E
++    // banded op reuses the MMA ABI: negative max_bias tags the branch, sinks_ptr carries rel_logits, -max_bias is E,
++    // m0 carries q_offset (the kv index of the first query, see ggml_flash_attn_ext_banded)
++    int32_t q_offset = 0;
+     if (rel) {
+         GGML_ASSERT(rel->type == GGML_TYPE_F32 && ggml_is_contiguous(rel));
+         GGML_ASSERT(rel->ne[0] <= (1 << 20)); // exactly representable in float
+         max_bias = -float(rel->ne[0]);
++        memcpy(&q_offset, (const int32_t *) KQV->op_params + 5, sizeof(q_offset));
++        GGML_ASSERT(q_offset >= -(1 << 24) && q_offset <= (1 << 24)); // exactly representable in float
+     }
+ 
+     if (logit_softcap != 0.0f) {
+@@ -1247,9 +1251,9 @@ void launch_fattn(
+     const uint32_t n_head      = Q->ne[2];
+     const uint32_t n_head_log2 = 1u << uint32_t(floorf(log2f(float(n_head))));
+ 
+-    // m0/m1 are unused for banded bias; the negative tag would otherwise blow up the exponent
+-    const float m0 = rel ? 1.0f : powf(2.0f, -(max_bias       ) / n_head_log2);
+-    const float m1 = rel ? 1.0f : powf(2.0f, -(max_bias / 2.0f) / n_head_log2);
++    // m0/m1 are not ALiBi slopes for the banded bias (the negative tag would otherwise blow up the exponent)
++    const float m0 = rel ? float(q_offset) : powf(2.0f, -(max_bias       ) / n_head_log2);
++    const float m1 = rel ? 1.0f           : powf(2.0f, -(max_bias / 2.0f) / n_head_log2);
+ 
+     // TODO other tensor dimensions after removal of WMMA kernel:
+     const uint3 ne01 = init_fastdiv_values(Q->ne[1]);
+diff --git a/ggml/src/ggml-cuda/fattn-mma-f16.cuh b/ggml/src/ggml-cuda/fattn-mma-f16.cuh
+index 319dd6c77..f5908066e 100644
+--- a/ggml/src/ggml-cuda/fattn-mma-f16.cuh
++++ b/ggml/src/ggml-cuda/fattn-mma-f16.cuh
+@@ -587,6 +587,7 @@ static __device__ __forceinline__ void flash_attn_ext_f16_iter(
+         const float slope,
+         const float logit_softcap,
+         const int rel_extent,
++        const int q_offset,
+         const int head_q0,
+         const uint3 ne01,
+         const int ne02,
+@@ -765,7 +766,7 @@ static __device__ __forceinline__ void flash_attn_ext_f16_iter(
+                     const int c      = jc % ncols2;
+                     const int64_t q_idx  = int64_t(jt)*ncols1 + j;
+                     const int64_t kv_idx = int64_t(k_VKQ_0) + i;
+-                    const int64_t dist   = q_idx + (int64_t(ne11) - ne01.z) - kv_idx;
++                    const int64_t dist   = q_idx + q_offset - kv_idx;
+                     if (q_idx < ne01.z && head_q0 + c < ne02 && kv_idx < ne11 &&
+                             dist >= 0 && dist < rel_extent) {
+                         KQ_C[i00/(np*T_C_KQ::I)].x[l] +=
+@@ -848,7 +849,7 @@ static __device__ __forceinline__ void flash_attn_ext_f16_iter(
+                     const int c      = jc % ncols2;
+                     const int64_t q_idx  = int64_t(jt)*ncols1 + j;
+                     const int64_t kv_idx = int64_t(k_VKQ_0) + i;
+-                    const int64_t dist   = q_idx + (int64_t(ne11) - ne01.z) - kv_idx;
++                    const int64_t dist   = q_idx + q_offset - kv_idx;
+                     if (q_idx < ne01.z && head_q0 + c < ne02 && kv_idx < ne11 &&
+                             dist >= 0 && dist < rel_extent) {
+                         KQ_C[i00/(np*T_C_KQ::J)].x[l] +=
+@@ -1120,7 +1121,7 @@ static __device__ __forceinline__ void flash_attn_ext_f16_iter(
+     }
+ #else
+     GGML_UNUSED_VARS(Q_f2, K_h2, V_h2, mask_h, indices, rel_f, dstk, dstk_fixup,
+-        scale, slope, logit_softcap, rel_extent, head_q0, ne01, ne02, ne11,
++        scale, slope, logit_softcap, rel_extent, q_offset, head_q0, ne01, ne02, ne11,
+         stride_K, stride_V, stride_mask,
+         tile_Q, tile_K, tile_V, tile_mask,
+         Q_B, VKQ_C, KQ_max, KQ_rowsum, kb0);
+@@ -1258,6 +1259,7 @@ static __device__ __forceinline__ void flash_attn_ext_f16_process_tile(
+         const float slope,
+         const float logit_softcap,
+         const int rel_extent,
++        const int q_offset,
+         const int head_q0,
+         const uint3 ne01,
+         const int ne02,
+@@ -1416,7 +1418,7 @@ static __device__ __forceinline__ void flash_attn_ext_f16_process_tile(
+                 <DKQ, DV, ncols1, ncols2, nwarps, use_logit_softcap, V_is_K_view, use_sparse, needs_fixup, is_fixup, last_iter, oob_check,
+                  T_A_KQ, T_B_KQ, T_C_KQ, T_A_VKQ, T_B_VKQ, T_C_VKQ>
+                 (Q_f2, K_h2, V_h2, mask_h, indices, rel_f, dstk, dstk_fixup, scale, slope, logit_softcap,
+-                 rel_extent, head_q0, ne01, ne02, ne11, stride_K, stride_V, stride_mask, tile_Q, tile_K, tile_V, tile_mask, Q_B, VKQ_C,
++                 rel_extent, q_offset, head_q0, ne01, ne02, ne11, stride_K, stride_V, stride_mask, tile_Q, tile_K, tile_V, tile_mask, Q_B, VKQ_C,
+                  KQ_max, KQ_rowsum, jt, kb0, k_VKQ_sup);
+         }
+         constexpr bool last_iter = true;
+@@ -1425,7 +1427,7 @@ static __device__ __forceinline__ void flash_attn_ext_f16_process_tile(
+             <DKQ, DV, ncols1, ncols2, nwarps, use_logit_softcap, V_is_K_view, use_sparse, needs_fixup, is_fixup, last_iter, oob_check,
+               T_A_KQ, T_B_KQ, T_C_KQ, T_A_VKQ, T_B_VKQ, T_C_VKQ>
+             (Q_f2, K_h2, V_h2, mask_h, indices, rel_f, dstk, dstk_fixup, scale, slope, logit_softcap,
+-             rel_extent, head_q0, ne01, ne02, ne11, stride_K, stride_V, stride_mask, tile_Q, tile_K, tile_V, tile_mask, Q_B, VKQ_C,
++             rel_extent, q_offset, head_q0, ne01, ne02, ne11, stride_K, stride_V, stride_mask, tile_Q, tile_K, tile_V, tile_mask, Q_B, VKQ_C,
+              KQ_max, KQ_rowsum, jt, kb0, k_VKQ_sup);
+     } else {
+         constexpr bool oob_check = false;
+@@ -1436,7 +1438,7 @@ static __device__ __forceinline__ void flash_attn_ext_f16_process_tile(
+                 <DKQ, DV, ncols1, ncols2, nwarps, use_logit_softcap, V_is_K_view, use_sparse, needs_fixup, is_fixup, last_iter, oob_check,
+                  T_A_KQ, T_B_KQ, T_C_KQ, T_A_VKQ, T_B_VKQ, T_C_VKQ>
+                 (Q_f2, K_h2, V_h2, mask_h, indices, rel_f, dstk, dstk_fixup, scale, slope, logit_softcap,
+-                 rel_extent, head_q0, ne01, ne02, ne11, stride_K, stride_V, stride_mask, tile_Q, tile_K, tile_V, tile_mask, Q_B, VKQ_C,
++                 rel_extent, q_offset, head_q0, ne01, ne02, ne11, stride_K, stride_V, stride_mask, tile_Q, tile_K, tile_V, tile_mask, Q_B, VKQ_C,
+                  KQ_max, KQ_rowsum, jt, kb0, k_VKQ_sup);
+         }
+         constexpr bool last_iter = true;
+@@ -1445,7 +1447,7 @@ static __device__ __forceinline__ void flash_attn_ext_f16_process_tile(
+             <DKQ, DV, ncols1, ncols2, nwarps, use_logit_softcap, V_is_K_view, use_sparse, needs_fixup, is_fixup, last_iter, oob_check,
+              T_A_KQ, T_B_KQ, T_C_KQ, T_A_VKQ, T_B_VKQ, T_C_VKQ>
+             (Q_f2, K_h2, V_h2, mask_h, indices, rel_f, dstk, dstk_fixup, scale, slope, logit_softcap,
+-             rel_extent, head_q0, ne01, ne02, ne11, stride_K, stride_V, stride_mask, tile_Q, tile_K, tile_V, tile_mask, Q_B, VKQ_C,
++             rel_extent, q_offset, head_q0, ne01, ne02, ne11, stride_K, stride_V, stride_mask, tile_Q, tile_K, tile_V, tile_mask, Q_B, VKQ_C,
+              KQ_max, KQ_rowsum, jt, kb0, k_VKQ_sup);
+     }
+ 
+@@ -1838,7 +1840,7 @@ static __device__ __forceinline__ void flash_attn_ext_f16_process_tile(
+     }
+ #else
+     GGML_UNUSED_VARS(Q_f2, K_h2, V_h2, mask_h, indices, sinks_f, rel_f, dstk, dstk_fixup,
+-        scale, slope, logit_softcap, rel_extent, head_q0, ne01, ne02, gqa_ratio, ne11,
++        scale, slope, logit_softcap, rel_extent, q_offset, head_q0, ne01, ne02, gqa_ratio, ne11,
+         stride_Q1, stride_Q2, stride_K, stride_V, stride_mask,
+         jt, kb0_start, kb0_stop);
+     NO_DEVICE_CODE;
+@@ -1891,6 +1893,7 @@ static __global__ void flash_attn_ext_f16(
+     float2     * GGML_CUDA_RESTRICT dst_meta       = dst_meta_ptr;
+     const bool banded_bias = max_bias < 0.0f;
+     const int  rel_extent  = banded_bias ? int(-max_bias) : 0;
++    const int  q_offset    = banded_bias ? int(m0)        : 0; // the kv index of the first query
+ 
+     // Skip unused kernel variants for faster compilation:
+     if (use_logit_softcap && !(DKQ == 128 || DKQ == 256 || DKQ == 512)) {
+@@ -2003,12 +2006,12 @@ static __global__ void flash_attn_ext_f16(
+             constexpr bool needs_fixup = false; // CUDA block is working on an entire tile.
+             flash_attn_ext_f16_process_tile<DKQ, DV, ncols1, ncols2, nwarps, use_logit_softcap, V_is_K_view, use_sparse, needs_fixup, is_fixup>
+                 (Q_f2, K_h2, V_h2, mask_h, indices, sinks_f, rel_f, dstk, dst_meta, scale, slope, logit_softcap,
+-                 rel_extent, zt_Q, ne01, ne02, gqa_ratio, ne11, stride_Q1, stride_Q2, stride_K, stride_V, stride_mask, jt, zt_gqa, kb0_start, kb0_stop);
++                 rel_extent, q_offset, zt_Q, ne01, ne02, gqa_ratio, ne11, stride_Q1, stride_Q2, stride_K, stride_V, stride_mask, jt, zt_gqa, kb0_start, kb0_stop);
+         } else {
+             constexpr bool needs_fixup = true; // CUDA block is missing the beginning of a tile.
+             flash_attn_ext_f16_process_tile<DKQ, DV, ncols1, ncols2, nwarps, use_logit_softcap, V_is_K_view, use_sparse, needs_fixup, is_fixup>
+                 (Q_f2, K_h2, V_h2, mask_h, indices, sinks_f, rel_f, dstk, dst_meta, scale, slope, logit_softcap,
+-                 rel_extent, zt_Q, ne01, ne02, gqa_ratio, ne11, stride_Q1, stride_Q2, stride_K, stride_V, stride_mask, jt, zt_gqa, kb0_start, kb0_stop);
++                 rel_extent, q_offset, zt_Q, ne01, ne02, gqa_ratio, ne11, stride_Q1, stride_Q2, stride_K, stride_V, stride_mask, jt, zt_gqa, kb0_start, kb0_stop);
+         }
+ 
+         kbc += iter_k;
+@@ -2055,7 +2058,7 @@ static __global__ void flash_attn_ext_f16(
+     constexpr bool needs_fixup = false;
+     flash_attn_ext_f16_process_tile<DKQ, DV, ncols1, ncols2, nwarps, use_logit_softcap, V_is_K_view, use_sparse, needs_fixup, is_fixup>
+         (Q_f2, K_h2, V_h2, mask_h, indices, sinks_f, rel_f, dstk, dst_meta, scale, slope, logit_softcap,
+-         rel_extent, zt_Q, ne01, ne02, gqa_ratio, ne11, stride_Q1, stride_Q2, stride_K, stride_V, stride_mask, jt, zt_gqa, kb0_start, kb0_stop);
++         rel_extent, q_offset, zt_Q, ne01, ne02, gqa_ratio, ne11, stride_Q1, stride_Q2, stride_K, stride_V, stride_mask, jt, zt_gqa, kb0_start, kb0_stop);
+ #else
+     GGML_UNUSED_VARS(Q_ptr, K_ptr, V_ptr, mask_ptr, sinks_ptr, KV_max_ptr, dst_ptr, dst_meta_ptr, scale,
+         max_bias, m0, m1, n_head_log2, logit_softcap,
+diff --git a/ggml/src/ggml-metal/ggml-metal-ops.cpp b/ggml/src/ggml-metal/ggml-metal-ops.cpp
+index e4d25543e..7ee7a6e89 100644
+--- a/ggml/src/ggml-metal/ggml-metal-ops.cpp
++++ b/ggml/src/ggml-metal/ggml-metal-ops.cpp
+@@ -3578,8 +3578,12 @@ int ggml_metal_op_flash_attn_ext(ggml_metal_op_t ctx, int idx) {
+         }
+     }
+ 
+-    // the band is anchored to the tail of the KV: dist = query + q_off - key
+-    const int32_t q_off = ne11 - ne01;
++    // the band is anchored by the kv index of the first query: dist = query + q_off - key
++    int32_t q_off = 0;
++
++    if (has_rel) {
++        memcpy(&q_off, ((const int32_t *) op->op_params) + 5, sizeof(q_off));
++    }
+ 
+     const uint32_t n_head      = op->src[0]->ne[2];
+     const  int32_t n_head_log2 = 1u << (uint32_t) floorf(log2f((float) n_head));
+diff --git a/ggml/src/ggml.c b/ggml/src/ggml.c
+index ead0f8198..2baf2c1c5 100644
+--- a/ggml/src/ggml.c
++++ b/ggml/src/ggml.c
+@@ -5602,7 +5602,8 @@ struct ggml_tensor * ggml_flash_attn_ext_banded(
+         struct ggml_tensor  * mask,
+         struct ggml_tensor  * rel_logits,
+         float                 scale,
+-        int64_t               rel_extent) {
++        int64_t               rel_extent,
++        int32_t               q_offset) {
+     GGML_ASSERT(ggml_can_mul_mat(k, q));
+     GGML_ASSERT(q->type == GGML_TYPE_F32);
+     GGML_ASSERT(q->ne[3] == k->ne[3]);
+@@ -5633,6 +5634,9 @@ struct ggml_tensor * ggml_flash_attn_ext_banded(
+     float params[] = { scale, 0.0f, 0.0f };
+     ggml_set_op_params(result, params, sizeof(params));
+ 
++    // [3] is the precision, [4] the n_kv_max hint (shared with ggml_flash_attn_ext)
++    ggml_set_op_params_i32(result, 5, q_offset);
++
+     result->op     = GGML_OP_FLASH_ATTN_EXT_BANDED;
+     result->src[0] = q;
+     result->src[1] = k;
+diff --git a/src/models/inkling.cpp b/src/models/inkling.cpp
+index 0978da602..0c40849c3 100644
+--- a/src/models/inkling.cpp
++++ b/src/models/inkling.cpp
+@@ -419,28 +419,19 @@ llama_model_inkling::graph::graph(const llama_model & model, const llm_graph_par
+             ggml_tensor * q_fa = ggml_view_4d(ctx0, q,
+                     q->ne[0], q->ne[1], q->ne[2]/n_stream, n_stream,
+                     q->nb[1], q->nb[2], q->nb[3]/n_stream, 0);
++
++            // the K/V views and the KQ mask span the n_kv cells of the cache (padded, so the kernels see aligned
++            // sizes and the graph shape stays constant); the cells past the contiguous tail are masked and the band
++            // is anchored at the position of the first token of the ubatch
+             ggml_tensor * k_fa = cache->get_k(ctx0, il);
+             ggml_tensor * v_fa = cache->get_v(ctx0, il);
+ 
+             const int64_t n_kv_flash = is_swa ? n_kv_flash_swa : n_kv_flash_base;
+-            GGML_ASSERT(n_stream == 1 && n_kv_flash <= k_fa->ne[2]);
++            GGML_ASSERT(n_stream == 1 && n_kv_flash >= n_tokens && n_kv_flash <= k_fa->ne[2]);
+ 
+-            k_fa = ggml_view_4d(ctx0, k_fa,
+-                    k_fa->ne[0], k_fa->ne[1], n_kv_flash, k_fa->ne[3],
+-                    k_fa->nb[1], k_fa->nb[2], k_fa->nb[3], 0);
++            const int32_t q_offset = (int32_t) (n_kv_flash - n_tokens);
+ 
+             const bool v_trans = v_fa->nb[1] > v_fa->nb[2];
+-            if (v_trans) {
+-                GGML_ASSERT(n_kv_flash <= v_fa->ne[0]);
+-                v_fa = ggml_view_4d(ctx0, v_fa,
+-                        n_kv_flash, v_fa->ne[1], v_fa->ne[2], v_fa->ne[3],
+-                        v_fa->nb[1], v_fa->nb[2], v_fa->nb[3], 0);
+-            } else {
+-                GGML_ASSERT(n_kv_flash <= v_fa->ne[2]);
+-                v_fa = ggml_view_4d(ctx0, v_fa,
+-                        v_fa->ne[0], v_fa->ne[1], n_kv_flash, v_fa->ne[3],
+-                        v_fa->nb[1], v_fa->nb[2], v_fa->nb[3], 0);
+-            }
+ 
+             q_fa = ggml_permute(ctx0, q_fa, 0, 2, 1, 3);
+             k_fa = ggml_permute(ctx0, k_fa, 0, 2, 1, 3);
+@@ -459,12 +450,9 @@ llama_model_inkling::graph::graph(const llama_model & model, const llm_graph_par
+             ggml_tensor * rel_fa = ggml_reshape_4d(ctx0, rel,
+                     rel_extent, n_head, n_tokens/n_stream, n_stream);
+             ggml_tensor * mask = is_swa ? inp_attn->get_kq_mask_swa() : inp_attn->get_kq_mask();
+-            mask = ggml_cont(ctx0, ggml_view_4d(ctx0, mask,
+-                    n_kv_flash, mask->ne[1], mask->ne[2], mask->ne[3],
+-                    mask->nb[1], mask->nb[2], mask->nb[3], 0));
+ 
+             cur = ggml_flash_attn_ext_banded(ctx0, q_fa, k_fa, v_fa, mask, rel_fa,
+-                    1.0f/float(head_dim), rel_extent);
++                    1.0f/float(head_dim), rel_extent, q_offset);
+             ggml_prec_set_acc(cur, GGML_PREC_F32);
+             res->add_fused_node({LLM_FUSED_OP_FLASH_ATTN, cur, il});
+ 
+diff --git a/tests/test-backend-ops.cpp b/tests/test-backend-ops.cpp
+index 4c918fa61..7fe4ae272 100644
+--- a/tests/test-backend-ops.cpp
++++ b/tests/test-backend-ops.cpp
+@@ -8760,9 +8760,10 @@ struct test_flash_attn_ext_banded : public test_case {
+     const ggml_type kv_type;
+     const ggml_type rel_type;
+     const bool strided;
++    const int64_t kv_pad; // masked rows past n_kv at the end of k, v and mask; the band stays anchored by q_offset
+ 
+     std::string vars() override {
+-        return VARS_TO_STR10(d, n_head, n_head_kv, n_q, n_kv, rel_extent, mask_kind, kv_type, rel_type, strided);
++        return VARS_TO_STR11(d, n_head, n_head_kv, n_q, n_kv, rel_extent, mask_kind, kv_type, rel_type, strided, kv_pad);
+     }
+ 
+     double max_nmse_err() override {
+@@ -8782,26 +8783,30 @@ struct test_flash_attn_ext_banded : public test_case {
+     test_flash_attn_ext_banded(
+             int64_t d, int64_t n_head, int64_t n_head_kv,
+             int64_t n_q, int64_t n_kv, int64_t rel_extent,
+-            int mask_kind, ggml_type kv_type, ggml_type rel_type, bool strided = false)
++            int mask_kind, ggml_type kv_type, ggml_type rel_type, bool strided = false, int64_t kv_pad = 0)
+         : d(d), n_head(n_head), n_head_kv(n_head_kv), n_q(n_q), n_kv(n_kv),
+-          rel_extent(rel_extent), mask_kind(mask_kind), kv_type(kv_type), rel_type(rel_type), strided(strided) {}
++          rel_extent(rel_extent), mask_kind(mask_kind), kv_type(kv_type), rel_type(rel_type), strided(strided), kv_pad(kv_pad) {
++        GGML_ASSERT(kv_pad == 0 || mask_kind != 0); // the padding rows are hidden by the mask
++    }
+ 
+     ggml_tensor * build_graph(ggml_context * ctx) override {
++        const int64_t n_kv_total = n_kv + kv_pad;
++
+         ggml_tensor * q = ggml_new_tensor_4d(ctx, GGML_TYPE_F32, d, n_q, n_head, 1);
+         ggml_tensor * k;
+         ggml_tensor * v;
+         ggml_tensor * r;
+         if (strided) {
+             // gaps between rows/heads force the kernels to use the 64-bit byte strides
+-            ggml_tensor * kb = ggml_new_tensor_4d(ctx, kv_type, 2*d, n_kv, n_head_kv, 1);
+-            ggml_tensor * vb = ggml_new_tensor_4d(ctx, kv_type, 2*d, n_kv, n_head_kv, 1);
++            ggml_tensor * kb = ggml_new_tensor_4d(ctx, kv_type, 2*d, n_kv_total, n_head_kv, 1);
++            ggml_tensor * vb = ggml_new_tensor_4d(ctx, kv_type, 2*d, n_kv_total, n_head_kv, 1);
+             ggml_tensor * rb = ggml_new_tensor_4d(ctx, rel_type, 2*rel_extent, n_head, n_q, 1);
+-            k = ggml_view_4d(ctx, kb, d, n_kv, n_head_kv, 1, kb->nb[1], kb->nb[2], kb->nb[3], 0);
+-            v = ggml_view_4d(ctx, vb, d, n_kv, n_head_kv, 1, vb->nb[1], vb->nb[2], vb->nb[3], 0);
++            k = ggml_view_4d(ctx, kb, d, n_kv_total, n_head_kv, 1, kb->nb[1], kb->nb[2], kb->nb[3], 0);
++            v = ggml_view_4d(ctx, vb, d, n_kv_total, n_head_kv, 1, vb->nb[1], vb->nb[2], vb->nb[3], 0);
+             r = ggml_view_4d(ctx, rb, rel_extent, n_head, n_q, 1, rb->nb[1], rb->nb[2], rb->nb[3], 0);
+         } else {
+-            k = ggml_new_tensor_4d(ctx, kv_type, d, n_kv, n_head_kv, 1);
+-            v = ggml_new_tensor_4d(ctx, kv_type, d, n_kv, n_head_kv, 1);
++            k = ggml_new_tensor_4d(ctx, kv_type, d, n_kv_total, n_head_kv, 1);
++            v = ggml_new_tensor_4d(ctx, kv_type, d, n_kv_total, n_head_kv, 1);
+             r = ggml_new_tensor_4d(ctx, rel_type, rel_extent, n_head, n_q, 1);
+         }
+         ggml_set_name(q, "q");
+@@ -8811,11 +8816,12 @@ struct test_flash_attn_ext_banded : public test_case {
+ 
+         ggml_tensor * m = nullptr;
+         if (mask_kind != 0) {
+-            m = ggml_new_tensor_4d(ctx, GGML_TYPE_F16, n_kv, n_q, 1, 1);
++            m = ggml_new_tensor_4d(ctx, GGML_TYPE_F16, n_kv_total, n_q, 1, 1);
+             ggml_set_name(m, "m");
+         }
+ 
+-        ggml_tensor * out = ggml_flash_attn_ext_banded(ctx, q, k, v, m, r, 1.0f/float(d), rel_extent);
++        // the queries are the tail of the n_kv logical keys; the kv_pad rows after them are masked
++        ggml_tensor * out = ggml_flash_attn_ext_banded(ctx, q, k, v, m, r, 1.0f/float(d), rel_extent, (int32_t) (n_kv - n_q));
+         ggml_prec_set_acc(out, GGML_PREC_F32);
+         ggml_set_name(out, "out");
+         return out;
+@@ -8824,12 +8830,13 @@ struct test_flash_attn_ext_banded : public test_case {
+     void initialize_tensors(ggml_context * ctx) override {
+         for (ggml_tensor * t = ggml_get_first_tensor(ctx); t != nullptr; t = ggml_get_next_tensor(ctx, t)) {
+             if (strcmp(t->name, "m") == 0) {
+-                std::vector<ggml_fp16_t> data(n_q*n_kv);
++                const int64_t n_kv_total = n_kv + kv_pad;
++                std::vector<ggml_fp16_t> data(n_q*n_kv_total);
+                 for (int64_t iq = 0; iq < n_q; ++iq) {
+-                    for (int64_t ik = 0; ik < n_kv; ++ik) {
++                    for (int64_t ik = 0; ik < n_kv_total; ++ik) {
+                         const int64_t rel_dist = iq + (n_kv - n_q) - ik;
+-                        const bool visible = rel_dist >= 0 && (mask_kind == 1 || rel_dist < rel_extent);
+-                        data[iq*n_kv + ik] = ggml_fp32_to_fp16(visible ? 0.0f : -INFINITY);
++                        const bool visible = ik < n_kv && rel_dist >= 0 && (mask_kind == 1 || rel_dist < rel_extent);
++                        data[iq*n_kv_total + ik] = ggml_fp32_to_fp16(visible ? 0.0f : -INFINITY);
+                     }
+                 }
+                 ggml_backend_tensor_set(t, data.data(), 0, data.size()*sizeof(data[0]));
+@@ -12405,6 +12412,11 @@ static std::vector<std::unique_ptr<test_case>> make_test_cases_eval() {
+     test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8,   7, 4100, 1024, 1, GGML_TYPE_F16,  GGML_TYPE_F32));
+     test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8, 512, 8192, 1024, 1, GGML_TYPE_Q8_0, GGML_TYPE_F32));
+     test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8,   1, 8192, 1024, 1, GGML_TYPE_Q8_0, GGML_TYPE_F32));
++    // k, v and mask padded past the logical n_kv (as the model does with its 256-padded cache views): the padding is
++    // masked and q_offset keeps the band anchored at n_kv - n_q
++    test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8, 512, 8209, 1024, 1, GGML_TYPE_F16, GGML_TYPE_F32, false, 239));
++    test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8,   1, 8209, 1024, 1, GGML_TYPE_F16, GGML_TYPE_F32, false, 239));
++    test_cases.emplace_back(new test_flash_attn_ext_banded(128,  8, 2,  17,   33,    8, 2, GGML_TYPE_F16, GGML_TYPE_F16, true,   31));
+ 
+     test_cases.emplace_back(new test_flash_attn_ext(256, 256, 4, {6, 1},   512, 512, true, false, 0, 0, GGML_PREC_F32, GGML_TYPE_F16, GGML_TYPE_F16));
+     test_cases.emplace_back(new test_flash_attn_ext(256, 256, 4, {6, 1},  4096,  64, true, false, 0, 0, GGML_PREC_F32, GGML_TYPE_F16, GGML_TYPE_F16));
+diff --git a/tests/test-flash-attn-bias.cpp b/tests/test-flash-attn-bias.cpp
+index ae0724f09..ef1da2756 100644
+--- a/tests/test-flash-attn-bias.cpp
++++ b/tests/test-flash-attn-bias.cpp
+@@ -172,7 +172,7 @@ static run_result run_graph(
+     ggml_tensor * out;
+     ggml_tensor * bias = nullptr;
+     if (!dense) {
+-        out = ggml_flash_attn_ext_banded(ctx.get(), q, k, v, m, r, 1.0f/float(c.d), c.extent);
++        out = ggml_flash_attn_ext_banded(ctx.get(), q, k, v, m, r, 1.0f/float(c.d), c.extent, (int32_t) (c.nkv - c.nq));
+     } else {
+         bias = ggml_new_tensor_4d(ctx.get(), GGML_TYPE_F32, c.nkv, c.nq, c.hq, c.n_batch);
+         ggml_set_name(bias, "dense_bias");
+@@ -384,7 +384,7 @@ static bool overflow_kernel_test(ggml_backend_t backend, const char * backend_ki
+     ggml_tensor * r = ggml_view_4d(ctx.get(), r_storage, c.extent, c.hq, c.nq, 1,
+         c.extent*sizeof(float), rel_nb2, rel_nb2*c.nq, 0);
+     ggml_tensor * out = ggml_flash_attn_ext_banded(
+-        ctx.get(), q, k, v, m, r, 1.0f/float(c.d), c.extent);
++        ctx.get(), q, k, v, m, r, 1.0f/float(c.d), c.extent, (int32_t) (c.nkv - c.nq));
+     ggml_backend_buffer_ptr buffer(ggml_backend_alloc_ctx_tensors(ctx.get(), backend));
+     GGML_ASSERT(buffer);
+ 

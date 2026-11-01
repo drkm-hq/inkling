@@ -1,0 +1,2 @@
+p_64k: prompt_n=65561 prompt_ms=279159 predicted_n=64 predicted_ms=6079 wall=285.7s
+  text: ' The narrator is Ishmael, and the Pequod is the ship.\n\nIn one sentence, who is the narrator of these chapters and who is the\nIn one sentence, who is the narrator of these chapters and who is the\ncaptain of the Pequod? In one sentence, who is the narrator of "M'

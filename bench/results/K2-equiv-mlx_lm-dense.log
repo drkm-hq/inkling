@@ -1,0 +1,7 @@
+[03:21:25] extras: {'hidden': '../results/K2-hidden', 'save_logprobs': '../results/K2-logprobs-mlx_lm-dense'}
+[03:21:34] mlx_lm 0.1.dev1+g1f7057ca5: lazy load 3.3s, chunked eval 5.8s, 82.4 GiB, active 82.4 GiB
+[03:21:34] run p_short_raw: 226 prompt tokens
+[03:21:43]   prefill 0.4s, decode 8.4s (15.2 tok/s), min margin 0.250
+[03:21:43]   text: ' Answer: The narrator is Ishmael; the ship is the Pequod.\n\nAnswer: Answer: The\n\nAnswer: Answer: The\n\nAnswer: Answer: Answer: The\n\nAnswer: Answer: Answer: The\n\nAnswer: Answer: Answer: The\n\nAnswer: Answ'
+[03:21:44] hidden states and routes written to ../results/K2-hidden
+[03:21:44] wrote <workdir>/bench/results/K2-equiv-mlx_lm-dense.json

@@ -1,0 +1,625 @@
+From 795968addb6481740cb97cf15b94925eac9bd206 Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Thu, 29 Oct 2026 00:17:59 -0400
+Subject: [PATCH 2/2] a3-review: adversarial server tests for the hybrid
+ prompt-cache gate (review only, not for submission)
+
+---
+ .../server/tests/unit/test_a3_hybrid_cache.py | 586 ++++++++++++++++++
+ tools/server/tests/utils.py                   |   3 +
+ 2 files changed, 589 insertions(+)
+ create mode 100644 tools/server/tests/unit/test_a3_hybrid_cache.py
+
+diff --git a/tools/server/tests/unit/test_a3_hybrid_cache.py b/tools/server/tests/unit/test_a3_hybrid_cache.py
+new file mode 100644
+index 000000000..82dbb3e7f
+--- /dev/null
++++ b/tools/server/tests/unit/test_a3_hybrid_cache.py
+@@ -0,0 +1,586 @@
++"""A3 adversarial cases for the server prompt-cache gate (branch server-hybrid-prompt-cache).
++
++Every case records the (cache_n, prompt_n) it observes per request and, when A3_OUT is set, writes them to
++<A3_OUT>/<case>-<A3_TAG>.json next to the server log, so the fixed, the baseline and the upstream-master binaries
++can be compared request by request. The asserted tuples are the ones the FIXED gate must produce; a baseline run
++is expected to fail some of them (that is the bug), and the json keeps the observed values either way.
++
++Output checks: the top-5 logprobs of the first predicted token of every cached request against the same prompt
++evaluated without the cache (slot 1 / a cleared slot), top-1 id equal, logprobs within 5e-2 (the cached request
++evaluates its suffix in a different ubatch split).
++"""
++import json
++import os
++import random
++
++import pytest
++from utils import *
++
++server: ServerProcess
++
++A3_OUT = os.environ.get("A3_OUT")
++A3_TAG = os.environ.get("A3_TAG", "run")
++
++WORDS = ("the quick brown fox jumps over lazy dog river mountain stone glass window paper candle "
++         "silver orange purple elephant lighthouse storm farmer sheep robot sonnet moonlight tax law "
++         "otter apple hill mill garden copper iron ladder bridge harbor island meadow forest valley "
++         "cloud thunder whisper marble feather lantern compass anchor ribbon velvet basket saddle").split()
++
++
++def words_text(n_words, seed):
++    rng = random.Random(seed)
++    return " ".join(rng.choice(WORDS) for _ in range(n_words))
++
++
++def record(name, obs, extra=None):
++    print(f"A3 {name} {A3_TAG}: {obs}")
++    if A3_OUT:
++        with open(os.path.join(A3_OUT, f"{name}-{A3_TAG}.json"), "w") as f:
++            json.dump({"obs": obs, "extra": extra or {}, "deviations": dict(DEVIATIONS)}, f, indent=1)
++    DEVIATIONS.clear()
++
++
++def with_log(s, name):
++    if A3_OUT:
++        s.debug = True
++        s.log_path = os.path.join(A3_OUT, f"{name}-{A3_TAG}.server.log")
++    return s
++
++
++def lfm2_server(name, n_swa=0, n_slots=2, n_ctx=4096, kv_unified=False, slot_save_path=None, ctx_shift=False,
++                cache_reuse=None):
++    s = ServerPreset.lfm2_hybrid()
++    s.n_slots = n_slots
++    s.n_ctx = n_ctx
++    s.n_batch = 64
++    s.n_ubatch = 32
++    s.cache_ram = 0
++    s.temperature = 0.0
++    s.kv_unified = kv_unified
++    if n_swa > 0:
++        s.override_kv = f"lfm2.attention.sliding_window=int:{n_swa}"
++    if slot_save_path:
++        s.slot_save_path = slot_save_path
++    if ctx_shift:
++        s.enable_ctx_shift = True
++    if cache_reuse is not None:
++        s.cache_reuse = cache_reuse
++    return with_log(s, name)
++
++
++class Client:
++    def __init__(self, srv):
++        self.s = srv
++
++    def tokenize(self, text):
++        res = self.s.make_request("POST", "/tokenize", data={"content": text})
++        assert res.status_code == 200
++        return res.body["tokens"]
++
++    # returns ((cache_n, prompt_n), sampled id, top-5 [(id, logprob)], body)
++    def completion(self, prompt, cache_prompt, id_slot, n_predict=1, **extra):
++        data = {"prompt": prompt, "id_slot": id_slot, "n_predict": n_predict, "n_probs": 5,
++                "cache_prompt": cache_prompt, "temperature": 0.0}
++        data.update(extra)
++        res = self.s.make_request("POST", "/completion", data=data)
++        assert res.status_code == 200, res.body
++        t = res.body["timings"]
++        probs = res.body["completion_probabilities"][0]
++        top = [(p["id"], p["logprob"]) for p in probs["top_logprobs"]]
++        return (t["cache_n"], t["prompt_n"]), probs["id"], top, res.body
++
++
++DEVIATIONS = {}
++
++
++def assert_same(top, expected, where="", tol=5e-2):
++    assert [tid for tid, _ in top] == [tid for tid, _ in expected], f"{where}: {top} vs {expected}"
++    dev = max(abs(lp - lp_expected) for (_, lp), (_, lp_expected) in zip(top, expected))
++    DEVIATIONS[where] = dev
++    assert dev <= tol, f"{where}: max |dlogprob| = {dev:.4f} > {tol}: {top} vs {expected}"
++
++
++def log_lines(name, needle):
++    if not A3_OUT:
++        return None
++    path = os.path.join(A3_OUT, f"{name}-{A3_TAG}.server.log")
++    with open(path, "rb") as f:
++        return sum(1 for line in f if needle.encode() in line)
++
++
++# 1. rewind to an early position of a 2K prompt, with an earlier checkpoint (the slot was primed with the first
++#    200 tokens, so checkpoints at 164 and 196 exist) and without one (the slot was primed with the 2K prompt)
++@pytest.mark.parametrize("n_swa", [0, 64])
++def test_a3_rewind_early(n_swa: int):
++    global server
++    name = f"rewind_early_swa{n_swa}"
++    server = lfm2_server(name, n_swa=n_swa)
++    server.start()
++    c = Client(server)
++
++    P = c.tokenize(words_text(2600, 1))[:2000]
++    ALT = c.tokenize(words_text(80, 2))[:40]
++    assert len(P) == 2000 and len(ALT) == 40
++    EDIT = P[:210] + ALT + P[250:]
++    assert len(EDIT) == 2000 and EDIT[210] != P[210]
++
++    obs = []
++
++    def cached(prompt, cache_prompt=True):
++        r = c.completion(prompt, cache_prompt, 0)
++        obs.append(r[0])
++        return r
++
++    ref_P = c.completion(P, False, 1)
++    ref_E = c.completion(EDIT, False, 1)
++
++    cached(P[:200])                                   # (0, 200): checkpoints at 164 and 196
++    r = cached(P)                                     # strict extension: (200, 1800)
++    assert_same(r[2], ref_P[2], "extension 200->2000")
++    r = cached(EDIT)                                  # rewind to 210: the checkpoint at 196 -> (196, 1804)
++    assert_same(r[2], ref_E[2], "edit at 210 with an early checkpoint")
++    cached(P, cache_prompt=False)                     # fresh slot: checkpoints at 1964 and 1996 only
++    r = cached(EDIT)                                  # rewind to 210 before every checkpoint -> (0, 2000)
++    assert_same(r[2], ref_E[2], "edit at 210 without an early checkpoint")
++
++    record(name, obs)
++    assert obs == [(0, 200), (200, 1800), (196, 1804), (0, 2000), (0, 2000)], obs
++
++
++# 2. two slots alternating, non-unified and unified KV: each slot reuses its own state
++@pytest.mark.parametrize("kv_unified", [False, True])
++def test_a3_two_slots(kv_unified: bool):
++    global server
++    name = f"two_slots_unified{int(kv_unified)}"
++    server = lfm2_server(name, n_swa=64, kv_unified=kv_unified)
++    server.start()
++    c = Client(server)
++
++    P0 = c.tokenize(words_text(400, 3))[:300]
++    P1 = c.tokenize(words_text(400, 4))[:300]
++    E0 = c.tokenize(words_text(40, 5))[:25]
++    E1 = c.tokenize(words_text(40, 6))[:25]
++    F = c.tokenize(words_text(40, 7))[:20]
++    assert P0 != P1
++
++    # references first (an uncached request clears the slot it runs on)
++    ref_0 = c.completion(P0 + E0, False, 0)
++    ref_1 = c.completion(P1 + E1, False, 1)
++    ref_0f = c.completion(P0 + E0 + F, False, 0)
++
++    obs = []
++
++    def cached(prompt, id_slot):
++        r = c.completion(prompt, True, id_slot)
++        obs.append((id_slot,) + r[0])
++        return r
++
++    cached(P0, 0)                                     # slot 0 held P0 + E0 + F from the reference: (0, 300) after a reset
++    cached(P1, 1)                                     # slot 1 held P1 + E1 from the reference: shrink -> its checkpoint at 289
++    r = cached(P0 + E0, 0)
++    assert_same(r[2], ref_0[2], "slot 0 extension")
++    r = cached(P1 + E1, 1)
++    assert_same(r[2], ref_1[2], "slot 1 extension")
++    r = cached(P0 + E0 + F, 0)
++    assert_same(r[2], ref_0f[2], "slot 0 second extension")
++    r = cached(P1 + E1, 1)                            # identical prompt on slot 1: checkpoint 4 before the end
++    assert_same(r[2], ref_1[2], "slot 1 identical")
++
++    record(name, obs)
++    assert obs == [(0, 0, 300), (1, 289, 11), (0, 300, 25), (1, 300, 25), (0, 325, 20), (1, 321, 4)], obs
++
++
++# 3. cache_prompt: false clears, and the slot keeps the uncached prompt for the next cached request
++@pytest.mark.parametrize("n_swa", [0, 64])
++def test_a3_cache_prompt_false(n_swa: int):
++    global server
++    name = f"cache_prompt_false_swa{n_swa}"
++    server = lfm2_server(name, n_swa=n_swa)
++    server.start()
++    c = Client(server)
++
++    P = c.tokenize(words_text(400, 8))[:300]
++    E = c.tokenize(words_text(40, 9))[:30]
++    F = c.tokenize(words_text(40, 10))[:20]
++
++    ref_PEF = c.completion(P + E + F, False, 1)
++
++    obs = []
++
++    def req(prompt, cache_prompt):
++        r = c.completion(prompt, cache_prompt, 0)
++        obs.append(r[0])
++        return r
++
++    req(P, True)
++    req(P + E, False)
++    r = req(P + E + F, True)                          # the slot holds P + E from the uncached request
++    assert_same(r[2], ref_PEF[2], "extension after an uncached request")
++    req(P + E + F, False)
++    req(P + E + F, False)
++
++    record(name, obs)
++    assert obs == [(0, 300), (0, 330), (330, 20), (0, 350), (0, 350)], obs
++
++
++# 4. a prompt that is a prefix of the cached one
++@pytest.mark.parametrize("n_swa", [0, 64])
++def test_a3_shrink(n_swa: int):
++    global server
++    name = f"shrink_swa{n_swa}"
++    server = lfm2_server(name, n_swa=n_swa)
++    server.start()
++    c = Client(server)
++
++    P = c.tokenize(words_text(400, 11))[:300]
++
++    refs = {n: c.completion(P[:n], False, 1) for n in (298, 250, 296)}
++
++    obs = []
++
++    def cached(prompt):
++        r = c.completion(prompt, True, 0)
++        obs.append(r[0])
++        return r
++
++    cached(P)                                         # (0, 300): checkpoints at 264 and 296
++    r = cached(P[:298])                               # shrink by 2: the checkpoint at 296 -> (296, 2)
++    assert_same(r[2], refs[298][2], "shrink by 2", tol=0.25)
++    r = cached(P[:250])                               # shrink below every checkpoint -> (0, 250)
++    assert_same(r[2], refs[250][2], "shrink by 50")
++    r = cached(P[:298])                               # extension of the shrunk prompt -> (250, 48), checkpoints at 262 and 294
++    assert_same(r[2], refs[298][2], "re-extension")
++    r = cached(P[:296])                               # shrink by 2 again -> (294, 2)
++    assert_same(r[2], refs[296][2], "shrink by 2 again", tol=0.25)
++
++    record(name, obs)
++    assert obs == [(0, 300), (296, 2), (0, 250), (250, 48), (294, 2)], obs
++
++
++# 5. a sliding window smaller than the extension (and smaller than n_ubatch + 4, so the unfixed server can still
++#    fall back to the checkpoint n_ubatch + 4 tokens back): the output must match the reference either way
++@pytest.mark.parametrize("n_swa", [4, 8, 16])
++def test_a3_swa_smaller_than_extension(n_swa: int):
++    global server
++    name = f"swa_small_{n_swa}"
++    server = lfm2_server(name, n_swa=n_swa)
++    server.start()
++    c = Client(server)
++
++    B = c.tokenize(words_text(140, 12))[:100]
++    E = c.tokenize(words_text(60, 13))[:40]
++    ALT = c.tokenize(words_text(40, 14))[:12]
++    T1 = c.tokenize("harbor")[:1]
++    T2 = c.tokenize("anchor")[:1]
++    assert E[20] != ALT[0]
++
++    ref_BE = c.completion(B + E, False, 1)
++    ref_BE1 = c.completion(B + E + T1, False, 1)
++    ref_BE12 = c.completion(B + E + T1 + T2, False, 1)
++    ref_RW = c.completion(B + E[:20] + ALT, False, 1)
++
++    obs = []
++
++    def cached(prompt):
++        r = c.completion(prompt, True, 0)
++        obs.append(r[0])
++        return r
++
++    cached(B)                                         # (0, 100): checkpoints at 64 and 96
++    r = cached(B + E)                                 # (100, 40): checkpoints at 104 and 136
++    assert_same(r[2], ref_BE[2], "extension longer than the window")
++    r = cached(B + E)                                 # (136, 4)
++    assert_same(r[2], ref_BE[2], "identical")
++    r = cached(B + E + T1)                            # one-token extension: (140, 1)
++    assert_same(r[2], ref_BE1[2], "+1", tol=0.25)
++    r = cached(B + E + T1 + T2)                       # (141, 1)
++    assert_same(r[2], ref_BE12[2], "+1 +1", tol=0.25)
++    r = cached(B + E[:20] + ALT)                      # rewind into the extension: the checkpoint at 104 -> (104, 28)
++    assert_same(r[2], ref_RW[2], "rewind into the extension")
++
++    record(name, obs)
++    assert obs == [(0, 100), (100, 40), (136, 4), (140, 1), (141, 1), (104, 28)], obs
++
++
++# 6. slot save / restore: the restored live state is a strict-extension base, the restored checkpoints a rewind base
++def test_a3_slot_save_restore(tmp_path):
++    global server
++    name = "slot_save_restore_swa64"
++    server = lfm2_server(name, n_swa=64, slot_save_path=str(tmp_path))
++    server.start()
++    c = Client(server)
++
++    P = c.tokenize(words_text(400, 15))[:300]
++    E = c.tokenize(words_text(40, 16))[:30]
++
++    ref_PE = c.completion(P + E, False, 1)
++    ref_P = c.completion(P, False, 1)
++
++    obs = []
++
++    def cached(prompt, id_slot):
++        r = c.completion(prompt, True, id_slot)
++        obs.append((id_slot,) + r[0])
++        return r
++
++    cached(P, 0)                                      # (0, 300) on slot 0, checkpoints at 264 and 296
++    res = server.make_request("POST", "/slots/0?action=save", data={"filename": "a3_slot0.bin"})
++    assert res.status_code == 200, res.body
++    res = server.make_request("POST", "/slots/1?action=restore", data={"filename": "a3_slot0.bin"})
++    assert res.status_code == 200, res.body
++    assert res.body["n_restored"] == 300
++
++    r = cached(P + E, 1)                              # strict extension of the restored state -> (300, 30)
++    assert_same(r[2], ref_PE[2], "extension on the restored slot")
++    r = cached(P, 1)                                  # identical: the checkpoint 4 before the end, from the file -> (296, 4)
++    assert_same(r[2], ref_P[2], "identical on the restored slot")
++
++    record(name, obs, {"restore": res.body})
++    assert obs == [(0, 0, 300), (1, 300, 30), (1, 296, 4)], obs
++
++
++# 7. context shift on the hybrid model (the server accepts --context-shift for it): no crash, state recorded
++@pytest.mark.parametrize("n_swa", [0, 64])
++def test_a3_ctx_shift_smoke(n_swa: int):
++    global server
++    name = f"ctx_shift_swa{n_swa}"
++    server = lfm2_server(name, n_swa=n_swa, n_slots=1, n_ctx=256, ctx_shift=True)
++    server.start()
++    c = Client(server)
++
++    P = c.tokenize(words_text(300, 17))[:200]
++
++    obs = []
++    r = c.completion(P, True, 0, n_predict=120, n_keep=10, ignore_eos=True)
++    obs.append(r[0] + (r[3]["timings"]["predicted_n"],))
++    gen = r[3].get("tokens") or []
++    r = c.completion(P, True, 0)                      # after the shift the slot's token list no longer starts with P
++    obs.append(r[0])
++    r = c.completion(P[:100], True, 0)
++    obs.append(r[0])
++
++    record(name, obs, {"n_gen": len(gen)})
++    assert obs[0][2] == 120
++
++
++# 8. --cache-reuse on a hybrid model (the server accepts it): a removed chunk shifts the attention cache but the
++#    recurrent state keeps the removed tokens. Recorded, not asserted against the reference: this is the
++#    pre-existing approximation of chunk reuse, which the fixed gate now accepts for SWA hybrids as it already
++#    did for hybrids without SWA.
++@pytest.mark.parametrize("n_swa", [0, 64])
++def test_a3_cache_reuse_hybrid(n_swa: int):
++    global server
++    name = f"cache_reuse_swa{n_swa}"
++    server = lfm2_server(name, n_swa=n_swa, cache_reuse=16)
++    server.start()
++    c = Client(server)
++
++    P = c.tokenize(words_text(400, 18))[:300]
++    E = c.tokenize(words_text(40, 19))[:20]
++    Q = P[:100] + P[150:] + E
++
++    ref_Q = c.completion(Q, False, 1)
++
++    obs = []
++    r = c.completion(P, True, 0)
++    obs.append(r[0])
++    r = c.completion(Q, True, 0)
++    obs.append(r[0])
++    same_top1 = r[1] == ref_Q[1]
++    same_logprobs = True
++    try:
++        assert_same(r[2], ref_Q[2])
++    except AssertionError:
++        same_logprobs = False
++
++    record(name, obs, {"same_top1": same_top1, "same_logprobs": same_logprobs, "cached_top": r[2], "ref_top": ref_Q[2]})
++    assert obs[0] == (0, 300)
++
++
++# 9. a dense model (plain KV, n_swa = 0): decisions and outputs must be identical on every binary, no checkpoints
++def test_a3_dense_unchanged():
++    global server
++    name = "dense_tinyllama2"
++    server = with_log(ServerPreset.tinyllama2(), name)
++    server.n_ctx = 2048
++    server.cache_ram = 0
++    server.temperature = 0.0
++    server.start()
++    c = Client(server)
++
++    P = c.tokenize(words_text(300, 20))[:300]
++    E = c.tokenize(words_text(40, 21))[:30]
++    ALT = c.tokenize(words_text(40, 22))[:10]
++    assert E[20] != ALT[0]
++
++    refs = {
++        "PE": c.completion(P + E, False, 1),
++        "RW": c.completion(P + E[:20] + ALT, False, 1),
++        "S": c.completion(P[:250], False, 1),
++    }
++
++    obs = []
++
++    def cached(prompt):
++        r = c.completion(prompt, True, 0)
++        obs.append(r[0])
++        return r
++
++    cached(P)
++    r = cached(P + E)
++    assert_same(r[2], refs["PE"][2], "dense extension")
++    r = cached(P + E)
++    assert_same(r[2], refs["PE"][2], "dense identical", tol=0.25)
++    r = cached(P + E[:20] + ALT)
++    assert_same(r[2], refs["RW"][2], "dense rewind")
++    r = cached(P[:250])
++    assert_same(r[2], refs["S"][2], "dense shrink", tol=0.25)
++
++    server.stop()
++    n_force = log_lines(name, "forcing full prompt re-processing")
++    n_ckpt = (log_lines(name, "created context checkpoint") or 0) + (log_lines(name, "restored context checkpoint") or 0)
++    record(name, obs, {"log_forcing_full": n_force, "log_checkpoint_lines": n_ckpt})
++    assert obs == [(0, 300), (300, 30), (329, 1), (320, 10), (249, 1)], obs
++    if A3_OUT:
++        assert n_force == 0 and n_ckpt == 0
++
++
++# 10. a plain SWA model (gemma3, PART seq_rm, n_swa = 4096): the back-off must still apply; prompts past the window
++#     so the window start has advanced. Decisions recorded and compared between binaries, outputs checked.
++def test_a3_swa_part_unchanged():
++    global server
++    name = "swa_part_tinygemma3"
++    server = with_log(ServerPreset.tinygemma3(), name)
++    server.no_mmproj = True
++    server.n_ctx = 16384
++    server.n_batch = 512
++    server.n_ubatch = 512
++    server.n_slots = 2
++    server.cache_ram = 0
++    server.temperature = 0.0
++    server.start()
++    c = Client(server)
++
++    P = c.tokenize(words_text(5000, 23))[:4300]
++    E = c.tokenize(words_text(40, 24))[:30]
++    ALT = c.tokenize(words_text(40, 25))[:10]
++    assert len(P) == 4300 and E[20] != ALT[0]
++
++    refs = {
++        "PE": c.completion(P + E, False, 1),
++        "RW": c.completion(P + E[:20] + ALT, False, 1),
++        "S": c.completion(P[:3000], False, 1),
++    }
++
++    obs = []
++
++    def cached(prompt):
++        r = c.completion(prompt, True, 0)
++        obs.append(r[0])
++        return r
++
++    cached(P)
++    r = cached(P + E)
++    assert_same(r[2], refs["PE"][2], "swa extension")
++    r = cached(P + E)
++    assert_same(r[2], refs["PE"][2], "swa identical")
++    r = cached(P + E[:20] + ALT)
++    assert_same(r[2], refs["RW"][2], "swa rewind")
++    r = cached(P[:3000])
++    assert_same(r[2], refs["S"][2], "swa shrink")
++
++    server.stop()
++    record(name, obs, {"log_forcing_full": log_lines(name, "forcing full prompt re-processing"),
++                       "log_restored": log_lines(name, "restored context checkpoint")})
++    assert obs[0] == (0, 4300) and obs[1][0] + obs[1][1] == 4330
++
++
++# 11. small-suffix deviation: 12-token suffixes from the live state and from a checkpoint against the uncached
++#     evaluation (bounded: the ubatch splits of the prime and of the reference differ, see the note at the end).
++#     - live state: prime P[:128], then P[:140] -> the suffix [128, 140) is one ubatch in both paths
++#     - checkpoint: prime P[:132] (checkpoints at 96 and 128), then P[:128] + Z -> the restored checkpoint at 128
++#     a mismatch beyond float noise is a wrong state; a run-to-run control measures the backend's own noise
++@pytest.mark.parametrize("n_swa", [0, 64])
++def test_a3_small_suffix(n_swa: int):
++    global server
++    name = f"small_suffix_swa{n_swa}"
++    server = lfm2_server(name, n_swa=n_swa)
++    server.start()
++    c = Client(server)
++
++    P = c.tokenize(words_text(200, 26))[:140]
++    Z = c.tokenize(words_text(40, 27))[:12]
++    assert len(P) == 140 and Z[0] != P[128]
++    Y = P[:128] + Z
++
++    ref_P = c.completion(P, False, 1)
++    ref_P2 = c.completion(P, False, 1)                # determinism control
++    ref_Y = c.completion(Y, False, 1)
++
++    obs = []
++
++    def cached(prompt):
++        r = c.completion(prompt, True, 0)
++        obs.append(r[0])
++        return r
++
++    cached(P[:128])                                   # (0, 128)
++    r_live = cached(P)                                # (128, 12): the live state + one ubatch
++    cached(P[:132])                                   # the slot holds P (140): shrink -> (128, 4); checkpoints at 96 and 128 (fresh)
++    r_ckpt = cached(Y)                                # rewind at 128 -> the checkpoint at 128 -> (128, 12)
++
++    def dev(a, b):
++        assert [t for t, _ in a] == [t for t, _ in b], (a, b)
++        return max(abs(x - y) for (_, x), (_, y) in zip(a, b))
++
++    d_control = dev(ref_P[2], ref_P2[2])
++    d_live = dev(r_live[2], ref_P[2])
++    d_ckpt = dev(r_ckpt[2], ref_Y[2])
++    record(name, obs, {"dev_control": d_control, "dev_live": d_live, "dev_ckpt": d_ckpt,
++                       "live_top": r_live[2], "ref_top": ref_P[2], "ckpt_top": r_ckpt[2], "ref_y_top": ref_Y[2]})
++    assert obs == [(0, 128), (128, 12), (128, 4), (128, 12)], obs
++    # the prime (128 or 132 tokens) and the reference (140) are split into ubatches at different points (the batch
++    # breaks 36 and 4 tokens before the end of each prompt), so this is a bounded check, not an exact one
++    assert d_live <= 0.05 and d_ckpt <= 0.05 and d_control == 0.0, (d_live, d_ckpt, d_control)
++
++
++# 12. exactness with identical ubatch splits (n_batch 64, n_ubatch 32, prompts of 164 = 128 + 36 tokens): the uncached
++#     X leaves checkpoints at 128 and 160; X' = X[:128] + 36 other tokens restores the one at 128 and evaluates the
++#     batches [128, 160) and [160, 164) exactly as the uncached X' does, so the logits must be identical. X' again
++#     restores the checkpoint at 160 (saved by the cached X' request) and evaluates [160, 164) -> identical too.
++@pytest.mark.parametrize("n_swa", [0, 64])
++def test_a3_identical_splits_exact(n_swa: int):
++    global server
++    name = f"identical_splits_swa{n_swa}"
++    server = lfm2_server(name, n_swa=n_swa)           # n_batch 64, n_ubatch 32: the batches [0,64) [64,128) [128,160) [160,164)
++    server.start()
++    c = Client(server)
++
++    P = c.tokenize(words_text(220, 28))[:164]
++    Z = c.tokenize(words_text(60, 29))[:36]
++    assert len(P) == 164 and len(Z) == 36 and Z[0] != P[128]
++    X = P
++    Xp = P[:128] + Z
++
++    obs = []
++
++    def req(prompt, cache_prompt, id_slot=0):
++        r = c.completion(prompt, cache_prompt, id_slot)
++        obs.append(r[0])
++        return r
++
++    ref_Xp = req(Xp, False, 1)                        # slot 1: (0, 164)
++    req(X, False, 0)                                  # slot 0: (0, 164), checkpoints at 128 and 160
++    r1 = req(Xp, True, 0)                             # rewind at 128 -> checkpoint 128 -> (128, 36): batches [128,160) [160,164)
++    r2 = req(Xp, True, 0)                             # identical -> checkpoint 160 -> (160, 4): batch [160, 164)
++
++    def dev(a, b):
++        assert [t for t, _ in a] == [t for t, _ in b], (a, b)
++        return max(abs(x - y) for (_, x), (_, y) in zip(a, b))
++
++    d1 = dev(r1[2], ref_Xp[2])
++    d2 = dev(r2[2], r1[2])
++    record(name, obs, {"dev_ckpt_vs_uncached": d1, "dev_again_vs_first": d2, "top_cached": r1[2], "top_ref": ref_Xp[2]})
++    assert obs == [(0, 164), (0, 164), (128, 36), (160, 4)], obs
++    assert d1 == 0.0, d1
++    assert d2 <= 1e-4, d2                             # the restored SWA cells can land in another order: float noise
+diff --git a/tools/server/tests/utils.py b/tools/server/tests/utils.py
+index 955c217ba..1f819d2ad 100644
+--- a/tools/server/tests/utils.py
++++ b/tools/server/tests/utils.py
+@@ -117,6 +117,7 @@ class ServerProcess:
+     media_path: str | None = None
+     sleep_idle_seconds: int | None = None
+     cache_ram: int | None = None
++    cache_reuse: int | None = None
+     override_kv: str | None = None
+     no_cache_idle_slots: bool = False
+     log_path: str | None = None
+@@ -293,6 +294,8 @@ class ServerProcess:
+             server_args.extend(["--sleep-idle-seconds", self.sleep_idle_seconds])
+         if self.cache_ram is not None:
+             server_args.extend(["--cache-ram", self.cache_ram])
++        if self.cache_reuse is not None:
++            server_args.extend(["--cache-reuse", self.cache_reuse])
+         if self.override_kv:
+             server_args.extend(["--override-kv", self.override_kv])
+         if self.no_cache_idle_slots:

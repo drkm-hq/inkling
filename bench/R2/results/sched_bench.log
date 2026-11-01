@@ -1,0 +1,8 @@
+# started 2026-10-29T01:57:07Z loadavg={ 77.07 36.62 19.44 }
+RESULT sched variant=fa n_q=1 n_kv_global=8192 n_kv_swa=768 threads=12 nodes=252 splits=1 us_mean=15461.1 us_median=14263.2 us_min=3517.0
+RESULT sched variant=banded n_q=1 n_kv_global=8192 n_kv_swa=768 threads=12 nodes=252 splits=85 us_mean=298629.7 us_median=98339.6 us_min=41984.4
+RESULT sched variant=fa n_q=1 n_kv_global=32768 n_kv_swa=768 threads=12 nodes=252 splits=1 us_mean=7356.3 us_median=7690.0 us_min=4264.9
+RESULT sched variant=banded n_q=1 n_kv_global=32768 n_kv_swa=768 threads=12 nodes=252 splits=85 us_mean=341724.4 us_median=149178.0 us_min=93741.8
+RESULT sched variant=fa n_q=512 n_kv_global=8192 n_kv_swa=1024 threads=18 nodes=252 splits=1 us_mean=59261.6 us_median=55146.9 us_min=48120.5
+RESULT sched variant=banded n_q=512 n_kv_global=8192 n_kv_swa=1024 threads=18 nodes=252 splits=85 us_mean=12031372.0 us_median=12348635.0 us_min=11073690.2
+# finished 2026-10-29T01:58:58Z loadavg={ 50.85 38.19 22.05 }

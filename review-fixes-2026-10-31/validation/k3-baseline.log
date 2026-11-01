@@ -1,0 +1,561 @@
+.F                                                                       [100%]
+=================================== FAILURES ===================================
+___________________ test_completion_cache_hybrid_memory[64] ____________________
+
+n_swa = 64
+
+    @pytest.mark.parametrize("n_swa", [0, 64])
+    def test_completion_cache_hybrid_memory(n_swa: int):
+        global server
+        server = ServerPreset.lfm2_hybrid()
+        server.n_slots = 2
+        server.n_batch = 64
+        server.n_ubatch = 32
+        server.cache_ram = 0
+        server.temperature = 0.0
+        if n_swa > 0:
+            server.override_kv = f"lfm2.attention.sliding_window=int:{n_swa}"
+        server.start()
+    
+        def tokenize(content):
+            res = server.make_request("POST", "/tokenize", data={"content": content})
+            assert res.status_code == 200
+            return res.body["tokens"]
+    
+        # (cache_n, prompt_n, the sampled token, the top logprobs it was sampled from)
+        def completion(prompt, cache_prompt, id_slot):
+            res = server.make_request("POST", "/completion", data={
+                "prompt": prompt,
+                "id_slot": id_slot,
+                "n_predict": 1,
+                "n_probs": 5,
+                "cache_prompt": cache_prompt,
+            })
+            assert res.status_code == 200
+            timings = res.body["timings"]
+            probs = res.body["completion_probabilities"][0]
+            top = [(p["id"], p["logprob"]) for p in probs["top_logprobs"]]
+            return timings["cache_n"], timings["prompt_n"], probs["id"], top
+    
+        # the cached requests use slot 0, the reference requests without the cache use slot 1
+        def cached(prompt):
+            return completion(prompt, True, 0)
+    
+        def reference(prompt):
+            return completion(prompt, False, 1)[3]
+    
+        # the cached request evaluates its tokens in fewer ubatches than the reference, so the logprobs differ by the
+        # accumulation order (up to a few tenths of a nat on a short suffix of this Q4_K_M model): same greedy token,
+        # and the logprobs of the candidates both lists have within 0.2 nats
+        def assert_same_output(top, expected):
+            assert top[0][0] == expected[0][0]
+            lp_expected = dict(expected)
+            common = [(tid, lp) for tid, lp in top if tid in lp_expected]
+            assert len(common) >= 3
+            for tid, lp in common:
+                assert lp == pytest.approx(lp_expected[tid], abs=0.2)
+    
+        base = tokenize("Purple elephants quietly compose sonnets about tax law in the moonlight while seven tiny robots "
+                        "repair the broken lighthouse lens before the storm arrives and the farmer counts his sheep")
+        ext  = tokenize("Green apples rolled down the hill toward the river where a curious otter collected them")
+        alt  = tokenize("under a flat stone near the old mill")
+        n_base = len(base)
+        assert n_base > server.n_ubatch + 8 and len(ext) > 8 and len(alt) > 4
+    
+        # prime the cache: the slot keeps the prompt (the sampled token is not decoded, so it is not kept)
+        cache_n, prompt_n, _, _ = cached(base)
+        assert (cache_n, prompt_n) == (0, n_base)
+    
+        # a strict extension reuses the whole cached prompt: only the new tokens are evaluated
+        assert ext[-3] != alt[0] and ext[2] != alt[0]
+        n_full = n_base + len(ext)
+    
+        cache_n, prompt_n, _, top = cached(base + ext)
+>       assert (cache_n, prompt_n) == (n_base, len(ext))
+E       assert (0, 93) == (66, 27)
+E         
+E         At index 0 diff: 0 != 66
+E         Use -v to get more diff
+
+unit/test_completion.py:843: AssertionError
+----------------------------- Captured stdout call -----------------------------
+tests: starting server with: <workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server --port 18971 --temp 0.0 --seed 42 --host 127.0.0.1 --offline --model <workdir> --batch-size 64 --ubatch-size 32 --n-gpu-layers 99 --no-slots --alias lfm2-hybrid --ctx-size 512 --parallel 2 --n-predict 16 --no-jinja --cache-ram 0 --override-kv lfm2.attention.sliding_window=int:64
+server pid=15721, pytest pid=15719
+0.00.041.155 I srv  llama_server: initializing ...
+0.00.041.162 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.041.305 W srv  server_setup: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.042.719 I srv    load_model: loading model '<workdir>'
+Response from server {
+  "error": {
+    "message": "Loading model",
+    "type": "unavailable_error",
+    "code": 503
+  }
+}
+0.00.051.270 I cmn          init: llama threadpool init, n_threads = 6
+0.00.054.038 I srv    load_model: initializing, n_slots = 2, n_ctx_slot = 256, kv_unified = 'false'
+0.00.054.057 W srv          init: --cache-idle-slots requires --cache-ram, disabling
+0.00.054.818 I srv  server_run_i: model loaded
+0.00.054.825 I srv  server_on_li: listening on http://127.0.0.1:18971
+Response from server {
+  "status": "ok"
+}
+Response from server {
+  "tokens": [
+    557,
+    827,
+    1302,
+    821,
+    799,
+    1111,
+    1648,
+    730,
+    862,
+    2596,
+    876,
+    922,
+    5021,
+    2153,
+    587,
+    1808,
+    1337,
+    5145,
+    3036,
+    797,
+    779,
+    3399,
+    772,
+    585,
+    961,
+    593,
+    2158,
+    7578,
+    766,
+    5708,
+    1232,
+    575,
+    2548,
+    840,
+    589,
+    1694,
+    779,
+    794,
+    805,
+    3449,
+    809,
+    961,
+    881,
+    2107,
+    809,
+    771,
+    592,
+    2076,
+    779,
+    878,
+    1059,
+    1138,
+    591,
+    1871,
+    810,
+    779,
+    792,
+    788,
+    1187,
+    781,
+    1246,
+    592,
+    1210,
+    775,
+    773,
+    1201
+  ]
+}
+Response from server {
+  "tokens": [
+    548,
+    782,
+    771,
+    1514,
+    2721,
+    1232,
+    1213,
+    791,
+    2208,
+    779,
+    812,
+    937,
+    7069,
+    779,
+    8008,
+    1695,
+    768,
+    781,
+    827,
+    1755,
+    4785,
+    886,
+    1475,
+    799,
+    822,
+    791,
+    1377
+  ]
+}
+Response from server {
+  "tokens": [
+    7755,
+    768,
+    1434,
+    776,
+    878,
+    1174,
+    3627,
+    779,
+    2731,
+    2651
+  ]
+}
+0.00.062.805 I slot get_availabl: id  0 | task -1 | selected slot by id (0)
+0.00.062.816 I slot launch_slot_: id  0 | task 0 | processing task, is_child = 0
+0.00.068.396 I slot print_timing: id  0 | task 0 | prompt eval time =       5.55 ms /    66 tokens (    0.08 ms per token, 11891.89 tokens per second)
+0.00.068.398 I slot print_timing: id  0 | task 0 |        eval time =       0.00 ms /     1 tokens (    0.00 ms per token,     0.00 tokens per second)
+0.00.068.399 I slot print_timing: id  0 | task 0 |       total time =       5.55 ms /    67 tokens
+0.00.068.399 I slot print_timing: id  0 | task 0 |    graphs reused =          1
+0.00.068.399 I slot print_timing: id  0 | task 0 |   graph reallocs =          0    /     0        (same size) / (changed size)
+0.00.068.408 I slot      release: id  0 | task 0 | stop processing: n_tokens = 66, truncated = 0
+Response from server {
+  "index": 0,
+  "content": " in",
+  "tokens": [],
+  "id_slot": 0,
+  "stop": true,
+  "model": "lfm2-hybrid",
+  "tokens_predicted": 1,
+  "tokens_evaluated": 66,
+  "generation_settings": {
+    "seed": 42,
+    "temperature": 0.0,
+    "dynatemp_range": 0.0,
+    "dynatemp_exponent": 1.0,
+    "top_k": 40,
+    "top_p": 0.949999988079071,
+    "min_p": 0.05000000074505806,
+    "top_n_sigma": -1.0,
+    "xtc_probability": 0.0,
+    "xtc_threshold": 0.10000000149011612,
+    "typical_p": 1.0,
+    "repeat_last_n": 64,
+    "repeat_penalty": 1.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0,
+    "dry_multiplier": 0.0,
+    "dry_base": 1.75,
+    "dry_allowed_length": 2,
+    "dry_penalty_last_n": 64,
+    "dry_sequence_breakers": [
+      "\n",
+      ":",
+      "\"",
+      "*"
+    ],
+    "mirostat": 0,
+    "mirostat_tau": 5.0,
+    "mirostat_eta": 0.10000000149011612,
+    "adaptive_target": -1.0,
+    "adaptive_decay": 0.8999999761581421,
+    "stop": [],
+    "max_tokens": 1,
+    "n_predict": 1,
+    "n_keep": 0,
+    "n_discard": 0,
+    "ignore_eos": false,
+    "stream": false,
+    "logit_bias": [],
+    "n_probs": 5,
+    "min_keep": 0,
+    "grammar": "",
+    "grammar_lazy": false,
+    "grammar_triggers": [],
+    "preserved_tokens": [],
+    "chat_format": "Content-only",
+    "reasoning_format": "deepseek",
+    "reasoning_in_content": false,
+    "generation_prompt": "",
+    "samplers": [
+      "penalties",
+      "dry",
+      "top_n_sigma",
+      "top_k",
+      "typ_p",
+      "top_p",
+      "min_p",
+      "xtc",
+      "temperature"
+    ],
+    "speculative.types": "none",
+    "timings_per_token": false,
+    "post_sampling_probs": false,
+    "backend_sampling": false,
+    "lora": []
+  },
+  "prompt": "Purple elephants quietly compose sonnets about tax law in the moonlight while seven tiny robots repair the broken lighthouse lens before the storm arrives and the farmer counts his sheep",
+  "has_new_line": false,
+  "truncated": false,
+  "stop_type": "limit",
+  "stopping_word": "",
+  "tokens_cached": 66,
+  "timings": {
+    "cache_n": 0,
+    "prompt_n": 66,
+    "prompt_ms": 5.55,
+    "prompt_per_token_ms": 0.08409090909090909,
+    "prompt_per_second": 11891.891891891892,
+    "predicted_n": 1,
+    "predicted_ms": 0.001,
+    "predicted_per_token_ms": 0.0,
+    "predicted_per_second": 0.0
+  },
+  "completion_probabilities": [
+    {
+      "id": 797,
+      "token": " in",
+      "bytes": [
+        32,
+        105,
+        110
+      ],
+      "logprob": -1.2721542119979858,
+      "top_logprobs": [
+        {
+          "id": 797,
+          "token": " in",
+          "bytes": [
+            32,
+            105,
+            110
+          ],
+          "logprob": -1.2721542119979858
+        },
+        {
+          "id": 769,
+          "token": "in",
+          "bytes": [
+            105,
+            110
+          ],
+          "logprob": -2.2734692096710205
+        },
+        {
+          "id": 809,
+          "token": " l",
+          "bytes": [
+            32,
+            108
+          ],
+          "logprob": -2.473205089569092
+        },
+        {
+          "id": 840,
+          "token": " re",
+          "bytes": [
+            32,
+            114,
+            101
+          ],
+          "logprob": -2.539430856704712
+        },
+        {
+          "id": 823,
+          "token": " th",
+          "bytes": [
+            32,
+            116,
+            104
+          ],
+          "logprob": -2.9196038246154785
+        }
+      ]
+    }
+  ]
+}
+0.00.069.386 I slot get_availabl: id  0 | task -1 | selected slot by id (0)
+0.00.069.395 I slot launch_slot_: id  0 | task 4 | processing task, is_child = 0
+0.00.075.391 I slot print_timing: id  0 | task 4 | prompt eval time =       5.98 ms /    93 tokens (    0.06 ms per token, 15562.25 tokens per second)
+0.00.075.393 I slot print_timing: id  0 | task 4 |        eval time =       0.00 ms /     1 tokens (    0.00 ms per token,     0.00 tokens per second)
+0.00.075.393 I slot print_timing: id  0 | task 4 |       total time =       5.98 ms /    94 tokens
+0.00.075.393 I slot print_timing: id  0 | task 4 |    graphs reused =          1
+0.00.075.394 I slot print_timing: id  0 | task 4 |   graph reallocs =          0    /     0        (same size) / (changed size)
+0.00.075.402 I slot      release: id  0 | task 4 | stop processing: n_tokens = 93, truncated = 0
+Response from server {
+  "index": 0,
+  "content": " are",
+  "tokens": [],
+  "id_slot": 0,
+  "stop": true,
+  "model": "lfm2-hybrid",
+  "tokens_predicted": 1,
+  "tokens_evaluated": 93,
+  "generation_settings": {
+    "seed": 42,
+    "temperature": 0.0,
+    "dynatemp_range": 0.0,
+    "dynatemp_exponent": 1.0,
+    "top_k": 40,
+    "top_p": 0.949999988079071,
+    "min_p": 0.05000000074505806,
+    "top_n_sigma": -1.0,
+    "xtc_probability": 0.0,
+    "xtc_threshold": 0.10000000149011612,
+    "typical_p": 1.0,
+    "repeat_last_n": 64,
+    "repeat_penalty": 1.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0,
+    "dry_multiplier": 0.0,
+    "dry_base": 1.75,
+    "dry_allowed_length": 2,
+    "dry_penalty_last_n": 64,
+    "dry_sequence_breakers": [
+      "\n",
+      ":",
+      "\"",
+      "*"
+    ],
+    "mirostat": 0,
+    "mirostat_tau": 5.0,
+    "mirostat_eta": 0.10000000149011612,
+    "adaptive_target": -1.0,
+    "adaptive_decay": 0.8999999761581421,
+    "stop": [],
+    "max_tokens": 1,
+    "n_predict": 1,
+    "n_keep": 0,
+    "n_discard": 0,
+    "ignore_eos": false,
+    "stream": false,
+    "logit_bias": [],
+    "n_probs": 5,
+    "min_keep": 0,
+    "grammar": "",
+    "grammar_lazy": false,
+    "grammar_triggers": [],
+    "preserved_tokens": [],
+    "chat_format": "Content-only",
+    "reasoning_format": "deepseek",
+    "reasoning_in_content": false,
+    "generation_prompt": "",
+    "samplers": [
+      "penalties",
+      "dry",
+      "top_n_sigma",
+      "top_k",
+      "typ_p",
+      "top_p",
+      "min_p",
+      "xtc",
+      "temperature"
+    ],
+    "speculative.types": "none",
+    "timings_per_token": false,
+    "post_sampling_probs": false,
+    "backend_sampling": false,
+    "lora": []
+  },
+  "prompt": "Purple elephants quietly compose sonnets about tax law in the moonlight while seven tiny robots repair the broken lighthouse lens before the storm arrives and the farmer counts his sheepGreen apples rolled down the hill toward the river where a curious otter collected them",
+  "has_new_line": false,
+  "truncated": false,
+  "stop_type": "limit",
+  "stopping_word": "",
+  "tokens_cached": 93,
+  "timings": {
+    "cache_n": 0,
+    "prompt_n": 93,
+    "prompt_ms": 5.976,
+    "prompt_per_token_ms": 0.06425806451612903,
+    "prompt_per_second": 15562.248995983935,
+    "predicted_n": 1,
+    "predicted_ms": 0.001,
+    "predicted_per_token_ms": 0.0,
+    "predicted_per_second": 0.0
+  },
+  "completion_probabilities": [
+    {
+      "id": 938,
+      "token": " are",
+      "bytes": [
+        32,
+        97,
+        114,
+        101
+      ],
+      "logprob": -0.25569114089012146,
+      "top_logprobs": [
+        {
+          "id": 938,
+          "token": " are",
+          "bytes": [
+            32,
+            97,
+            114,
+            101
+          ],
+          "logprob": -0.25569114089012146
+        },
+        {
+          "id": 922,
+          "token": " com",
+          "bytes": [
+            32,
+            99,
+            111,
+            109
+          ],
+          "logprob": -2.2092995643615723
+        },
+        {
+          "id": 789,
+          "token": " w",
+          "bytes": [
+            32,
+            119
+          ],
+          "logprob": -3.956540584564209
+        },
+        {
+          "id": 2701,
+          "token": " caus",
+          "bytes": [
+            32,
+            99,
+            97,
+            117,
+            115
+          ],
+          "logprob": -4.2960638999938965
+        },
+        {
+          "id": 1081,
+          "token": " us",
+          "bytes": [
+            32,
+            117,
+            115
+          ],
+          "logprob": -4.511411190032959
+        }
+      ]
+    }
+  ]
+}
+--------------------------- Captured stdout teardown ---------------------------
+Stopping server with pid=15721
+0.00.104.128 I srv    operator(): operator(): cleaning up before exit...
+=============================== warnings summary ===============================
+unit/test_completion.py:131
+  <workdir> PytestUnknownMarkWarning: Unknown pytest.mark.slow - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.slow
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED unit/test_completion.py::test_completion_cache_hybrid_memory[64] - ass...
+1 failed, 1 passed, 43 deselected, 1 warning in 0.78s

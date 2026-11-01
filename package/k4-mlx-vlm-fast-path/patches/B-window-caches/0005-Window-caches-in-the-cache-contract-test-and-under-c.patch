@@ -1,0 +1,110 @@
+From d13d4c4a5ead3217df89ecbd4da07cb91964249d Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Thu, 29 Oct 2026 03:21:33 -0400
+Subject: [PATCH 5/6] Window caches in the cache contract test and under
+ continuous batching
+
+test_model_cache_contract discovers every cache class a model's make_cache
+uses and builds a sample of each through a table of constructors; classes
+that take a window size need an entry, as RotatingKVCache has. Add
+SlidingWindowKVCache with the same seeding (keys, values, offset and the
+write index) so the Inkling layer contract (ArraysCache + KVCache +
+SlidingWindowKVCache) is checked for prefix-cache planning, cloning,
+memory accounting, exact-cache store/lookup and row merging. Also add an
+end-to-end continuous-batching test on the tiny Inkling model: two
+right-padded prompts (600 and 591 tokens) go through PromptProcessingBatch
+with a 157-token prefill step, which cuts chunks at the shorter row's end
+and keeps its last real logits, and GenerationBatch then decodes thirty
+greedy tokens on the batched window caches; every row must reproduce the
+tokens of its single-sequence run.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ mlx_vlm/tests/test_cache.py             |  3 +-
+ mlx_vlm/tests/test_inkling_fast_path.py | 52 +++++++++++++++++++++++++
+ 2 files changed, 54 insertions(+), 1 deletion(-)
+
+diff --git a/mlx_vlm/tests/test_cache.py b/mlx_vlm/tests/test_cache.py
+index 18b838d..5d20550 100644
+--- a/mlx_vlm/tests/test_cache.py
++++ b/mlx_vlm/tests/test_cache.py
+@@ -1810,6 +1810,7 @@ def sample(name, length=0):
+         "PoolingCache": lambda: C.PoolingCache(2),
+         "RingSlidingKVCache": lambda: RingSlidingKVCache(max(16, length)),
+         "RotatingKVCache": lambda: C.RotatingKVCache(max(16, length * 2)),
++        "SlidingWindowKVCache": lambda: C.SlidingWindowKVCache(max(16, length * 2)),
+         "StaticPrefixKVCache": lambda: C.StaticPrefixKVCache(max(16, length)),
+     }
+     cache = constructors.get(name, getattr(C, name, globals().get(name)))()
+@@ -1840,7 +1841,7 @@ def sample(name, length=0):
+             cache.update_index_and_fetch(keys)
+     else:
+         cache.keys, cache.values, cache.offset = keys, keys * 2, length
+-        if name == "RotatingKVCache":
++        if name in ("RotatingKVCache", "SlidingWindowKVCache"):
+             cache._idx = length
+         if name == "QSAKVCache":
+             cache.index_keys = mx.ones((1, length, 4)) * 3
+diff --git a/mlx_vlm/tests/test_inkling_fast_path.py b/mlx_vlm/tests/test_inkling_fast_path.py
+index 4c44acb..9cfbed7 100644
+--- a/mlx_vlm/tests/test_inkling_fast_path.py
++++ b/mlx_vlm/tests/test_inkling_fast_path.py
+@@ -222,3 +222,55 @@ def test_batched_window_cache_matches_single_rows():
+         y = mx.argmax(got[:, -1], axis=-1)[:, None]
+     assert cache[0].caches[0].start_position > 0
+     assert cache[0].caches[0].keys.shape[2] <= 1024
++
++
++# --------------------------------------------- continuous batching end to end
++
++
++def test_prompt_processing_batch_matches_single_rows():
++    """The batch generator path: right-padded prompts, chunked prefill through
++    PromptProcessingBatch, then GenerationBatch decode on the batched window
++    caches, must produce each row's single-sequence greedy tokens."""
++    from mlx_vlm.generate.ar import PromptProcessingBatch
++
++    model = tiny_model(window=8)
++    rows = [tokens(600, seed=3)[0].tolist(), tokens(591, seed=4)[0].tolist()]
++    width = max(len(r) for r in rows)
++    right_pad = [width - len(r) for r in rows]
++    padded = [r + [0] * pad for r, pad in zip(rows, right_pad)]
++    steps = 30
++    batch = PromptProcessingBatch(
++        model=model,
++        uids=[0, 1],
++        input_ids=rows,  # unpadded ids: their lengths mark where rows end
++        max_tokens=[steps, steps],
++        inputs_embeds=model.model.embed(mx.array(padded)),
++        prompt_kwargs={},
++        prefill_step_size=157,
++        right_pad_per_row=right_pad,
++        greedy_sampling=True,
++    )
++    while batch.needs_processing():
++        assert batch.prompt_step() > 0
++    assert isinstance(batch.prompt_cache[0].caches[0], BatchSlidingWindowKVCache)
++    gen = batch.generate(
++        sampler=lambda logits: mx.argmax(logits, axis=-1),
++        stop_criteria=lambda _: False,
++        compute_logprobs=False,
++    )
++    generated = {0: [], 1: []}
++    while len(gen):
++        for response in gen.next():
++            generated[response.uid].append(int(response.token))
++    assert all(len(v) == steps for v in generated.values())
++
++    for uid, row in enumerate(rows):
++        ids = mx.array([row])
++        cache = model.make_cache()
++        logits = run(model, ids, cache, 157)
++        want = []
++        y = mx.argmax(logits[:, -1], axis=-1)
++        for _ in range(steps):
++            want.append(int(y.item()))
++            y = mx.argmax(model(y[:, None], cache=cache).logits[:, -1], axis=-1)
++        assert generated[uid] == want, uid
+-- 
+2.55.0
+

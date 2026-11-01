@@ -1,0 +1,38 @@
+W1029 00:27:15.421000 75672 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+[00:27:16] {"kind": "meta", "tag": "after-kv8", "model": "~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit/snapshots/f8a0af554e168077bdaf48e1fb6682fb395c807c/", "mlx": "0.32.4", "mlx_vlm": "0.7.11", "mlx_vlm_file": "<workdir>/upstream/mlx-vlm/mlx_vlm/__init__.py", "git": "355ea6f", "python": "~/.venvs/inkling/bin/python", "device": "Apple M5 Max", "argv": ["<workdir>/package/k4-mlx-vlm-fast-path/bench/equiv_bench.py", "--no-lock", "--tag", "after-kv8", "--prompts", "p_short,p_8k", "--repeats", "2", "--max-tokens", "128", "--kv-bits", "8", "--kv-group-size", "64", "--quantized-kv-start", "0"], "pid": 75672, "load1": 17.623046875, "env_tf32": null}
+[00:27:29] load: lazy 1.0s, chunked eval 12.3s, 82.3 GiB of parameters, active 82.3 GiB, peak 82.4 GiB
+[00:27:29] parameter dtypes: {'mlx.core.bfloat16': 1014, 'mlx.core.uint32': 250, 'mlx.core.float32': 160}
+[00:27:29] make_cache kv kinds: ['KVCache', 'SlidingWindowKVCache']
+[00:27:30] prompt p_short: 833 chars, 239 tokens
+[00:27:30] prompt p_8k: 30131 chars, 8231 tokens
+[00:27:30] gen kwargs: {'max_tokens': 128, 'temperature': 0.0, 'top_p': 1.0, 'top_k': 0, 'verbose': False, 'kv_bits': 8.0, 'kv_group_size': 64, 'quantized_kv_start': 0}
+[00:27:30] warm-up with p_short
+Traceback (most recent call last):
+  File "<workdir>/package/k4-mlx-vlm-fast-path/bench/equiv_bench.py", line 328, in <module>
+    main()
+  File "<workdir>/package/k4-mlx-vlm-fast-path/bench/equiv_bench.py", line 290, in main
+    run(args.warmup_prompt, 0, timed=False)
+  File "<workdir>/package/k4-mlx-vlm-fast-path/bench/equiv_bench.py", line 234, in run
+    for r in stream_generate(model, processor, prompt, **gen_kwargs):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<workdir>/upstream/mlx-vlm/mlx_vlm/generate/dispatch.py", line 1094, in stream_generate
+    for n, (token, logprobs) in enumerate(gen):
+                                ^^^^^^^^^^^^^^
+  File "<workdir>/upstream/mlx-vlm/mlx_vlm/generate/ar.py", line 517, in generate_step
+    y, logprobs = _step(input_ids, inputs_embeds=inputs_embeds)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<workdir>/upstream/mlx-vlm/mlx_vlm/generate/ar.py", line 381, in _step
+    outputs = model.language_model(
+              ^^^^^^^^^^^^^^^^^^^^^
+  File "<workdir>/upstream/mlx-vlm/mlx_vlm/models/inkling/language.py", line 1015, in __call__
+    pre_norm = self.model(inputs, cache, inputs_embeds, skip_final_norm=True)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<workdir>/upstream/mlx-vlm/mlx_vlm/models/inkling/language.py", line 976, in __call__
+    h = layer(h, cache=c)
+        ^^^^^^^^^^^^^^^^^
+  File "<workdir>/upstream/mlx-vlm/mlx_vlm/models/inkling/language.py", line 935, in __call__
+    r = self.self_attn(self.input_layernorm(x), cache=cache, conv_mask=conv_mask)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<workdir>/upstream/mlx-vlm/mlx_vlm/models/inkling/language.py", line 484, in __call__
+    raise NotImplementedError(
+NotImplementedError: QuantizedKVCache is not supported by the Inkling attention; quantize the KV cache with --kv-quant-scheme uniform

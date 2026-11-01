@@ -1,0 +1,972 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.14, pytest-8.3.5, pluggy-1.7.0 -- <scratch>
+rootdir: <workdir>/upstream/llama.cpp-k3/tools/server/tests
+configfile: pytest.ini
+plugins: xdist-3.8.0, anyio-4.15.1
+collecting ... collected 142 items
+
+unit/test_completion.py::test_completion[I believe the meaning of life is-8-(going|bed)+-18-8-False-False] PASSED [  0%]
+unit/test_completion.py::test_completion[Write a joke about AI from a very long prompt which will not be truncated-64-(princesses|everyone|kids|Anna|forest)+-46-64-False-True] PASSED [  1%]
+unit/test_completion.py::test_completion_stream[I believe the meaning of life is-8-(going|bed)+-18-8-False] PASSED [  2%]
+unit/test_completion.py::test_completion_stream[Write a joke about AI from a very long prompt which will not be truncated-64-(princesses|everyone|kids|Anna|forest)+-46-64-False] PASSED [  2%]
+unit/test_completion.py::test_completion_stream_vs_non_stream PASSED     [  3%]
+unit/test_completion.py::test_completion_with_openai_library PASSED      [  4%]
+unit/test_completion.py::test_completion_stream_with_openai_library PASSED [  4%]
+unit/test_completion.py::test_completion_stream_with_openai_library_stops FAILED [  5%]
+unit/test_completion.py::test_consistent_result_same_seed[1] PASSED      [  6%]
+unit/test_completion.py::test_consistent_result_same_seed[2] PASSED      [  7%]
+unit/test_completion.py::test_different_result_different_seed[1] PASSED  [  7%]
+unit/test_completion.py::test_different_result_different_seed[2] PASSED  [  8%]
+unit/test_completion.py::test_consistent_result_different_batch_size[0.0-16] PASSED [  9%]
+unit/test_completion.py::test_consistent_result_different_batch_size[0.0-32] PASSED [  9%]
+unit/test_completion.py::test_cache_vs_nocache_prompt SKIPPED (This ...) [ 10%]
+unit/test_completion.py::test_nocache_long_input_prompt PASSED           [ 11%]
+unit/test_completion.py::test_pinned_request_on_busy_slot PASSED         [ 11%]
+unit/test_completion.py::test_json_prompt_no_mtmd PASSED                 [ 12%]
+unit/test_completion.py::test_json_prompt_mtm_error_when_not_supported PASSED [ 13%]
+unit/test_completion.py::test_completion_with_tokens_input PASSED        [ 14%]
+unit/test_completion.py::test_completion_parallel_slots[1-3] PASSED      [ 14%]
+unit/test_completion.py::test_completion_parallel_slots[2-2] PASSED      [ 15%]
+unit/test_completion.py::test_completion_parallel_slots[2-4] PASSED      [ 16%]
+unit/test_completion.py::test_completion_parallel_slots[4-2] PASSED      [ 16%]
+unit/test_completion.py::test_completion_parallel_slots[4-6] PASSED      [ 17%]
+unit/test_completion.py::test_completion_unified[256-4-n_predict_vals0-expected_success0] PASSED [ 18%]
+unit/test_completion.py::test_completion_unified[256-4-n_predict_vals1-expected_success1] PASSED [ 19%]
+unit/test_completion.py::test_completion_unified[256-4-n_predict_vals2-expected_success2] PASSED [ 19%]
+unit/test_completion.py::test_completion_unified[256-4-n_predict_vals3-expected_success3] PASSED [ 20%]
+unit/test_completion.py::test_completion_response_fields[I believe the meaning of life is-8-response_fields0] PASSED [ 21%]
+unit/test_completion.py::test_completion_response_fields[I believe the meaning of life is-32-response_fields1] PASSED [ 21%]
+unit/test_completion.py::test_n_probs PASSED                             [ 22%]
+unit/test_completion.py::test_n_probs_stream PASSED                      [ 23%]
+unit/test_completion.py::test_n_probs_post_sampling PASSED               [ 23%]
+unit/test_completion.py::test_n_probs_post_backend_sampling PASSED       [ 24%]
+unit/test_completion.py::test_logit_bias[False-False] PASSED             [ 25%]
+unit/test_completion.py::test_logit_bias[False-True] PASSED              [ 26%]
+unit/test_completion.py::test_logit_bias[True-False] PASSED              [ 26%]
+unit/test_completion.py::test_logit_bias[True-True] PASSED               [ 27%]
+unit/test_completion.py::test_cancel_request PASSED                      [ 28%]
+unit/test_completion.py::test_completion_prompt_cache PASSED             [ 28%]
+unit/test_completion.py::test_completion_checkpoint_after_unrelated_prompt PASSED [ 29%]
+unit/test_completion.py::test_completion_checkpoint_kept_after_restore PASSED [ 30%]
+unit/test_completion.py::test_completion_cache_hybrid_memory[0] PASSED   [ 30%]
+unit/test_completion.py::test_completion_cache_hybrid_memory[64] FAILED  [ 31%]
+unit/test_slot_save.py::test_slot_save_restore PASSED                    [ 32%]
+unit/test_slot_save.py::test_slot_restore_legacy_token_list PASSED       [ 33%]
+unit/test_slot_save.py::test_slot_restore_draft_state PASSED             [ 33%]
+unit/test_slot_save.py::test_slot_erase PASSED                           [ 34%]
+unit/test_slot_save.py::test_slot_save_restore_text_only_on_multimodal PASSED [ 35%]
+unit/test_slot_save.py::test_slot_save_restore_with_image PASSED         [ 35%]
+unit/test_slot_save.py::test_slot_save_restore_with_two_images PASSED    [ 36%]
+unit/test_slot_save.py::test_slot_save_restore_with_image_across_restart PASSED [ 37%]
+unit/test_slot_save.py::test_slot_save_restore_image_payload_larger_than_context PASSED [ 38%]
+unit/test_slot_save.py::test_slot_restore_media_file_without_mmproj PASSED [ 38%]
+unit/test_slot_save.py::test_slot_restore_preserves_context_checkpoints[ckpt_slot1.bin] PASSED [ 39%]
+unit/test_slot_save.py::test_slot_restore_preserves_context_checkpoints[ckpt_slot1_\xe9.bin] PASSED [ 40%]
+unit/test_slot_save.py::test_slot_restore_damaged_checkpoint_appendix[oversized_blob] PASSED [ 40%]
+unit/test_slot_save.py::test_slot_restore_damaged_checkpoint_appendix[empty_target] PASSED [ 41%]
+unit/test_slot_save.py::test_slot_restore_damaged_checkpoint_appendix[corrupt_state] PASSED [ 42%]
+unit/test_slot_save.py::test_slot_restore_damaged_checkpoint_appendix[many_checkpoints] PASSED [ 42%]
+unit/test_slot_save.py::test_slot_restore_checkpoints_draft_kv_type_change[f16] PASSED [ 43%]
+unit/test_slot_save.py::test_slot_restore_checkpoints_draft_kv_type_change[q8_0] PASSED [ 44%]
+unit/test_slot_save.py::test_slot_restore_swa_window PASSED              [ 45%]
+unit/test_slot_save.py::test_prompt_cache_swa_window PASSED              [ 45%]
+unit/test_ctx_shift.py::test_ctx_shift_enabled PASSED                    [ 46%]
+unit/test_ctx_shift.py::test_ctx_shift_disabled_short_prompt[64-64-False] PASSED [ 47%]
+unit/test_ctx_shift.py::test_ctx_shift_disabled_short_prompt[-1-248-True] PASSED [ 47%]
+unit/test_ctx_shift.py::test_ctx_shift_disabled_long_prompt PASSED       [ 48%]
+unit/test_ctx_shift.py::test_ctx_shift_disabled_stream PASSED            [ 49%]
+unit/test_speculative.py::test_with_and_without_draft PASSED             [ 50%]
+unit/test_speculative.py::test_different_draft_min_draft_max PASSED      [ 50%]
+unit/test_speculative.py::test_synth_is_deterministic PASSED             [ 51%]
+unit/test_speculative.py::test_synth_ignores_target_tokens PASSED        [ 52%]
+unit/test_speculative.py::test_draft_n_ubatch_smaller_than_target PASSED [ 52%]
+unit/test_speculative.py::test_slot_ctx_not_exceeded PASSED              [ 53%]
+unit/test_speculative.py::test_with_ctx_shift PASSED                     [ 54%]
+unit/test_speculative.py::test_multi_requests_parallel[1-2] PASSED       [ 54%]
+unit/test_speculative.py::test_multi_requests_parallel[2-2] PASSED       [ 55%]
+unit/test_speculative.py::test_draft_token_probs PASSED                  [ 56%]
+unit/test_basic.py::test_server_start_simple PASSED                      [ 57%]
+unit/test_basic.py::test_server_multiple_addresses PASSED                [ 57%]
+unit/test_basic.py::test_server_props PASSED                             [ 58%]
+unit/test_basic.py::test_server_models PASSED                            [ 59%]
+unit/test_basic.py::test_server_slots PASSED                             [ 59%]
+unit/test_basic.py::test_load_split_model PASSED                         [ 60%]
+unit/test_basic.py::test_no_ui PASSED                                    [ 61%]
+unit/test_basic.py::test_server_model_aliases_and_tags PASSED            [ 61%]
+unit/test_chat_completion.py::test_chat_completion[None-Book-Hey-8-But she couldn't-69-8-length-False-None] PASSED [ 62%]
+unit/test_chat_completion.py::test_chat_completion[None-Book-Hey-8-But she couldn't-69-8-length-True-None] PASSED [ 63%]
+unit/test_chat_completion.py::test_chat_completion[None-Book-What is the best book-8-(Suddenly)+|\\{ " Sarax.-77-8-length-False-None] PASSED [ 64%]
+unit/test_chat_completion.py::test_chat_completion[None-Book-What is the best book-8-(Suddenly)+|\\{ " Sarax.-77-8-length-True-None] PASSED [ 64%]
+unit/test_chat_completion.py::test_chat_completion[None-Book-What is the best book-8-(Suddenly)+|\\{ " Sarax.-77-8-length-True-chatml] PASSED [ 65%]
+unit/test_chat_completion.py::test_chat_completion[None-Book-What is the best book-8-^ blue-23-8-length-True-This is not a chat template, it is] PASSED [ 66%]
+unit/test_chat_completion.py::test_chat_completion[codellama70b-You are a coding assistant.-Write the fibonacci function in c++.-128-(Aside|she|felter|alonger)+-104-128-length-False-None] PASSED [ 66%]
+unit/test_chat_completion.py::test_chat_completion[codellama70b-You are a coding assistant.-Write the fibonacci function in c++.-128-(Aside|she|felter|alonger)+-104-128-length-True-None] PASSED [ 67%]
+unit/test_chat_completion.py::test_chat_completion[None-Book-user_prompt8-8-Whillicter-79-8-length-False-None] PASSED [ 68%]
+unit/test_chat_completion.py::test_chat_completion[None-Book-user_prompt9-8-Whillicter-79-8-length-True-None] PASSED [ 69%]
+unit/test_chat_completion.py::test_chat_completion_cached_tokens PASSED  [ 69%]
+unit/test_chat_completion.py::test_chat_completion_stream[Book-What is the best book-8-(Suddenly)+-77-8-length] PASSED [ 70%]
+unit/test_chat_completion.py::test_chat_completion_stream[You are a coding assistant.-Write the fibonacci function in c++.-128-(Aside|she|felter|alonger)+-104-128-length] PASSED [ 71%]
+unit/test_chat_completion.py::test_chat_completion_with_openai_library PASSED [ 71%]
+unit/test_chat_completion.py::test_chat_template PASSED                  [ 72%]
+unit/test_chat_completion.py::test_chat_template_assistant_prefill[Whill-Whill] PASSED [ 73%]
+unit/test_chat_completion.py::test_chat_template_assistant_prefill[prefill1-Wh\n\nill] PASSED [ 73%]
+unit/test_chat_completion.py::test_chat_template_continue_final_message_vllm_compat PASSED [ 74%]
+unit/test_chat_completion.py::test_chat_template_continue_final_message_mutual_exclusion PASSED [ 75%]
+unit/test_chat_completion.py::test_apply_chat_template PASSED            [ 76%]
+unit/test_chat_completion.py::test_completion_with_response_format[response_format0-6-"42"] PASSED [ 76%]
+unit/test_chat_completion.py::test_completion_with_response_format[response_format1-10-[ -3000 ]] PASSED [ 77%]
+unit/test_chat_completion.py::test_completion_with_response_format[response_format2-10-"foooooo"] PASSED [ 78%]
+unit/test_chat_completion.py::test_completion_with_response_format[response_format3-10-(\\{|John)+] PASSED [ 78%]
+unit/test_chat_completion.py::test_completion_with_response_format[response_format4-0-None] PASSED [ 79%]
+unit/test_chat_completion.py::test_completion_with_response_format[response_format5-0-None] PASSED [ 80%]
+unit/test_chat_completion.py::test_completion_with_response_format[response_format6-0-None] PASSED [ 80%]
+unit/test_chat_completion.py::test_completion_with_response_format[response_format7-0-None] PASSED [ 81%]
+unit/test_chat_completion.py::test_completion_with_json_schema[False-json_schema0-6-"42"] PASSED [ 82%]
+unit/test_chat_completion.py::test_completion_with_json_schema[True-json_schema1-6-"42"] PASSED [ 83%]
+unit/test_chat_completion.py::test_completion_with_grammar[False-root ::= "a"{5,5}-6-a{5,5}] PASSED [ 83%]
+unit/test_chat_completion.py::test_completion_with_grammar[True-root ::= "a"{5,5}-6-a{5,5}] PASSED [ 84%]
+unit/test_chat_completion.py::test_completion_with_invalid_grammar PASSED [ 85%]
+unit/test_chat_completion.py::test_invalid_chat_completion_req[None] PASSED [ 85%]
+unit/test_chat_completion.py::test_invalid_chat_completion_req[string] PASSED [ 86%]
+unit/test_chat_completion.py::test_invalid_chat_completion_req[messages2] PASSED [ 87%]
+unit/test_chat_completion.py::test_invalid_chat_completion_req[messages3] PASSED [ 88%]
+unit/test_chat_completion.py::test_invalid_chat_completion_req[messages4] PASSED [ 88%]
+unit/test_chat_completion.py::test_invalid_chat_completion_req[messages5] PASSED [ 89%]
+unit/test_chat_completion.py::test_invalid_chat_completion_req[messages6] PASSED [ 90%]
+unit/test_chat_completion.py::test_invalid_chat_completion_req[messages7] PASSED [ 90%]
+unit/test_chat_completion.py::test_chat_completion_with_timings_per_token PASSED [ 91%]
+unit/test_chat_completion.py::test_logprobs PASSED                       [ 92%]
+unit/test_chat_completion.py::test_logprobs_stream PASSED                [ 92%]
+unit/test_chat_completion.py::test_logit_bias PASSED                     [ 93%]
+unit/test_chat_completion.py::test_context_size_exceeded PASSED          [ 94%]
+unit/test_chat_completion.py::test_context_size_exceeded_stream PASSED   [ 95%]
+unit/test_chat_completion.py::test_return_progress[64-4-False] PASSED    [ 95%]
+unit/test_chat_completion.py::test_return_progress[64-2-True] PASSED     [ 96%]
+unit/test_chat_completion.py::test_chat_completions_multiple_choices PASSED [ 97%]
+unit/test_chat_completion.py::test_chat_completions_token_count PASSED   [ 97%]
+unit/test_chat_completion.py::test_verbose_debug PASSED                  [ 98%]
+unit/test_kv_keep_only_active.py::test_clear_and_restore PASSED          [ 99%]
+unit/test_kv_keep_only_active.py::test_disabled_with_flag PASSED         [100%]
+
+=================================== FAILURES ===================================
+_______________ test_completion_stream_with_openai_library_stops _______________
+
+    @pytest.mark.slow
+    def test_completion_stream_with_openai_library_stops():
+        global server
+        server.model_hf_repo = "bartowski/Phi-3.5-mini-instruct-GGUF:Q4_K_M"
+        server.model_hf_file = None
+>       server.start()
+
+unit/test_completion.py:136: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <utils.ServerProcess object at 0x10c4679e0>, timeout_seconds = 600
+
+    def start(self, timeout_seconds: int = DEFAULT_HTTP_TIMEOUT) -> None:
+        env = {
+            **os.environ,
+            "LLAMA_SERVER_DEBUG_FAKE_TIMING": "1",
+        }
+        if self.llama_cache is not None:
+            env["LLAMA_CACHE"] = self.llama_cache
+        elif "LLAMA_CACHE" not in os.environ:
+            env["LLAMA_CACHE"] = "tmp"
+        if self.external_server:
+            print(f"[external_server]: Assuming external server running on {self.server_host}:{self.server_port}")
+            return
+        if self.server_path is not None:
+            server_path = self.server_path
+        elif "LLAMA_SERVER_BIN_PATH" in os.environ:
+            server_path = os.environ["LLAMA_SERVER_BIN_PATH"]
+        elif os.name == "nt":
+            server_path = "../../../build/bin/Release/llama-server.exe"
+        else:
+            server_path = "../../../build/bin/llama-server"
+        server_args = [
+            "--port",
+            self.server_port,
+            "--temp",
+            self.temperature,
+            "--seed",
+            self.seed,
+        ]
+        server_args.extend(["--host", self.server_host])
+        if self.offline:
+            server_args.append("--offline")
+        if self.model_file:
+            server_args.extend(["--model", self.model_file])
+        if self.model_url:
+            server_args.extend(["--model-url", self.model_url])
+        if self.model_draft:
+            server_args.extend(["--model-draft", self.model_draft])
+        if self.model_draft_hf_repo:
+            server_args.extend(["--hf-repo-draft", self.model_draft_hf_repo])
+        if self.model_hf_repo:
+            server_args.extend(["--hf-repo", self.model_hf_repo])
+        if self.model_hf_file:
+            server_args.extend(["--hf-file", self.model_hf_file])
+        if self.models_dir:
+            server_args.extend(["--models-dir", self.models_dir])
+        if self.models_max is not None:
+            server_args.extend(["--models-max", self.models_max])
+        if self.models_memory_margin is not None:
+            server_args.extend(["--models-memory-margin", self.models_memory_margin])
+        if self.models_preset:
+            server_args.extend(["--models-preset", self.models_preset])
+        if self.cors_origins:
+            server_args.extend(["--cors-origins", self.cors_origins])
+        if self.n_batch:
+            server_args.extend(["--batch-size", self.n_batch])
+        if self.n_ubatch:
+            server_args.extend(["--ubatch-size", self.n_ubatch])
+        if self.n_threads:
+            server_args.extend(["--threads", self.n_threads])
+        if self.n_gpu_layer:
+            server_args.extend(["--n-gpu-layers", self.n_gpu_layer])
+        if self.server_continuous_batching:
+            server_args.append("--cont-batching")
+        if self.server_embeddings:
+            server_args.append("--embedding")
+        if self.server_reranking:
+            server_args.append("--reranking")
+        if self.server_metrics:
+            server_args.append("--metrics")
+        if self.kv_unified:
+            server_args.append("--kv-unified")
+        if self.swa_full:
+            server_args.append("--swa-full")
+        if self.server_slots:
+            server_args.append("--slots")
+        else:
+            server_args.append("--no-slots")
+        if self.pooling:
+            server_args.extend(["--pooling", self.pooling])
+        if self.model_alias:
+            server_args.extend(["--alias", self.model_alias])
+        if self.model_tags:
+            server_args.extend(["--tags", self.model_tags])
+        if self.n_ctx:
+            server_args.extend(["--ctx-size", self.n_ctx])
+        if self.n_slots:
+            server_args.extend(["--parallel", self.n_slots])
+        if self.ctk:
+            server_args.extend(["-ctk", self.ctk])
+        if self.ctv:
+            server_args.extend(["-ctv", self.ctv])
+        if self.ctkd:
+            server_args.extend(["-ctkd", self.ctkd])
+        if self.fa is not None:
+            server_args.extend(["-fa", self.fa])
+        if self.n_predict:
+            server_args.extend(["--n-predict", self.n_predict])
+        if self.slot_save_path:
+            server_args.extend(["--slot-save-path", self.slot_save_path])
+        if self.n_ga:
+            server_args.extend(["--grp-attn-n", self.n_ga])
+        if self.n_ga_w:
+            server_args.extend(["--grp-attn-w", self.n_ga_w])
+        if self.debug:
+            server_args.append("--verbose")
+        if self.lora_files:
+            for lora_file in self.lora_files:
+                server_args.extend(["--lora", lora_file])
+        if self.enable_ctx_shift:
+            server_args.append("--context-shift")
+        if self.spec_type:
+            server_args.extend(["--spec-type", self.spec_type])
+        if self.api_key:
+            server_args.extend(["--api-key", self.api_key])
+        if self.spec_draft_n_max:
+            server_args.extend(["--spec-draft-n-max", self.spec_draft_n_max])
+        if self.spec_draft_n_min:
+            server_args.extend(["--spec-draft-n-min", self.spec_draft_n_min])
+        if self.spec_draft_n_ubatch:
+            server_args.extend(["--spec-draft-n-ubatch", self.spec_draft_n_ubatch])
+        if self.spec_synth_len is not None:
+            server_args.extend(["--spec-synth-len", self.spec_synth_len])
+        if self.spec_synth_rates is not None:
+            rates = ",".join(str(rate) for rate in self.spec_synth_rates)
+            server_args.extend(["--spec-synth-rates", rates])
+        if self.no_ui:
+            server_args.append("--no-ui")
+        if self.no_models_autoload:
+            server_args.append("--no-models-autoload")
+        if self.jinja:
+            server_args.append("--jinja")
+        else:
+            server_args.append("--no-jinja")
+        if self.reasoning_format is not None:
+            server_args.extend(("--reasoning-format", self.reasoning_format))
+        if self.reasoning is not None:
+            server_args.extend(("--reasoning", self.reasoning))
+        if self.chat_template:
+            server_args.extend(["--chat-template", self.chat_template])
+        if self.chat_template_file:
+            server_args.extend(["--chat-template-file", self.chat_template_file])
+        if self.mmproj_url:
+            server_args.extend(["--mmproj-url", self.mmproj_url])
+        if self.no_mmproj:
+            server_args.append("--no-mmproj")
+        if self.media_path:
+            server_args.extend(["--media-path", self.media_path])
+        if self.sleep_idle_seconds is not None:
+            server_args.extend(["--sleep-idle-seconds", self.sleep_idle_seconds])
+        if self.cache_ram is not None:
+            server_args.extend(["--cache-ram", self.cache_ram])
+        if self.override_kv:
+            server_args.extend(["--override-kv", self.override_kv])
+        if self.no_cache_idle_slots:
+            server_args.append("--no-cache-idle-slots")
+        if self.ui_mcp_proxy:
+            server_args.append("--ui-mcp-proxy")
+        if self.server_tools:
+            server_args.extend(["--tools", self.server_tools])
+        if self.server_tools_runtime:
+            server_args.extend(["--tools-runtime", self.server_tools_runtime])
+        if self.mcp_servers_config:
+            server_args.extend(["--mcp-servers-config", self.mcp_servers_config])
+        if self.mcp_servers_json:
+            server_args.extend(["--mcp-servers-json", self.mcp_servers_json])
+        if self.backend_sampling:
+            server_args.append("--backend_sampling")
+        if self.gcp_compat:
+            env["AIP_MODE"] = "PREDICTION"
+            env["AIP_HTTP_PORT"] = str(self.server_port)
+    
+        args = [str(arg) for arg in [server_path, *server_args]]
+        print(f"tests: starting server with: {' '.join(args)}")
+    
+        flags = 0
+        if "nt" == os.name:
+            flags |= subprocess.DETACHED_PROCESS
+            flags |= subprocess.CREATE_NEW_PROCESS_GROUP
+            flags |= subprocess.CREATE_NO_WINDOW
+    
+        if self.log_path:
+            self._log = open(self.log_path, "w")
+        else:
+            self._log = sys.stdout
+    
+        self.process = subprocess.Popen(
+            [str(arg) for arg in [server_path, *server_args]],
+            creationflags=flags,
+            stdout=self._log,
+            stderr=self._log if self._log != sys.stdout else sys.stdout,
+            env=env,
+        )
+        server_instances.add(self)
+    
+        print(f"server pid={self.process.pid}, pytest pid={os.getpid()}")
+    
+        # wait for server to start
+        start_time = time.time()
+        last_print_time = start_time
+        while time.time() - start_time < timeout_seconds:
+            try:
+                response = self.make_request("GET", "/health", headers={
+                    "Authorization": f"Bearer {self.api_key}" if self.api_key else None
+                })
+                if response.status_code == 200:
+                    self.ready = True
+                    return  # server is ready
+            except Exception as e:
+                pass
+            # Check if process died
+            if self.process.poll() is not None:
+>               raise RuntimeError(f"Server process died with return code {self.process.returncode}")
+E               RuntimeError: Server process died with return code 1
+
+utils.py:356: RuntimeError
+----------------------------- Captured stdout call -----------------------------
+tests: starting server with: <workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server --port 8080 --temp 0.8 --seed 42 --host 127.0.0.1 --offline --hf-repo bartowski/Phi-3.5-mini-instruct-GGUF:Q4_K_M --batch-size 32 --no-slots --alias tinyllama-2 --ctx-size 512 --parallel 2 --n-predict 64 --no-jinja
+server pid=56888, pytest pid=56592
+0.00.001.448 I srv  llama_server: initializing ...
+0.00.208.830 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.209.250 W srv  server_setup: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.211.438 I srv    load_model: loading model 'bartowski/Phi-3.5-mini-instruct-GGUF:Q4_K_M'
+0.00.211.495 E llama_model_load_from_file_impl: exactly one out metadata, path_model, and file must be defined
+0.00.215.244 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model
+0.00.216.532 E llama_model_load_from_file_impl: exactly one out metadata, path_model, and file must be defined
+0.00.216.539 E cmn  common_init_: failed to load model ''
+0.00.216.541 E srv    load_model: failed to load model, ''
+0.00.216.543 I srv    operator(): operator(): cleaning up before exit...
+0.00.219.635 E srv  server_run_i: exiting due to model loading error
+--------------------------- Captured stdout teardown ---------------------------
+Stopping server with pid=56888
+___________________ test_completion_cache_hybrid_memory[64] ____________________
+
+n_swa = 64
+
+    @pytest.mark.parametrize("n_swa", [0, 64])
+    def test_completion_cache_hybrid_memory(n_swa: int):
+        global server
+        server = ServerPreset.lfm2_hybrid()
+        server.n_slots = 2
+        server.n_batch = 64
+        server.n_ubatch = 32
+        server.cache_ram = 0
+        server.temperature = 0.0
+        if n_swa > 0:
+            server.override_kv = f"lfm2.attention.sliding_window=int:{n_swa}"
+        server.start()
+    
+        def tokenize(content):
+            res = server.make_request("POST", "/tokenize", data={"content": content})
+            assert res.status_code == 200
+            return res.body["tokens"]
+    
+        # (cache_n, prompt_n, the sampled token, the top logprobs it was sampled from)
+        def completion(prompt, cache_prompt, id_slot):
+            res = server.make_request("POST", "/completion", data={
+                "prompt": prompt,
+                "id_slot": id_slot,
+                "n_predict": 1,
+                "n_probs": 5,
+                "cache_prompt": cache_prompt,
+            })
+            assert res.status_code == 200
+            timings = res.body["timings"]
+            probs = res.body["completion_probabilities"][0]
+            top = [(p["id"], p["logprob"]) for p in probs["top_logprobs"]]
+            return timings["cache_n"], timings["prompt_n"], probs["id"], top
+    
+        # the cached requests use slot 0, the reference requests without the cache use slot 1
+        def cached(prompt):
+            return completion(prompt, True, 0)
+    
+        def reference(prompt):
+            return completion(prompt, False, 1)[3]
+    
+        # the cached request evaluates its tokens in fewer ubatches than the reference, so the logprobs differ by rounding
+        def assert_same_output(top, expected):
+            assert [tid for tid, _ in top] == [tid for tid, _ in expected]
+            for (_, lp), (_, lp_expected) in zip(top, expected):
+                assert lp == pytest.approx(lp_expected, abs=5e-2)
+    
+        base = tokenize("Purple elephants quietly compose sonnets about tax law in the moonlight while seven tiny robots "
+                        "repair the broken lighthouse lens before the storm arrives and the farmer counts his sheep")
+        ext  = tokenize("Green apples rolled down the hill toward the river where a curious otter collected them")
+        alt  = tokenize("under a flat stone near the old mill")
+        n_base = len(base)
+        assert n_base > server.n_ubatch + 8 and len(ext) > 8 and len(alt) > 4
+    
+        # prime the cache: the slot keeps the prompt (the sampled token is not decoded, so it is not kept)
+        cache_n, prompt_n, _, _ = cached(base)
+        assert (cache_n, prompt_n) == (0, n_base)
+    
+        # a strict extension reuses the whole cached prompt: only the new tokens are evaluated
+        assert ext[-3] != alt[0] and ext[2] != alt[0]
+        n_full = n_base + len(ext)
+    
+        cache_n, prompt_n, _, top = cached(base + ext)
+>       assert (cache_n, prompt_n) == (n_base, len(ext))
+E       AssertionError: assert (0, 93) == (66, 27)
+E         
+E         At index 0 diff: 0 != 66
+E         
+E         Full diff:
+E           (
+E         -     66,
+E         ?     ^^...
+E         
+E         ...Full output truncated (5 lines hidden), use '-vv' to show
+
+unit/test_completion.py:838: AssertionError
+----------------------------- Captured stdout call -----------------------------
+tests: starting server with: <workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server --port 8080 --temp 0.0 --seed 42 --host 127.0.0.1 --offline --hf-repo ggml-org/LFM2-test-ci-80M --hf-file model-Q4_K_M.gguf --batch-size 64 --ubatch-size 32 --no-slots --alias lfm2-hybrid --ctx-size 512 --parallel 2 --n-predict 16 --no-jinja --cache-ram 0 --override-kv lfm2.attention.sliding_window=int:64
+server pid=57820, pytest pid=56592
+0.00.005.560 I srv  llama_server: initializing ...
+0.00.430.227 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.430.832 W srv  server_setup: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.435.589 I srv    load_model: loading model 'ggml-org/LFM2-test-ci-80M'
+Response from server {
+  "error": {
+    "message": "Loading model",
+    "type": "unavailable_error",
+    "code": 503
+  }
+}
+Response from server {
+  "error": {
+    "message": "Loading model",
+    "type": "unavailable_error",
+    "code": 503
+  }
+}
+Response from server {
+  "error": {
+    "message": "Loading model",
+    "type": "unavailable_error",
+    "code": 503
+  }
+}
+0.00.491.845 I cmn          init: llama threadpool init, n_threads = 6
+Response from server {
+  "error": {
+    "message": "Loading model",
+    "type": "unavailable_error",
+    "code": 503
+  }
+}
+0.00.537.040 I srv    load_model: initializing, n_slots = 2, n_ctx_slot = 256, kv_unified = 'false'
+0.00.537.106 W srv          init: --cache-idle-slots requires --cache-ram, disabling
+0.00.541.459 I srv  server_run_i: model loaded
+0.00.541.464 I srv  server_on_li: listening on http://127.0.0.1:8080
+Response from server {
+  "status": "ok"
+}
+Response from server {
+  "tokens": [
+    557,
+    827,
+    1302,
+    821,
+    799,
+    1111,
+    1648,
+    730,
+    862,
+    2596,
+    876,
+    922,
+    5021,
+    2153,
+    587,
+    1808,
+    1337,
+    5145,
+    3036,
+    797,
+    779,
+    3399,
+    772,
+    585,
+    961,
+    593,
+    2158,
+    7578,
+    766,
+    5708,
+    1232,
+    575,
+    2548,
+    840,
+    589,
+    1694,
+    779,
+    794,
+    805,
+    3449,
+    809,
+    961,
+    881,
+    2107,
+    809,
+    771,
+    592,
+    2076,
+    779,
+    878,
+    1059,
+    1138,
+    591,
+    1871,
+    810,
+    779,
+    792,
+    788,
+    1187,
+    781,
+    1246,
+    592,
+    1210,
+    775,
+    773,
+    1201
+  ]
+}
+Response from server {
+  "tokens": [
+    548,
+    782,
+    771,
+    1514,
+    2721,
+    1232,
+    1213,
+    791,
+    2208,
+    779,
+    812,
+    937,
+    7069,
+    779,
+    8008,
+    1695,
+    768,
+    781,
+    827,
+    1755,
+    4785,
+    886,
+    1475,
+    799,
+    822,
+    791,
+    1377
+  ]
+}
+Response from server {
+  "tokens": [
+    7755,
+    768,
+    1434,
+    776,
+    878,
+    1174,
+    3627,
+    779,
+    2731,
+    2651
+  ]
+}
+0.00.574.669 I slot get_availabl: id  0 | task -1 | selected slot by id (0)
+0.00.574.701 I slot launch_slot_: id  0 | task 0 | processing task, is_child = 0
+0.00.628.920 I slot print_timing: id  0 | task 0 | prompt eval time =      54.07 ms /    66 tokens (    0.82 ms per token,  1220.57 tokens per second)
+0.00.628.925 I slot print_timing: id  0 | task 0 |        eval time =       0.00 ms /     1 tokens (    0.00 ms per token,     0.00 tokens per second)
+0.00.628.926 I slot print_timing: id  0 | task 0 |       total time =      54.07 ms /    67 tokens
+0.00.628.927 I slot print_timing: id  0 | task 0 |    graphs reused =          1
+0.00.628.928 I slot print_timing: id  0 | task 0 |   graph reallocs =          0    /     0        (same size) / (changed size)
+0.00.628.994 I slot      release: id  0 | task 0 | stop processing: n_tokens = 66, truncated = 0
+Response from server {
+  "index": 0,
+  "content": " in",
+  "tokens": [],
+  "id_slot": 0,
+  "stop": true,
+  "model": "lfm2-hybrid",
+  "tokens_predicted": 1,
+  "tokens_evaluated": 66,
+  "generation_settings": {
+    "seed": 42,
+    "temperature": 0.0,
+    "dynatemp_range": 0.0,
+    "dynatemp_exponent": 1.0,
+    "top_k": 40,
+    "top_p": 0.949999988079071,
+    "min_p": 0.05000000074505806,
+    "top_n_sigma": -1.0,
+    "xtc_probability": 0.0,
+    "xtc_threshold": 0.10000000149011612,
+    "typical_p": 1.0,
+    "repeat_last_n": 64,
+    "repeat_penalty": 1.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0,
+    "dry_multiplier": 0.0,
+    "dry_base": 1.75,
+    "dry_allowed_length": 2,
+    "dry_penalty_last_n": 64,
+    "dry_sequence_breakers": [
+      "\n",
+      ":",
+      "\"",
+      "*"
+    ],
+    "mirostat": 0,
+    "mirostat_tau": 5.0,
+    "mirostat_eta": 0.10000000149011612,
+    "adaptive_target": -1.0,
+    "adaptive_decay": 0.8999999761581421,
+    "stop": [],
+    "max_tokens": 1,
+    "n_predict": 1,
+    "n_keep": 0,
+    "n_discard": 0,
+    "ignore_eos": false,
+    "stream": false,
+    "logit_bias": [],
+    "n_probs": 5,
+    "min_keep": 0,
+    "grammar": "",
+    "grammar_lazy": false,
+    "grammar_triggers": [],
+    "preserved_tokens": [],
+    "chat_format": "Content-only",
+    "reasoning_format": "deepseek",
+    "reasoning_in_content": false,
+    "generation_prompt": "",
+    "samplers": [
+      "penalties",
+      "dry",
+      "top_n_sigma",
+      "top_k",
+      "typ_p",
+      "top_p",
+      "min_p",
+      "xtc",
+      "temperature"
+    ],
+    "speculative.types": "none",
+    "timings_per_token": false,
+    "post_sampling_probs": false,
+    "backend_sampling": false,
+    "lora": []
+  },
+  "prompt": "Purple elephants quietly compose sonnets about tax law in the moonlight while seven tiny robots repair the broken lighthouse lens before the storm arrives and the farmer counts his sheep",
+  "has_new_line": false,
+  "truncated": false,
+  "stop_type": "limit",
+  "stopping_word": "",
+  "tokens_cached": 66,
+  "timings": {
+    "cache_n": 0,
+    "prompt_n": 66,
+    "prompt_ms": 54.073,
+    "prompt_per_token_ms": 0.8192878787878788,
+    "prompt_per_second": 1220.5721894475987,
+    "predicted_n": 1,
+    "predicted_ms": 0.001,
+    "predicted_per_token_ms": 0.0,
+    "predicted_per_second": 0.0
+  },
+  "completion_probabilities": [
+    {
+      "id": 797,
+      "token": " in",
+      "bytes": [
+        32,
+        105,
+        110
+      ],
+      "logprob": -1.2721542119979858,
+      "top_logprobs": [
+        {
+          "id": 797,
+          "token": " in",
+          "bytes": [
+            32,
+            105,
+            110
+          ],
+          "logprob": -1.2721542119979858
+        },
+        {
+          "id": 769,
+          "token": "in",
+          "bytes": [
+            105,
+            110
+          ],
+          "logprob": -2.2734692096710205
+        },
+        {
+          "id": 809,
+          "token": " l",
+          "bytes": [
+            32,
+            108
+          ],
+          "logprob": -2.473205089569092
+        },
+        {
+          "id": 840,
+          "token": " re",
+          "bytes": [
+            32,
+            114,
+            101
+          ],
+          "logprob": -2.539430856704712
+        },
+        {
+          "id": 823,
+          "token": " th",
+          "bytes": [
+            32,
+            116,
+            104
+          ],
+          "logprob": -2.9196038246154785
+        }
+      ]
+    }
+  ]
+}
+0.00.633.327 I slot get_availabl: id  0 | task -1 | selected slot by id (0)
+0.00.633.362 I slot launch_slot_: id  0 | task 4 | processing task, is_child = 0
+0.00.702.455 I slot print_timing: id  0 | task 4 | prompt eval time =      68.97 ms /    93 tokens (    0.74 ms per token,  1348.45 tokens per second)
+0.00.702.466 I slot print_timing: id  0 | task 4 |        eval time =       0.00 ms /     1 tokens (    0.00 ms per token,     0.00 tokens per second)
+0.00.702.467 I slot print_timing: id  0 | task 4 |       total time =      68.97 ms /    94 tokens
+0.00.702.468 I slot print_timing: id  0 | task 4 |    graphs reused =          1
+0.00.702.468 I slot print_timing: id  0 | task 4 |   graph reallocs =          0    /     0        (same size) / (changed size)
+0.00.702.496 I slot      release: id  0 | task 4 | stop processing: n_tokens = 93, truncated = 0
+Response from server {
+  "index": 0,
+  "content": " are",
+  "tokens": [],
+  "id_slot": 0,
+  "stop": true,
+  "model": "lfm2-hybrid",
+  "tokens_predicted": 1,
+  "tokens_evaluated": 93,
+  "generation_settings": {
+    "seed": 42,
+    "temperature": 0.0,
+    "dynatemp_range": 0.0,
+    "dynatemp_exponent": 1.0,
+    "top_k": 40,
+    "top_p": 0.949999988079071,
+    "min_p": 0.05000000074505806,
+    "top_n_sigma": -1.0,
+    "xtc_probability": 0.0,
+    "xtc_threshold": 0.10000000149011612,
+    "typical_p": 1.0,
+    "repeat_last_n": 64,
+    "repeat_penalty": 1.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0,
+    "dry_multiplier": 0.0,
+    "dry_base": 1.75,
+    "dry_allowed_length": 2,
+    "dry_penalty_last_n": 64,
+    "dry_sequence_breakers": [
+      "\n",
+      ":",
+      "\"",
+      "*"
+    ],
+    "mirostat": 0,
+    "mirostat_tau": 5.0,
+    "mirostat_eta": 0.10000000149011612,
+    "adaptive_target": -1.0,
+    "adaptive_decay": 0.8999999761581421,
+    "stop": [],
+    "max_tokens": 1,
+    "n_predict": 1,
+    "n_keep": 0,
+    "n_discard": 0,
+    "ignore_eos": false,
+    "stream": false,
+    "logit_bias": [],
+    "n_probs": 5,
+    "min_keep": 0,
+    "grammar": "",
+    "grammar_lazy": false,
+    "grammar_triggers": [],
+    "preserved_tokens": [],
+    "chat_format": "Content-only",
+    "reasoning_format": "deepseek",
+    "reasoning_in_content": false,
+    "generation_prompt": "",
+    "samplers": [
+      "penalties",
+      "dry",
+      "top_n_sigma",
+      "top_k",
+      "typ_p",
+      "top_p",
+      "min_p",
+      "xtc",
+      "temperature"
+    ],
+    "speculative.types": "none",
+    "timings_per_token": false,
+    "post_sampling_probs": false,
+    "backend_sampling": false,
+    "lora": []
+  },
+  "prompt": "Purple elephants quietly compose sonnets about tax law in the moonlight while seven tiny robots repair the broken lighthouse lens before the storm arrives and the farmer counts his sheepGreen apples rolled down the hill toward the river where a curious otter collected them",
+  "has_new_line": false,
+  "truncated": false,
+  "stop_type": "limit",
+  "stopping_word": "",
+  "tokens_cached": 93,
+  "timings": {
+    "cache_n": 0,
+    "prompt_n": 93,
+    "prompt_ms": 68.968,
+    "prompt_per_token_ms": 0.7415913978494624,
+    "prompt_per_second": 1348.451455747593,
+    "predicted_n": 1,
+    "predicted_ms": 0.001,
+    "predicted_per_token_ms": 0.0,
+    "predicted_per_second": 0.0
+  },
+  "completion_probabilities": [
+    {
+      "id": 938,
+      "token": " are",
+      "bytes": [
+        32,
+        97,
+        114,
+        101
+      ],
+      "logprob": -0.25569114089012146,
+      "top_logprobs": [
+        {
+          "id": 938,
+          "token": " are",
+          "bytes": [
+            32,
+            97,
+            114,
+            101
+          ],
+          "logprob": -0.25569114089012146
+        },
+        {
+          "id": 922,
+          "token": " com",
+          "bytes": [
+            32,
+            99,
+            111,
+            109
+          ],
+          "logprob": -2.2092995643615723
+        },
+        {
+          "id": 789,
+          "token": " w",
+          "bytes": [
+            32,
+            119
+          ],
+          "logprob": -3.956540584564209
+        },
+        {
+          "id": 2701,
+          "token": " caus",
+          "bytes": [
+            32,
+            99,
+            97,
+            117,
+            115
+          ],
+          "logprob": -4.2960638999938965
+        },
+        {
+          "id": 1081,
+          "token": " us",
+          "bytes": [
+            32,
+            117,
+            115
+          ],
+          "logprob": -4.511411190032959
+        }
+      ]
+    }
+  ]
+}
+--------------------------- Captured stdout teardown ---------------------------
+Stopping server with pid=57820
+0.00.741.111 I srv    operator(): operator(): cleaning up before exit...
+=========================== short test summary info ============================
+FAILED unit/test_completion.py::test_completion_stream_with_openai_library_stops
+FAILED unit/test_completion.py::test_completion_cache_hybrid_memory[64] - Ass...
+============= 2 failed, 139 passed, 1 skipped in 181.17s (0:03:01) =============

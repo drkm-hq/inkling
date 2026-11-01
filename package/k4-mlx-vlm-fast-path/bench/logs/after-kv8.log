@@ -1,0 +1,22 @@
+W1029 02:36:39.603000 50061 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+[02:36:40] {"kind": "meta", "tag": "after-kv8", "model": "~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit/snapshots/f8a0af554e168077bdaf48e1fb6682fb395c807c/", "mlx": "0.32.4", "mlx_vlm": "0.7.11", "mlx_vlm_file": "<workdir>/upstream/mlx-vlm/mlx_vlm/__init__.py", "git": "eb93183", "python": "~/.venvs/inkling/bin/python", "device": "Apple M5 Max", "argv": ["<workdir>/package/k4-mlx-vlm-fast-path/bench/equiv_bench.py", "--no-lock", "--tag", "after-kv8", "--prompts", "p_short,p_8k", "--repeats", "2", "--max-tokens", "128", "--kv-bits", "8", "--kv-group-size", "64", "--quantized-kv-start", "0"], "pid": 50061, "load1": 5.78759765625, "env_tf32": null}
+[02:36:51] load: lazy 0.7s, chunked eval 10.6s, 82.3 GiB of parameters, active 82.4 GiB, peak 82.4 GiB
+[02:36:51] parameter dtypes: {'mlx.core.bfloat16': 1014, 'mlx.core.uint32': 250, 'mlx.core.float32': 160}
+[02:36:51] make_cache kv kinds: ['KVCache', 'SlidingWindowKVCache']
+[02:36:51] prompt p_short: 833 chars, 239 tokens
+[02:36:51] prompt p_8k: 30131 chars, 8231 tokens
+[02:36:51] gen kwargs: {'max_tokens': 128, 'temperature': 0.0, 'top_p': 1.0, 'top_k': 0, 'verbose': False, 'kv_bits': 8.0, 'kv_group_size': 64, 'quantized_kv_start': 0}
+[02:36:51] warm-up with p_short
+[02:37:01] warmup p_short rep0: prompt 239 tok, prefill 5.71s (41.9 tok/s), TTFT 7.00s, decode 128 tok 45.67 tok/s wall (46.02 api), peak 89.5 GB api / 83.3 GiB, load1 5.5, aborted=None
+[02:37:01]   text64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>The user is asking for the narrator and the ship name based on the chapter titles listed, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "The'
+[02:37:08] run p_short rep1: prompt 239 tok, prefill 1.34s (178.4 tok/s), TTFT 1.34s, decode 128 tok 24.65 tok/s wall (24.85 api), peak 89.5 GB api / 83.3 GiB, load1 5.4, aborted=None
+[02:37:08]   text64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>The user is asking for the narrator and the ship name based on the chapter titles listed, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "The'
+[02:37:14] run p_short rep2: prompt 239 tok, prefill 1.09s (219.9 tok/s), TTFT 1.09s, decode 128 tok 25.66 tok/s wall (25.86 api), peak 89.5 GB api / 83.3 GiB, load1 6.1, aborted=None
+[02:37:14]   text64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>The user is asking for the narrator and the ship name based on the chapter titles listed, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "The'
+[02:37:14] SUMMARY p_short: prompt 239 tok | prefill 199.1 tok/s (spread 20.8%) | TTFT 1.21s | decode 25.15 tok/s (spread 4.0%) | peak 83.3 GiB | identical=True
+[02:37:38] run p_8k rep1: prompt 8231 tok, prefill 18.69s (440.5 tok/s), TTFT 18.70s, decode 128 tok 24.05 tok/s wall (24.24 api), peak 98.9 GB api / 92.1 GiB, load1 5.8, aborted=None
+[02:37:38]   text64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" They provide a table of contents / chapter list for Moby-Dick (or similar) and'
+[02:38:02] run p_8k rep2: prompt 8231 tok, prefill 19.26s (427.3 tok/s), TTFT 19.27s, decode 128 tok 24.46 tok/s wall (24.66 api), peak 98.9 GB api / 92.1 GiB, load1 5.8, aborted=None
+[02:38:02]   text64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" They provide a table of contents / chapter list for Moby-Dick (or similar) and'
+[02:38:02] SUMMARY p_8k: prompt 8231 tok | prefill 433.9 tok/s (spread 3.0%) | TTFT 18.99s | decode 24.26 tok/s (spread 1.7%) | peak 92.1 GiB | identical=True
+[02:38:02] done; maxrss 55.6 GiB

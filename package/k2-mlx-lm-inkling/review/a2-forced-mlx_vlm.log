@@ -1,0 +1,13 @@
+W1029 03:25:46.343000 66229 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+[03:25:54] mlx_vlm 0.7.11 (~/.venvs/inkling-base/lib/python3.12/site-packages/mlx_vlm/__init__.py, head None): lazy load 7.1s, chunked eval 6.7s, 82.3 GiB, active 82.3 GiB
+[03:25:54] run p_short_raw: 226 prompt tokens, teacher forced on the mlx-vlm 0.7.11 tokens of hold 2
+[03:26:03]   vs reference logprobs (K2-logprobs-mlx_vlm): KL mean 0.0000 median 0.0000 max 0.0000 (step 0); |dlogprob| top-1 mean 0.0000 max 0.0000; top-1 agreement 100.0%
+[03:26:03]   argmax agrees with the fed tokens at 128/128 steps; prefill 1.5s, decode 7.5s (16.9 tok/s), min margin 0.000
+[03:26:03] run p_2k_raw: 2072 prompt tokens, teacher forced on the mlx-vlm 0.7.11 tokens of hold 2
+[03:26:11]   dumped step 45 (fed token 25 at position 2117) -> mlx_vlm_p_2k_raw_step045.npz
+[03:26:11]   dumped step 46 (fed token 623 at position 2118) -> mlx_vlm_p_2k_raw_step046.npz
+[03:26:11]   dumped step 47 (fed token 101829 at position 2119) -> mlx_vlm_p_2k_raw_step047.npz
+[03:26:12]   dumped step 48 (fed token 382 at position 2120) -> mlx_vlm_p_2k_raw_step048.npz
+[03:26:16]   vs reference logprobs (K2-logprobs-mlx_vlm): KL mean 0.0000 median 0.0000 max 0.0000 (step 0); |dlogprob| top-1 mean 0.0000 max 0.0000; top-1 agreement 100.0%
+[03:26:16]   argmax agrees with the fed tokens at 128/128 steps; prefill 5.4s, decode 7.0s (18.2 tok/s), min margin 0.125
+[03:26:16] wrote <workdir>/package/k2-mlx-lm-inkling/review/a2-forced-mlx_vlm.json

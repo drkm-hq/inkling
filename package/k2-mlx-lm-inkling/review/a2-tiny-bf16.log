@@ -1,0 +1,21 @@
+mlx_lm from <workdir>/upstream/mlx-lm-a2/mlx_lm/__init__.py
+mlx_vlm from ~/.venvs/inkling-base/lib/python3.12/site-packages/mlx_vlm/models/inkling/language.py
+fp32 (TF32 off): mlx-vlm vs oracle 6.71e-07, mlx-lm vs oracle 6.42e-07, routes identical: True
+
+mlx.core.bfloat16: tokens whose routed experts differ from fp32: mlx-vlm 2/32, mlx-lm 2/32; 30 tokens routed identically by both
+  mlx-vlm vs oracle, all tokens                    max|d|/max|ref| = 6.834e-01
+  mlx-lm  vs oracle, all tokens                    max|d|/max|ref| = 6.793e-01
+  mlx-lm  vs mlx-vlm, all tokens                   max|d|/max|ref| = 1.687e-02
+  mlx-vlm vs oracle, identically routed tokens     max|d|/max|ref| = 4.269e-01
+  mlx-lm  vs oracle, identically routed tokens     max|d|/max|ref| = 4.321e-01
+  mlx-lm  vs mlx-vlm, identically routed tokens    max|d|/max|ref| = 1.687e-02
+  top-1 agreement with the oracle over 32 positions: mlx-vlm 0.906, mlx-lm 0.906; mlx-lm == mlx-vlm 1.000
+
+mlx.core.float16: tokens whose routed experts differ from fp32: mlx-vlm 0/32, mlx-lm 0/32; 32 tokens routed identically by both
+  mlx-vlm vs oracle, all tokens                    max|d|/max|ref| = 1.976e-03
+  mlx-lm  vs oracle, all tokens                    max|d|/max|ref| = 1.777e-03
+  mlx-lm  vs mlx-vlm, all tokens                   max|d|/max|ref| = 1.784e-03
+  mlx-vlm vs oracle, identically routed tokens     max|d|/max|ref| = 1.976e-03
+  mlx-lm  vs oracle, identically routed tokens     max|d|/max|ref| = 1.777e-03
+  mlx-lm  vs mlx-vlm, identically routed tokens    max|d|/max|ref| = 1.784e-03
+  top-1 agreement with the oracle over 32 positions: mlx-vlm 1.000, mlx-lm 1.000; mlx-lm == mlx-vlm 1.000

@@ -1,0 +1,127 @@
+diff --git a/mlx_vlm/generate/common.py b/mlx_vlm/generate/common.py
+--- a/mlx_vlm/generate/common.py
++++ b/mlx_vlm/generate/common.py
+@@ -232,15 +232,31 @@
+             prompt_cache[index] = quantize_entry(layer_cache)
+         return
+ 
++    def quantize_uniform(entry, nested=False):
++        # A restored composite can be a plain CacheList, without its model's
++        # conversion hook. Keep its window and auxiliary caches unchanged.
++        if nested and (
++            isinstance(entry, cache.RotatingKVCache)
++            or getattr(entry, "preserve_auxiliary_kv_state", False)
++        ):
++            return entry
++        # An explicit hook owns the whole entry, including below its threshold.
++        # Preserve the existing behavior of direct top-level cache hooks.
++        if hasattr(entry, "to_quantized"):
++            if entry.offset >= quantized_kv_start:
++                return entry.to_quantized(group_size=kv_group_size, bits=int(kv_bits))
++            return entry
++        if isinstance(entry, cache.CacheList):
++            entry.caches = [quantize_uniform(sub, True) for sub in entry.caches]
++        elif isinstance(entry, list):
++            for index, sub in enumerate(entry):
++                entry[index] = quantize_uniform(sub, True)
++        elif isinstance(entry, tuple):
++            return tuple(quantize_uniform(sub, True) for sub in entry)
++        return entry
++
+     for index, layer_cache in enumerate(prompt_cache):
+-        if (
+-            hasattr(layer_cache, "to_quantized")
+-            and layer_cache.offset >= quantized_kv_start
+-        ):
+-            prompt_cache[index] = layer_cache.to_quantized(
+-                group_size=kv_group_size,
+-                bits=int(kv_bits),
+-            )
++        prompt_cache[index] = quantize_uniform(layer_cache)
+ 
+ 
+ @contextlib.contextmanager
+diff --git a/mlx_vlm/tests/test_inkling_fast_path.py b/mlx_vlm/tests/test_inkling_fast_path.py
+--- a/mlx_vlm/tests/test_inkling_fast_path.py
++++ b/mlx_vlm/tests/test_inkling_fast_path.py
+@@ -544,3 +544,80 @@
+         np.testing.assert_allclose(np.array(got), np.array(want), atol=0.15, rtol=0.05)
+         assert cache[1].caches[0].offset == 301 + step
+         y = mx.argmax(want[:, -1], axis=-1)[:, None]
++
++
++@pytest.mark.parametrize("restore_path", ["apc-memory", "apc-disk", "batch-row"])
++def test_uniform_kv_quantization_after_cache_reconstruction(tmp_path, restore_path):
++    from mlx_vlm.apc import DiskBlockStore, _clone_prompt_cache_for_apc
++    from mlx_vlm.generate.common import maybe_quantize_kv_cache
++    from mlx_vlm.models.cache import QuantizedKVCache
++
++    model = tiny_model(head_dim=32, swa_head_dim=32)
++    ids = tokens(8)
++    if restore_path == "batch-row":
++        batch_cache = _make_cache(model, left_padding=[0, 0])
++        model(mx.concatenate([ids, ids], axis=0), cache=batch_cache)
++        restored = [entry.extract(0) for entry in batch_cache]
++    else:
++        cache = model.make_cache()
++        model(ids, cache=cache)
++        if restore_path == "apc-memory":
++            restored = _clone_prompt_cache_for_apc(cache)
++        else:
++            store = DiskBlockStore(tmp_path)
++            try:
++                assert store.save_exact_cache(
++                    1, ids.flatten().tolist(), 0, cache, synchronous=True
++                )
++                restored = store.load_exact_cache(1)[2]
++            finally:
++                store.close()
++    assert all(type(entry) is CacheList for entry in restored)
++    # Each real reuse path loses InklingCacheList's hook. Conversion must still
++    # wait for the threshold, then reach the global KV cache inside the pair.
++    maybe_quantize_kv_cache(restored, 10, 32, 8, "uniform")
++    assert type(restored[1][0]) is KVCache
++    model(tokens(2), cache=restored)
++    before = [(entry[0], entry[1]) for entry in restored]
++    maybe_quantize_kv_cache(restored, 10, 32, 8, "uniform")
++    assert [type(entry[0]) for entry in restored] == [
++        SlidingWindowKVCache,
++        QuantizedKVCache,
++        SlidingWindowKVCache,
++    ]
++    assert [entry[0].offset for entry in restored] == [10, 10, 10]
++    assert all(entry[1] is old[1] for entry, old in zip(restored, before))
++    assert restored[0][0] is before[0][0]
++    assert restored[2][0] is before[2][0]
++    output = model(tokens(1), cache=restored).logits
++    assert output.shape == (1, 1, VOCAB - 4)
++    assert mx.all(mx.isfinite(output)).item()
++
++
++def test_uniform_nested_cache_conversion_preserves_explicit_hooks():
++    from mlx_vlm.generate.common import maybe_quantize_kv_cache
++    from mlx_vlm.models.cache import QuantizedKVCache, RotatingKVCache
++
++    def filled():
++        cache = KVCache()
++        values = mx.ones((1, 1, 4, 32))
++        cache.update_and_fetch(values, values)
++        return cache
++
++    class ProtectedPair(CacheList):
++        offset = 4
++
++        def to_quantized(self, **kwargs):
++            return self
++
++    explicit = ProtectedPair(filled())
++    nested = [CacheList(filled()), (filled(),), [filled()], explicit]
++    maybe_quantize_kv_cache(nested, 5, 32, 8, "uniform")
++    assert all(type(entry[0]) is KVCache for entry in nested)
++    maybe_quantize_kv_cache(nested, 4, 32, 8, "uniform")
++    assert all(type(entry[0]) is QuantizedKVCache for entry in nested[:3])
++    assert type(explicit[0]) is KVCache
++    # Direct hook behavior remains unchanged by recursive composite support.
++    rotating = RotatingKVCache(8)
++    with pytest.raises(NotImplementedError):
++        maybe_quantize_kv_cache([rotating], 0, 32, 8, "uniform")

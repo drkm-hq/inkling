@@ -1,0 +1,13 @@
+[03:13:15] {"kind": "meta", "tag": "a4-after-eager", "model": "~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit/snapshots/f8a0af554e168077bdaf48e1fb6682fb395c807c/", "mlx": "0.32.4", "mlx_vlm": "0.7.11", "mlx_vlm_file": "<workdir>/upstream/mlx-vlm-a4/mlx_vlm/__init__.py", "git": "026dd58", "python": "~/.venvs/inkling-a4/bin/python", "device": "Apple M5 Max", "argv": ["<workdir>/package/k4-mlx-vlm-fast-path/review/a4_equiv_bench.py", "--no-lock", "--tag", "a4-after-eager", "--out-dir", "<workdir>/package/k4-mlx-vlm-fast-path/review/results", "--eager-load", "--prompts", "p_short", "--repeats", "1", "--max-tokens", "16"], "pid": 60357, "load1": 6.1337890625, "env_tf32": null}
+[03:13:27] load: eager 11.7s, chunked eval 0.0s, 82.3 GiB of parameters, active 82.3 GiB, peak 82.4 GiB
+[03:13:27] parameter dtypes: {'mlx.core.bfloat16': 1014, 'mlx.core.uint32': 250, 'mlx.core.float32': 160}
+[03:13:27] make_cache kv kinds: ['KVCache', 'SlidingWindowKVCache']
+[03:13:27] prompt p_short: 833 chars, 239 tokens
+[03:13:27] gen kwargs: {'max_tokens': 16, 'temperature': 0.0, 'top_p': 1.0, 'top_k': 0, 'verbose': False}
+[03:13:27] warm-up with p_short
+[03:13:34] warmup p_short rep0: prompt 239 tok, prefill 6.10s (39.2 tok/s), TTFT 7.30s, decode 16 tok 26.89 tok/s wall (28.68 api), peak 89.5 GB api / 83.3 GiB, load1 6.4, aborted=None
+[03:13:34]   text64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|end_message|>'
+[03:13:37] run p_short rep1: prompt 239 tok, prefill 1.60s (149.5 tok/s), TTFT 1.60s, decode 16 tok 22.83 tok/s wall (24.36 api), peak 89.5 GB api / 83.3 GiB, load1 6.2, aborted=None
+[03:13:37]   text64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|end_message|>'
+[03:13:37] SUMMARY p_short: prompt 239 tok | prefill 149.5 tok/s (spread 0.0%) | TTFT 1.60s | decode 22.83 tok/s (spread 0.0%) | peak 83.3 GiB | identical=True
+[03:13:37] done; maxrss 57.9 GiB

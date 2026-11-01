@@ -1,0 +1,69 @@
+decode SWA S=512: banded_mask_v2 [1,32,1,512]                             0.0473 ms  writes 0.03 MB
+decode SWA S=512: SDPA with additive mask                                 0.0371 ms  K+V read 2.10 MB
+decode SWA S=512: SDPA mask=None                                          0.0365 ms  
+decode SWA S=512: mask_v2 + SDPA (as in InklingAttention)                 0.0536 ms  
+decode global S=2048: banded_mask_v2 [1,32,1,2048]                        0.0482 ms  writes 0.13 MB
+decode global S=2048: SDPA with additive mask                             0.0597 ms  K+V read 8.39 MB
+decode global S=2048: SDPA mask=None                                      0.0499 ms  
+decode global S=2048: mask_v2 + SDPA (as in InklingAttention)             0.0801 ms  
+decode global S=2048: tau where() over the mask (L473)                    0.0354 ms  
+decode global S=8192: banded_mask_v2 [1,32,1,8192]                        0.0752 ms  writes 0.52 MB
+decode global S=8192: SDPA with additive mask                             0.0961 ms  K+V read 33.55 MB
+decode global S=8192: SDPA mask=None                                      0.0911 ms  
+decode global S=8192: mask_v2 + SDPA (as in InklingAttention)             0.1352 ms  
+decode global S=8192: tau where() over the mask (L473)                    0.0318 ms  
+decode global S=32768: banded_mask_v2 [1,32,1,32768]                      0.1384 ms  writes 2.10 MB
+decode global S=32768: SDPA with additive mask                            0.3958 ms  K+V read 134.22 MB
+decode global S=32768: SDPA mask=None                                     1.5532 ms  
+decode global S=32768: mask_v2 + SDPA (as in InklingAttention)            4.6594 ms  
+decode global S=32768: tau where() over the mask (L473)                   0.0529 ms  
+prefill SWA LQ=2048 S=2048: banded_mask_v2 [1,32,2048,2048]               2.6670 ms  writes 0.27 GB
+prefill SWA LQ=2048 S=2048: SDPA with additive mask                       2.7721 ms  
+prefill SWA LQ=2048 S=2048: SDPA mask='causal' (no bias; reference)       0.9852 ms  
+prefill SWA LQ=2048 S=2559: banded_mask_v2 [1,32,2048,2559]               2.9635 ms  writes 0.34 GB
+prefill SWA LQ=2048 S=2559: SDPA with additive mask                       3.0588 ms  
+prefill global LQ=2048 S=2048: banded_mask_v2 [1,32,2048,2048]            3.4221 ms  writes 0.27 GB
+prefill global LQ=2048 S=2048: SDPA with additive mask                    2.0204 ms  
+prefill global LQ=2048 S=2048: SDPA mask='causal' (no bias; reference)    0.9709 ms  
+prefill global LQ=2048 S=2048: tau where() over the mask (L473)           4.3306 ms  
+prefill global LQ=2048 S=8192: banded_mask_v2 [1,32,2048,8192]            7.9854 ms  writes 1.07 GB
+prefill global LQ=2048 S=8192: SDPA with additive mask                    8.0369 ms  
+prefill global LQ=2048 S=8192: tau where() over the mask (L473)          17.3012 ms  
+prefill global LQ=8192 S=8192: banded_mask_v2 [1,32,8192,8192]           41.0522 ms  writes 4.29 GB
+prefill global LQ=8192 S=8192: SDPA with additive mask                   73.4185 ms  
+prefill global LQ=8192 S=8192: SDPA mask='causal' (no bias; reference)   53.0145 ms  
+prefill global LQ=8192 S=8192: tau where() over the mask (L473)          85.8680 ms  
+sconv decode fused kernel C=1024 (+residual)                              0.0866 ms  
+sconv decode UNFUSED path C=1024 (mask forces mx ops)                     0.3749 ms  
+sconv prefill T=2048 C=1024 (conv1d path)                                 1.9394 ms  
+sconv decode fused kernel C=4096 (+residual)                              0.0766 ms  
+sconv decode UNFUSED path C=4096 (mask forces mx ops)                     0.3806 ms  
+sconv prefill T=2048 C=4096 (conv1d path)                                 3.4118 ms  
+route kernel N=1 (inkling_moe_route)                                      0.3096 ms  
+route pure-MLX N=1 (L772-793 chain)                                       0.5723 ms  
+router gemv N=1 (xf @ gate_weight.T, bf16 258x4096)                       0.2673 ms  
+route kernel N=8 (inkling_moe_route)                                      0.3515 ms  
+route pure-MLX N=8 (L772-793 chain)                                       0.9854 ms  
+router gemv N=8 (xf @ gate_weight.T, bf16 258x4096)                       0.2554 ms  
+route kernel N=2048 (inkling_moe_route)                                   0.3941 ms  
+route pure-MLX N=2048 (L772-793 chain)                                    0.6447 ms  
+router gemv N=2048 (xf @ gate_weight.T, bf16 258x4096)                    0.4308 ms  
+MoE block q4 N=1: default path (down_combine kernel if q4)                0.6203 ms  
+MoE block q4 N=1: gather_qmm down path (_DOWN_COMBINE=False)              0.4333 ms  
+MoE block q4 N=3: default path (down_combine kernel if q4)                1.2462 ms  
+MoE block q4 N=3: gather_qmm down path (_DOWN_COMBINE=False)              1.1796 ms  
+MoE block q4 N=8: default path (down_combine kernel if q4)                1.8383 ms  
+MoE block q4 N=8: gather_qmm down path (_DOWN_COMBINE=False)              1.6185 ms  
+MoE block q4 N=2048 (prefill, sorted gather_qmm)                         40.4629 ms  
+  gather_qmm q4 up_proj N=2048 sorted (x gathered [12288,1,4096])        12.6267 ms  
+  gather_qmm q4 up_proj N=2048 UNsorted                                 121.3321 ms  
+  gather_qmm q4 down_proj N=2048 sorted                                  65.9731 ms  
+  reference bf16 GEMM [2048,4096]x[4096,2048] (1/18 of the MoE FLOPs)     7.1795 ms  
+  reference q4 quantized_matmul [2048,4096]x[4096,2048]                   3.5226 ms  
+Traceback (most recent call last):
+  File "<workdir>/bench/R1/kernels_bench.py", line 169, in <module>
+    setattr(moe.switch_mlp, p, getattr(moe.switch_mlp, p).to_quantized(group_size=64, bits=bits))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "~/.venvs/inkling/lib/python3.12/site-packages/mlx/nn/layers/base.py", line 103, in __getattr__
+    super(Module, self).__getattribute__(key)
+AttributeError: 'QuantizedSwitchLinear' object has no attribute 'to_quantized'

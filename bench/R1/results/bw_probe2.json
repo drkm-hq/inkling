@@ -1,0 +1,110 @@
+{
+ "mlx": "0.32.4",
+ "results": {
+  "gemv M=1 4096x4096 bf16 (16 copies, chain 32)": {
+   "ms_per_op": 0.07425781245729013,
+   "bytes": 33554432,
+   "GB/s": 451.8639977349057
+  },
+  "gemv M=1 4096x4096 q8 (16 copies, chain 32)": {
+   "ms_per_op": 0.04297787495488592,
+   "bytes": 17825792.0,
+   "GB/s": 414.76671470406154
+  },
+  "gemv M=1 4096x4096 q4 (16 copies, chain 32)": {
+   "ms_per_op": 0.031930999966789386,
+   "bytes": 9437184.0,
+   "GB/s": 295.5492784383631
+  },
+  "gemv M=1 4096x4096 q2 (16 copies, chain 32)": {
+   "ms_per_op": 0.022126312501313805,
+   "bytes": 5242880.0,
+   "GB/s": 236.9522711788822
+  },
+  "gemv M=1 6656x4096 bf16 (+slice) (12 copies, chain 24)": {
+   "ms_per_op": 0.12072741674273857,
+   "bytes": 54525952,
+   "GB/s": 451.64514797985674
+  },
+  "gemv M=1 6656x4096 q8 (+slice) (12 copies, chain 24)": {
+   "ms_per_op": 0.07051737505510876,
+   "bytes": 28966912.0,
+   "GB/s": 410.77694649527996
+  },
+  "gemv M=1 6656x4096 q4 (+slice) (12 copies, chain 24)": {
+   "ms_per_op": 0.04543925009177959,
+   "bytes": 15335424.0,
+   "GB/s": 337.49289367727334
+  },
+  "gemv M=1 dense up+down 16384x4096 x2 bf16 (4 copies, chain 12)": {
+   "ms_per_op": 0.5613611665467033,
+   "bytes": 268435456,
+   "GB/s": 478.1867218413426
+  },
+  "gemv M=1 dense up+down 16384x4096 x2 q8 (4 copies, chain 12)": {
+   "ms_per_op": 0.3166840000024725,
+   "bytes": 142606336.0,
+   "GB/s": 450.31114928094445
+  },
+  "gemv M=1 dense up+down 16384x4096 x2 q4 (4 copies, chain 12)": {
+   "ms_per_op": 0.18225349989127912,
+   "bytes": 75497472.0,
+   "GB/s": 414.244291851937
+  },
+  "gemv M=1 dense up+down 16384x4096 x2 q2 (4 copies, chain 12)": {
+   "ms_per_op": 0.13569100004436527,
+   "bytes": 41943040.0,
+   "GB/s": 309.1070151025963
+  },
+  "gemv M=1 lm_head 201024x4096 bf16 (chain 6)": {
+   "ms_per_op": 3.3491319997362248,
+   "bytes": 1646788608,
+   "GB/s": 491.7060922441098
+  },
+  "gemv M=1 lm_head 201024x4096 q8 (chain 6)": {
+   "ms_per_op": 1.7990625001402805,
+   "bytes": 874856448.0,
+   "GB/s": 486.28463320856486
+  },
+  "gemv M=1 lm_head 201024x4096 q4 (chain 6)": {
+   "ms_per_op": 0.9392984999673596,
+   "bytes": 463159296.0,
+   "GB/s": 493.0906373384975
+  },
+  "gemv M=1 lm_head 201024x4096 q2 (chain 6)": {
+   "ms_per_op": 0.5331180000212044,
+   "bytes": 257310720.0,
+   "GB/s": 482.65247091594296
+  },
+  "SwitchGLU gather_qmm q2 N=1 K=6 up+gate+down (chain 16)": {
+   "ms_per_op": 0.16873959373242542,
+   "bytes": 47185920.0,
+   "GB/s": 279.63751100896854
+  },
+  "gather_qmm q2 down_proj only N=1 K=6 (chain 16)": {
+   "ms_per_op": 0.06314193740308838,
+   "bytes": 15728640.0,
+   "GB/s": 249.0997369876504
+  },
+  "gather_qmm q2 up_proj only N=1 K=6 (chain 16)": {
+   "ms_per_op": 0.06871615619274962,
+   "bytes": 15728640.0,
+   "GB/s": 228.8928961026426
+  },
+  "SwitchGLU gather_qmm q4 N=1 K=6 up+gate+down (chain 16)": {
+   "ms_per_op": 0.25640624994593963,
+   "bytes": 84934656.0,
+   "GB/s": 331.2503342563121
+  },
+  "gather_qmm q4 down_proj only N=1 K=6 (chain 16)": {
+   "ms_per_op": 0.09508721871043235,
+   "bytes": 28311552.0,
+   "GB/s": 297.7429814854164
+  },
+  "gather_qmm q4 up_proj only N=1 K=6 (chain 16)": {
+   "ms_per_op": 0.08907162498417165,
+   "bytes": 28311552.0,
+   "GB/s": 317.8515268474227
+  }
+ }
+}

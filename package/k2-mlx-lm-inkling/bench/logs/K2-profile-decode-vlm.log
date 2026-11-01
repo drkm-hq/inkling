@@ -1,0 +1,29 @@
+W1029 03:18:43.266000 61819 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+[03:19:06] mlx_vlm 0.7.11, context 525 tokens, load1 5.6
+[03:19:06] whole decode step (language model forward, 1 token):
+[03:19:07]   lm(y, cache).logits                                          46.900 ms  (best 44.719)
+[03:19:07] head and layer kinds (chained x10):
+[03:19:08]   final norm + /16 + lm_head + slice                            4.832 ms  (best 3.886)
+[03:19:09]   sliding MoE layer (x10, cache grows)                          1.833 ms  (best 1.539)
+[03:19:09]   global MoE layer (x10)                                        1.334 ms  (best 1.161)
+[03:19:09]   dense sliding layer 0 (x10)                                   0.860 ms  (best 0.785)
+[03:19:09]   => 33 sliding MoE + 7 global MoE + 2 dense = 71.5 ms of 46.9 ms per step
+[03:19:09] inside one sliding MoE layer (chained x10):
+[03:19:09]   input_layernorm                                               0.038 ms  (best 0.029)
+[03:19:09]   qkvr_proj GEMV [4096 -> 6656] bf16                            0.120 ms  (best 0.105)
+[03:19:09]   k_sconv + v_sconv kernels (2 x 1024 ch)                       0.101 ms  (best 0.064)
+[03:19:09]   q_norm + k_norm                                               0.050 ms  (best 0.034)
+[03:19:09]   KVCache.update_and_fetch (full history, k and v)              0.074 ms  (best 0.056)
+[03:19:09]   banded mask kernel (L=1, S=512)                               0.053 ms  (best 0.039)
+[03:19:09]   SDPA (32q/8kv heads, 512 keys, additive mask)                 0.055 ms  (best 0.041)
+[03:19:09]   o_proj GEMV [4096 -> 4096] bf16                               0.076 ms  (best 0.064)
+[03:19:10]   attn_sconv kernel with residual (4096 ch)                     0.069 ms  (best 0.041)
+[03:19:10]   post_attention_layernorm                                      0.041 ms  (best 0.029)
+[03:19:10]   router GEMV bf16 [4096 -> 258]                                0.047 ms  (best 0.029)
+[03:19:10]   route kernel                                                  0.066 ms  (best 0.038)
+[03:19:10]   switch_mlp (6 experts: 3 gather_qmm 2-bit + swiglu)           0.221 ms  (best 0.193)
+[03:19:10]   weighted sum of the 6 expert outputs                          0.060 ms  (best 0.042)
+[03:19:10]   shared experts dense (3 quantized GEMV + swiglu)              0.110 ms  (best 0.094)
+[03:19:10]   MoE block total (mlp(x))                                      0.410 ms  (best 0.356)
+[03:19:10]   mlp_sconv kernel with residual (4096 ch)                      0.060 ms  (best 0.040)
+[03:19:10] done

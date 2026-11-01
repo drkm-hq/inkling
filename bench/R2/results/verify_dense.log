@@ -1,0 +1,20 @@
+# started 2026-10-29T02:00:45Z
+VERIFY metal_dense_vs_cpu_banded n_q=512 n_kv=2048 swa=0 extent=1024 nmse=2.088e-07 max_abs_diff=2.921e-05
+VERIFY cpu_dense_vs_cpu_banded n_q=512 n_kv=2048 swa=0 extent=1024 nmse=1.386e-06 max_abs_diff=9.229e-05
+VERIFY metal_dense_vs_cpu_dense n_q=512 n_kv=2048 swa=0 extent=1024 nmse=1.645e-06 max_abs_diff=9.078e-05
+VERIFY metal_dense_vs_cpu_banded n_q=512 n_kv=8192 swa=0 extent=1024 nmse=2.472e-07 max_abs_diff=1.453e-05
+VERIFY cpu_dense_vs_cpu_banded n_q=512 n_kv=8192 swa=0 extent=1024 nmse=5.524e-06 max_abs_diff=8.580e-05
+VERIFY metal_dense_vs_cpu_dense n_q=512 n_kv=8192 swa=0 extent=1024 nmse=5.823e-06 max_abs_diff=8.735e-05
+VERIFY metal_dense_vs_cpu_banded n_q=512 n_kv=1024 swa=512 extent=1024 nmse=1.887e-07 max_abs_diff=5.959e-05
+VERIFY cpu_dense_vs_cpu_banded n_q=512 n_kv=1024 swa=512 extent=1024 nmse=5.076e-07 max_abs_diff=9.843e-05
+VERIFY metal_dense_vs_cpu_dense n_q=512 n_kv=1024 swa=512 extent=1024 nmse=7.417e-07 max_abs_diff=1.342e-04
+VERIFY metal_dense_vs_cpu_banded n_q=1 n_kv=8192 swa=0 extent=1024 nmse=2.235e-10 max_abs_diff=3.895e-07
+VERIFY cpu_dense_vs_cpu_banded n_q=1 n_kv=8192 swa=0 extent=1024 nmse=5.702e-06 max_abs_diff=6.632e-05
+VERIFY metal_dense_vs_cpu_dense n_q=1 n_kv=8192 swa=0 extent=1024 nmse=5.705e-06 max_abs_diff=6.628e-05
+VERIFY metal_dense_vs_cpu_banded n_q=17 n_kv=4100 swa=0 extent=1024 nmse=1.925e-07 max_abs_diff=1.826e-05
+VERIFY cpu_dense_vs_cpu_banded n_q=17 n_kv=4100 swa=0 extent=1024 nmse=2.854e-06 max_abs_diff=7.342e-05
+VERIFY metal_dense_vs_cpu_dense n_q=17 n_kv=4100 swa=0 extent=1024 nmse=3.090e-06 max_abs_diff=8.292e-05
+VERIFY metal_dense_vs_cpu_banded n_q=1 n_kv=768 swa=512 extent=1024 nmse=2.118e-10 max_abs_diff=1.693e-06
+VERIFY cpu_dense_vs_cpu_banded n_q=1 n_kv=768 swa=512 extent=1024 nmse=4.969e-07 max_abs_diff=1.024e-04
+VERIFY metal_dense_vs_cpu_dense n_q=1 n_kv=768 swa=512 extent=1024 nmse=4.969e-07 max_abs_diff=1.024e-04
+# finished 2026-10-29T02:00:55Z

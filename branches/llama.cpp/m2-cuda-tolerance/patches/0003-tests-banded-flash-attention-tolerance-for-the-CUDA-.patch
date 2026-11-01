@@ -1,0 +1,40 @@
+From 2dee8b49591fd63dc6d91f6b7a268c050bed4997 Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Thu, 29 Oct 2026 02:15:20 -0400
+Subject: [PATCH 3/3] tests : banded flash attention tolerance for the CUDA MMA
+ kernel
+
+0002 set the banded cases to NMSE 1e-6 from the Metal kernels (f32
+accumulators, ~1e-8). The CUDA MMA kernel accumulates VKQ in f16: on an
+H100, 25 of the 85 cases (every f16 prefill case with n_q >= 512 and
+n_kv > 1024) measure 1.1e-6 .. 4.2e-5, all decode and small-batch cases
+stay under 1e-6. Bound: 1e-4 up to 8192 keys, 5e-4 above, bf16 1e-4.
+
+Assisted-by: Claude Fable 5.1
+---
+ tests/test-backend-ops.cpp | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/tests/test-backend-ops.cpp b/tests/test-backend-ops.cpp
+index 715916c67..5c9bd5dc9 100644
+--- a/tests/test-backend-ops.cpp
++++ b/tests/test-backend-ops.cpp
+@@ -8778,13 +8778,13 @@ struct test_flash_attn_ext_banded : public test_case {
+     }
+ 
+     double max_nmse_err() override {
+-        // the scores and the accumulators are f32 in the kernels and in the CPU reference (which keeps the VKQ
+-        // accumulator in f32 for this op), so the backends agree to ~1e-8 for f16, f32 and quantized KV; the bf16
+-        // kernels are at ~1e-5, and a mean over 2^18 or more random rows loses the rest
+-        if (kv_type == GGML_TYPE_BF16 || n_kv >= (1 << 18)) {
++        // the CUDA MMA kernel accumulates VKQ in f16 and its error grows with the number of visible keys: NMSE up to
++        // 1.2e-5 at n_kv <= 8192 and 4.2e-5 at 32K (H100, n_q 512, flat softmax); the Metal kernels and the CPU
++        // reference keep the accumulators in f32 (~1e-8 for f16, f32 and quantized KV, ~1e-5 for bf16)
++        if (kv_type == GGML_TYPE_BF16) {
+             return 1e-4;
+         }
+-        return 1e-6;
++        return n_kv > 8192 ? 5e-4 : 1e-4;
+     }
+ 
+     uint64_t op_flops(ggml_tensor * t) override {

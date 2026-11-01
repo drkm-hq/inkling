@@ -1,0 +1,9 @@
+Waiting for GPU benchmark lock: pid=55387
+Acquired GPU benchmark lock: pid=55387 time=1793472814.444654
+RUN graph-order-tests.log
+RESULT graph-order-tests.log 0
+RUN test-relative-hardened.log
+RESULT test-relative-hardened.log 0
+RUN relative-order-probe.log
+RESULT relative-order-probe.log 0
+Released GPU benchmark lock: pid=55387

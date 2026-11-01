@@ -1,0 +1,41 @@
+{"section": "routed experts bits=2"}
+decode gather_qmm up    4096->2048 x6 2b                   | r1:    0.211 ms (best    0.194)     74 GB/s | r8:    0.054 ms (best    0.051)    290 GB/s
+decode gather_qmm down  2048->4096 x6 2b                   | r1:    0.261 ms (best    0.200)     60 GB/s | r8:    0.060 ms (best    0.053)    262 GB/s
+decode SwitchGLU (3 gather_qmm) x6 2b                      | r1:    0.348 ms (best    0.272)    136 GB/s | r8:    0.140 ms (best    0.103)    336 GB/s
+decode SwitchGLU fused gate+up (2 gather_qmm) x6 2b        | r1:    0.356 ms (best    0.291)    132 GB/s | r8:    0.132 ms (best    0.102)    357 GB/s
+prefill T=512 SwitchGLU sorted x6 2b (per call)            | r1:   10.460 ms (best    9.953)    192 GB/s
+{"label": "prefill T=512 2b per-token us", "us_per_token": 20.4}
+prefill T=512 SwitchGLU UNsorted x6 2b (per call)          | r1:  150.600 ms (best  124.635)
+prefill T=2048 SwitchGLU sorted x6 2b (per call)           | r1:   57.767 ms (best   56.064)     35 GB/s
+{"label": "prefill T=2048 2b per-token us", "us_per_token": 28.2}
+{"section": "routed experts bits=3"}
+decode gather_qmm up    4096->2048 x6 3b                   | r1:    0.283 ms (best    0.217)     78 GB/s | r8:    0.095 ms (best    0.087)    232 GB/s
+decode gather_qmm down  2048->4096 x6 3b                   | r1:    0.325 ms (best    0.236)     68 GB/s | r8:    0.093 ms (best    0.084)    236 GB/s
+decode SwitchGLU (3 gather_qmm) x6 3b                      | r1:    0.426 ms (best    0.332)    155 GB/s | r8:    0.199 ms (best    0.175)    331 GB/s
+decode SwitchGLU fused gate+up (2 gather_qmm) x6 3b        | r1:    0.478 ms (best    0.413)    138 GB/s | r8:    0.182 ms (best    0.173)    363 GB/s
+prefill T=512 SwitchGLU sorted x6 3b (per call)            | r1:   16.314 ms (best   14.819)    173 GB/s
+{"label": "prefill T=512 3b per-token us", "us_per_token": 31.9}
+prefill T=512 SwitchGLU UNsorted x6 3b (per call)          | r1:  174.748 ms (best  167.171)
+prefill T=2048 SwitchGLU sorted x6 3b (per call)           | r1:   62.491 ms (best   58.352)     45 GB/s
+{"label": "prefill T=2048 3b per-token us", "us_per_token": 30.5}
+{"section": "routed experts bits=4"}
+decode gather_qmm up    4096->2048 x6 4b                   | r1:    1.256 ms (best    0.253)     23 GB/s | r8:    0.132 ms (best    0.060)    215 GB/s
+decode gather_qmm down  2048->4096 x6 4b                   | r1:    2.458 ms (best    0.192)     12 GB/s | r8:    0.548 ms (best    0.140)     52 GB/s
+decode SwitchGLU (3 gather_qmm) x6 4b                      | r1:    3.436 ms (best    0.822)     25 GB/s | r8:    0.901 ms (best    0.259)     94 GB/s
+decode SwitchGLU fused gate+up (2 gather_qmm) x6 4b        | r1:    0.778 ms (best    0.431)    109 GB/s | r8:    0.273 ms (best    0.150)    311 GB/s
+prefill T=512 SwitchGLU sorted x6 4b (per call)            | r1:   14.578 ms (best   12.144)    249 GB/s
+{"label": "prefill T=512 4b per-token us", "us_per_token": 28.5}
+prefill T=512 SwitchGLU UNsorted x6 4b (per call)          | r1:  179.632 ms (best   78.082)
+prefill T=2048 SwitchGLU sorted x6 4b (per call)           | r1:   73.785 ms (best   62.313)     49 GB/s
+{"label": "prefill T=2048 4b per-token us", "us_per_token": 36.0}
+{"section": "shared experts bits=2"}
+decode shared experts via gather_qmm (E=2) 2b              | r1:    1.418 ms (best    0.379)     11 GB/s | r8:    0.189 ms (best    0.101)     83 GB/s
+decode shared experts as dense GLU (2I=4096) 2b            | r1:   11.673 ms (best    1.242)      1 GB/s | r8:    0.180 ms (best    0.108)     87 GB/s
+{"section": "shared experts bits=3"}
+decode shared experts via gather_qmm (E=2) 3b              | r1:    1.726 ms (best    0.427)     13 GB/s | r8:    0.179 ms (best    0.101)    123 GB/s
+decode shared experts as dense GLU (2I=4096) 3b            | r1:    4.011 ms (best    0.386)      5 GB/s | r8:    0.340 ms (best    0.144)     65 GB/s
+{"section": "shared experts bits=4"}
+decode shared experts via gather_qmm (E=2) 4b              | r1:    0.958 ms (best    0.581)     30 GB/s | r8:    0.319 ms (best    0.195)     89 GB/s
+decode shared experts as dense GLU (2I=4096) 4b            | r1:    0.718 ms (best    0.457)     39 GB/s | r8:    0.489 ms (best    0.163)     58 GB/s
+{"section": "router"}
+decode router fp32 (gemv+sigmoid+argpartition+softmax)     | r1:    0.817 ms (best    0.394)      5 GB/s | r8:    0.270 ms (best    0.087)     16 GB/s

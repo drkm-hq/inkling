@@ -1,0 +1,7 @@
+40 MoE layers' routing per token (N=1):
+  mlx-lm: fp32 gemv + compiled _select_experts                 7.31 ms (best 4.60)
+    gemv only                                                  1.53 ms (best 0.87)
+    _select_experts only                                       5.87 ms (best 3.42)
+    argpartition only                                          1.37 ms (best 0.86)
+    topk only (alternative)                                    1.22 ms (best 0.80)
+  mlx-vlm 0.7.11: _route_kernel only (40 calls)                1.49 ms (best 1.01)

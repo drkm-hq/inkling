@@ -1,0 +1,12 @@
+=== A-loader @ d6b2552: mlx_vlm/tests/test_load_eval_chunks.py
+5 passed in 8.20s
+=== B-window-caches @ a261464: mlx_vlm/tests/test_sliding_window_cache.py mlx_vlm/tests/test_inkling_fast_path.py mlx_vlm/tests/test_inkling_kernel_gates.py mlx_vlm/tests/test_cache.py
+445 passed in 67.18s (0:01:07)
+=== C-decode-kernels @ 2d52a2e: mlx_vlm/tests/test_inkling_fast_path.py mlx_vlm/tests/test_inkling_kernel_gates.py
+28 passed in 22.20s
+=== D-kv-bits @ 27b6e6e: mlx_vlm/tests/test_inkling_fast_path.py mlx_vlm/tests/test_sliding_window_cache.py mlx_vlm/tests/test_load_eval_chunks.py mlx_vlm/tests/test_cache.py mlx_vlm/tests/test_speculative.py
+999 passed in 76.41s (0:01:16)
+black....................................................................Failed
+isort....................................................................Passed
+autoflake................................................................Passed
+=== boundaries done

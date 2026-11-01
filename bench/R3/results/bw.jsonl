@@ -1,0 +1,44 @@
+{"_sysinfo": {"mlx": "0.32.4", "device": "Apple M5 Max", "arch": "applegpu_g17s", "load1": 28.8, "load5": 16.4}, "_t": 1793238931.273643}
+{"section": "bandwidth probe"}
+{"label": "a+1  fp16 1 GiB (read+write)", "med_ms_r1": 5.1587, "best_ms_r1": 4.6945, "gbps_r1": 416.3, "med_ms_r4": 4.8927, "best_ms_r4": 4.4053, "gbps_r4": 438.9, "nbytes": 2147483648}
+{"label": "a*b  fp16 1 GiB (2 reads+write)", "med_ms_r1": 19.5531, "best_ms_r1": 11.629, "gbps_r1": 164.7, "med_ms_r4": 12.2663, "best_ms_r4": 5.1873, "gbps_r4": 262.6, "nbytes": 3221225472}
+{"label": "sum(a) fp16 1 GiB (read)", "med_ms_r1": 2.4291, "best_ms_r1": 2.3422, "gbps_r1": 442.0, "med_ms_r4": 2.167, "best_ms_r4": 2.0797, "gbps_r4": 495.5, "nbytes": 1073741824}
+{"label": "a+1  fp16 4 GiB (read+write)", "med_ms_r1": 20.1065, "best_ms_r1": 18.116, "gbps_r1": 427.2, "med_ms_r4": 18.2243, "best_ms_r4": 16.7016, "gbps_r4": 471.3, "nbytes": 8589934592}
+{"label": "a*b  fp16 4 GiB (2 reads+write)", "med_ms_r1": 562.7542, "best_ms_r1": 122.6897, "gbps_r1": 22.9, "med_ms_r4": 21.1701, "best_ms_r4": 19.6803, "gbps_r4": 608.6, "nbytes": 12884901888}
+{"label": "sum(a) fp16 4 GiB (read)", "med_ms_r1": 17.6433, "best_ms_r1": 8.4063, "gbps_r1": 243.4, "med_ms_r4": 8.1108, "best_ms_r4": 7.8608, "gbps_r4": 529.5, "nbytes": 4294967296}
+{"label": "gemv bf16 16384x4096 (0.12 GiB)", "med_ms_r1": 0.4766, "best_ms_r1": 0.4206, "gbps_r1": 281.6, "med_ms_r8": 0.2826, "best_ms_r8": 0.2575, "gbps_r8": 475.0, "nbytes": 134217728}
+{"label": "gemv bf16 16384x16384 (0.50 GiB)", "med_ms_r1": 1.2387, "best_ms_r1": 1.1287, "gbps_r1": 433.4, "med_ms_r8": 1.0478, "best_ms_r8": 1.0044, "gbps_r8": 512.4, "nbytes": 536870912}
+{"label": "gemv bf16 32768x16384 (1.00 GiB)", "med_ms_r1": 2.4329, "best_ms_r1": 2.1485, "gbps_r1": 441.3, "med_ms_r8": 1.98, "best_ms_r8": 1.9152, "gbps_r8": 542.3, "nbytes": 1073741824}
+{"_sysinfo": {"mlx": "0.32.4", "device": "Apple M5 Max", "arch": "applegpu_g17s", "load1": 8.0, "load5": 16.0}, "_t": 1793239817.402944}
+{"section": "bandwidth probe"}
+{"label": "a+1  fp16 1 GiB (read+write)", "med_ms_r1": 4.8388, "best_ms_r1": 4.3239, "gbps_r1": 443.8, "med_ms_r4": 4.5773, "best_ms_r4": 4.4458, "gbps_r4": 469.2, "nbytes": 2147483648}
+{"label": "a*b  fp16 1 GiB (2 reads+write)", "med_ms_r1": 6.9691, "best_ms_r1": 6.389, "gbps_r1": 462.2, "med_ms_r4": 6.5618, "best_ms_r4": 6.1125, "gbps_r4": 490.9, "nbytes": 3221225472}
+{"label": "sum(a) fp16 1 GiB (read)", "med_ms_r1": 2.382, "best_ms_r1": 2.1457, "gbps_r1": 450.8, "med_ms_r4": 2.117, "best_ms_r4": 1.8773, "gbps_r4": 507.2, "nbytes": 1073741824}
+{"_sysinfo": {"mlx": "0.32.4", "device": "Apple M5 Max", "arch": "applegpu_g17s", "load1": 8.5, "load5": 16.0}, "_t": 1793239822.009566}
+{"section": "bandwidth probe"}
+{"label": "a+1  fp16 1 GiB (read+write)", "med_ms_r1": 9.6036, "best_ms_r1": 9.0641, "gbps_r1": 223.6, "med_ms_r4": 8.7941, "best_ms_r4": 4.35, "gbps_r4": 244.2, "nbytes": 2147483648}
+{"label": "a+1  fp16 4 GiB (read+write)", "med_ms_r1": 18.1026, "best_ms_r1": 17.7923, "gbps_r1": 474.5, "med_ms_r4": 32.3913, "best_ms_r4": 18.1293, "gbps_r4": 265.2, "nbytes": 8589934592}
+{"label": "a*b  fp16 1 GiB (2 reads+write)", "med_ms_r1": 12.4658, "best_ms_r1": 11.414, "gbps_r1": 258.4, "med_ms_r4": 13.3455, "best_ms_r4": 5.4718, "gbps_r4": 241.4, "nbytes": 3221225472}
+{"label": "sum(a) fp16 1 GiB (read)", "med_ms_r1": 8.2505, "best_ms_r1": 3.5636, "gbps_r1": 130.1, "med_ms_r4": 3.7662, "best_ms_r4": 2.8137, "gbps_r4": 285.1, "nbytes": 1073741824}
+{"label": "a*b  fp16 4 GiB (2 reads+write)", "med_ms_r1": 63.5311, "best_ms_r1": 38.1, "gbps_r1": 202.8, "med_ms_r4": 38.4238, "best_ms_r4": 27.1113, "gbps_r4": 335.3, "nbytes": 12884901888}
+{"label": "sum(a) fp16 4 GiB (read)", "med_ms_r1": 10.0827, "best_ms_r1": 9.0847, "gbps_r1": 426.0, "med_ms_r4": 10.2983, "best_ms_r4": 8.972, "gbps_r4": 417.1, "nbytes": 4294967296}
+{"label": "gemv bf16 16384x4096 (0.12 GiB)", "med_ms_r1": 0.6864, "best_ms_r1": 0.4817, "gbps_r1": 195.5, "med_ms_r8": 0.3377, "best_ms_r8": 0.2876, "gbps_r8": 397.5, "nbytes": 134217728}
+{"label": "gemv bf16 16384x16384 (0.50 GiB)", "med_ms_r1": 1.7177, "best_ms_r1": 1.315, "gbps_r1": 312.6, "med_ms_r8": 1.5194, "best_ms_r8": 1.3264, "gbps_r8": 353.3, "nbytes": 536870912}
+{"label": "gemv bf16 32768x16384 (1.00 GiB)", "med_ms_r1": 3.0282, "best_ms_r1": 2.7355, "gbps_r1": 354.6, "med_ms_r8": 2.6512, "best_ms_r8": 2.4779, "gbps_r8": 405.0, "nbytes": 1073741824}
+{"label": "a+1  fp16 4 GiB (read+write)", "med_ms_r1": 46.4915, "best_ms_r1": 19.432, "gbps_r1": 184.8, "med_ms_r4": 33.8411, "best_ms_r4": 18.1741, "gbps_r4": 253.8, "nbytes": 8589934592}
+{"label": "a*b  fp16 4 GiB (2 reads+write)", "med_ms_r1": 28.6557, "best_ms_r1": 26.6355, "gbps_r1": 449.6, "med_ms_r4": 37.8676, "best_ms_r4": 27.1599, "gbps_r4": 340.3, "nbytes": 12884901888}
+{"label": "sum(a) fp16 4 GiB (read)", "med_ms_r1": 12.018, "best_ms_r1": 9.492, "gbps_r1": 357.4, "med_ms_r4": 9.448, "best_ms_r4": 9.0095, "gbps_r4": 454.6, "nbytes": 4294967296}
+{"label": "gemv bf16 16384x4096 (0.12 GiB)", "med_ms_r1": 0.5539, "best_ms_r1": 0.4745, "gbps_r1": 242.3, "med_ms_r8": 0.3064, "best_ms_r8": 0.279, "gbps_r8": 438.0, "nbytes": 134217728}
+{"label": "gemv bf16 16384x16384 (0.50 GiB)", "med_ms_r1": 1.5321, "best_ms_r1": 1.3657, "gbps_r1": 350.4, "med_ms_r8": 1.4852, "best_ms_r8": 1.1085, "gbps_r8": 361.5, "nbytes": 536870912}
+{"label": "gemv bf16 32768x16384 (1.00 GiB)", "med_ms_r1": 4.0068, "best_ms_r1": 2.6453, "gbps_r1": 268.0, "med_ms_r8": 4.3685, "best_ms_r8": 2.9323, "gbps_r8": 245.8, "nbytes": 1073741824}
+{"_sysinfo": {"mlx": "0.32.4", "device": "Apple M5 Max", "arch": "applegpu_g17s", "load1": 9.1, "load5": 16.7}, "_t": 1793240229.8255758}
+{"section": "bandwidth probe"}
+{"label": "a+1  fp16 1 GiB (read+write)", "med_ms_r1": 4.671, "best_ms_r1": 4.442, "gbps_r1": 459.8, "med_ms_r4": 4.5246, "best_ms_r4": 4.3263, "gbps_r4": 474.6, "nbytes": 2147483648}
+{"label": "a*b  fp16 1 GiB (2 reads+write)", "med_ms_r1": 6.984, "best_ms_r1": 6.4873, "gbps_r1": 461.2, "med_ms_r4": 6.653, "best_ms_r4": 5.4195, "gbps_r4": 484.2, "nbytes": 3221225472}
+{"label": "sum(a) fp16 1 GiB (read)", "med_ms_r1": 2.2765, "best_ms_r1": 2.1041, "gbps_r1": 471.7, "med_ms_r4": 2.0605, "best_ms_r4": 1.9144, "gbps_r4": 521.1, "nbytes": 1073741824}
+{"label": "a+1  fp16 4 GiB (read+write)", "med_ms_r1": 19.1354, "best_ms_r1": 17.6607, "gbps_r1": 448.9, "med_ms_r4": 18.1115, "best_ms_r4": 17.6279, "gbps_r4": 474.3, "nbytes": 8589934592}
+{"label": "a*b  fp16 4 GiB (2 reads+write)", "med_ms_r1": 34.2246, "best_ms_r1": 29.1577, "gbps_r1": 376.5, "med_ms_r4": 33.4289, "best_ms_r4": 29.7849, "gbps_r4": 385.4, "nbytes": 12884901888}
+{"label": "sum(a) fp16 4 GiB (read)", "med_ms_r1": 14.464, "best_ms_r1": 12.5806, "gbps_r1": 296.9, "med_ms_r4": 11.9971, "best_ms_r4": 11.3121, "gbps_r4": 358.0, "nbytes": 4294967296}
+{"label": "gemv bf16 16384x4096 (0.12 GiB)", "med_ms_r1": 0.5862, "best_ms_r1": 0.4463, "gbps_r1": 229.0, "med_ms_r8": 0.304, "best_ms_r8": 0.2695, "gbps_r8": 441.5, "nbytes": 134217728}
+{"label": "gemv bf16 16384x16384 (0.50 GiB)", "med_ms_r1": 1.3465, "best_ms_r1": 1.212, "gbps_r1": 398.7, "med_ms_r8": 1.1798, "best_ms_r8": 1.0236, "gbps_r8": 455.1, "nbytes": 536870912}
+{"label": "gemv bf16 32768x16384 (1.00 GiB)", "med_ms_r1": 2.433, "best_ms_r1": 2.2145, "gbps_r1": 441.3, "med_ms_r8": 2.3132, "best_ms_r8": 2.1494, "gbps_r8": 464.2, "nbytes": 1073741824}

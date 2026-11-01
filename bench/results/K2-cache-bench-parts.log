@@ -1,0 +1,10 @@
+per-step cost of 35 layers at a full window:
+  shifting update_and_fetch only                   0.523 ms (best 0.408)
+  rotating update_and_fetch only                   0.421 ms (best 0.298)
+  35 x flip rl[..., ::-1]                          0.484 ms (best 0.368)
+  35 x take_along_axis gather                      0.357 ms (best 0.233)
+K/V view shape (1, 8, 512, 128) contiguous copy (1, 8, 512, 128)
+  35 x sdpa on the shifting view (strided K/V)     0.618 ms (best 0.481)
+  35 x sdpa on contiguous K/V                      0.469 ms (best 0.369)
+  35 x sdpa contiguous, mask=None                  0.429 ms (best 0.374)
+  35 x sdpa contiguous K/V, flipped-view mask      0.478 ms (best 0.395)

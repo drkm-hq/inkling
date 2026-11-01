@@ -1,0 +1,8 @@
+ mlx_vlm/models/cache.py                    | 216 +++++++++++-
+ mlx_vlm/models/inkling/language.py         | 149 ++++++--
+ mlx_vlm/tests/test_cache.py                |   3 +-
+ mlx_vlm/tests/test_inkling_fast_path.py    | 546 +++++++++++++++++++++++++++++
+ mlx_vlm/tests/test_load_eval_chunks.py     |  84 +++++
+ mlx_vlm/tests/test_sliding_window_cache.py | 281 +++++++++++++++
+ mlx_vlm/utils.py                           |  30 +-
+ 7 files changed, 1277 insertions(+), 32 deletions(-)

@@ -1,0 +1,3061 @@
+bringing up nodes...
+bringing up nodes...
+
+.....uuuuuu.............................ss.............................. [  1%]
+........................................................................ [  2%]
+........................................................................ [  4%]
+........................................................................ [  5%]
+............................................................uuuuuuuuuuuu [  6%]
+uu..uuuu..uuu....uuuuu.uuu..uuuuu....uuuuuuuu.uuuuu.uuuu.....uuuuuuuu.uu [  7%]
+uuuuuuuuu..uuuuuuuuu...uu............................................... [  8%]
+........................................................................ [  9%]
+...........................................................F............ [ 10%]
+..........F.FFF.FF.FF........F...........FFFF..FF....FFF......FFF......F [ 12%]
+F...F.FF.FFF....F........................F....F....F......F............. [ 13%]
+........................................................................ [ 15%]
+........................................................................ [ 16%]
+........................................................................ [ 17%]
+...................................................................F.... [ 19%]
+.........F...................F.......F......F........................... [ 20%]
+..................................................F.................F... [ 21%]
+................F.....................F................................. [ 23%]
+.................................F.....................F................ [ 24%]
+....................F...................F..............F..............F. [ 26%]
+...............F................F....................................... [ 27%]
+...FFF...F............F..uuuuuu.uuu.uuuu.Fuuu.uuuuuuuuuuuuuuuuuu.uuu.Fuu [ 28%]
+uuuuuu..Fuuuu.uuu.uuuuuuuuu.Fuuuuuuuu......FF.F....FFFF.F..F....F....... [ 28%]
+........................................................................ [ 30%]
+.................................FFFFFFFFF......FF....F................. [ 31%]
+........................................................................ [ 33%]
+........................................................................ [ 34%]
+.....ssuu..uuuuuuu.....................s................................ [ 35%]
+........................................................................ [ 37%]
+........................................................................ [ 38%]
+........................................................................ [ 39%]
+........................................................................ [ 41%]
+........................................................................ [ 42%]
+.........................................uu.uuuuuuuuu.uuu............... [ 43%]
+........................................................................ [ 45%]
+........................................................................ [ 46%]
+.......s................................................................ [ 48%]
+........................................................................ [ 49%]
+........................................................................ [ 50%]
+........................................................................ [ 52%]
+........................................................................ [ 53%]
+........................................................................ [ 54%]
+........................................................................ [ 56%]
+........................................................................ [ 57%]
+........................................................................ [ 59%]
+........................................................................ [ 60%]
+........................................................................ [ 61%]
+........................................................................ [ 63%]
+....................................ssssssss............................ [ 64%]
+........................................................................ [ 66%]
+........................................................................ [ 67%]
+........................................................................ [ 68%]
+........................................................................ [ 70%]
+........................................................................ [ 71%]
+........................................................................ [ 73%]
+........................................................................ [ 74%]
+........................................................................ [ 75%]
+........................................................................ [ 77%]
+........................................................................ [ 78%]
+........................................................................ [ 80%]
+........................................................................ [ 81%]
+........................................................................ [ 82%]
+........................................................................ [ 84%]
+........................................................................ [ 85%]
+.......uuuuuu.uu...uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu...uu............. [ 86%]
+........................................................................ [ 87%]
+..........................................uu.........................uuu [ 88%]
+uuu.uuuuu.uu..........................................................uu [ 90%]
+..........................uuu.uu.u.uuuu....uuuuuuuuuuuu.....uu..uuu..... [ 90%]
+......uuu..u..u.uu.uuu.uuu.uuu....uuu.uu.u..u.uuu...uuu.uuuu............ [ 91%]
+.............................s.........................................s [ 93%]
+........................................................................ [ 94%]
+........................................................................ [ 95%]
+........................................................................ [ 97%]
+........................................................................ [ 98%]
+........................................................................ [ 99%]
+..                                                                       [100%]
+=================================== FAILURES ===================================
+_______ test_precomputed_semantic_hash_reuses_actual_growing_apc_prefix ________
+[gw1] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+    def test_precomputed_semantic_hash_reuses_actual_growing_apc_prefix():
+        manager = apc_module.APCManager(num_blocks=4, block_size=4)
+        manager.exact_cache_guard_tokens = 1
+        semantic_hash = 7088136067003016882
+        short_tokens = list(range(8))
+        extended_tokens = [*short_tokens, 8, 9]
+        layer_keys = [mx.ones((1, 1, len(short_tokens), 2))]
+        layer_values = [mx.ones((1, 1, len(short_tokens), 2)) * 2]
+    
+        stored = manager.store_kv_blocks(
+            short_tokens, layer_keys, layer_values, extra_hash=semantic_hash
+        )
+        manager.release(stored)
+    
+        batch_generator = object.__new__(BatchGenerator)
+        batch_generator.apc_manager = manager
+        batch_generator.apc_mode = "block"
+        batch_generator.model = SimpleNamespace(config=SimpleNamespace())
+        batch_generator._wire_stack = None
+    
+        pick = batch_generator._apc_pick_for(
+            (1, extended_tokens, 1, {"_apc_semantic_hash": semantic_hash}, [], None)
+        )
+    
+>       assert pick is not None
+E       assert None is not None
+
+mlx_vlm/tests/test_generate.py:1521: AssertionError
+__________________________ test_blocks_and_statistics __________________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+managers = <function managers.<locals>.make at 0x13755ea20>
+
+    def test_blocks_and_statistics(managers):
+        manager = managers(blocks=16)
+        tokens = list(range(53))
+        assert manager.lookup_prefix(tokens) == ([], 0)
+        stored = store_blocks(manager, tokens)
+>       assert len(stored) == 3
+E       assert 0 == 3
+E        +  where 0 = len([])
+
+mlx_vlm/tests/test_cache.py:1403: AssertionError
+__________________________ test_layer_major_threshold __________________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+managers = <function managers.<locals>.make at 0x1352adda0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x13800f830>
+
+    def test_layer_major_threshold(managers, monkeypatch):
+        monkeypatch.setenv("APC_LAYER_MAJOR_MEMORY_MIN_TOKENS", "1")
+        manager = managers(blocks=16)
+        tokens = list(range(64))
+        sources = [allocated(64, value) for value in (1, 3)]
+        keys, values = [c.keys for c in sources], [c.values for c in sources]
+        assert manager.store_kv_blocks(tokens, keys, values) == []
+        assert manager.lookup_prefix(tokens)[1] == 0
+        warm, count = manager.lookup_exact_cache(tokens + [999])
+>       assert count == 48 and len(warm) == 2
+E       assert (0 == 48)
+
+mlx_vlm/tests/test_cache.py:1432: AssertionError
+__________________________ test_disk_block_lifecycle ___________________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+managers = <function managers.<locals>.make at 0x1352ae160>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137e344d0>
+
+    def test_disk_block_lifecycle(managers, monkeypatch):
+        monkeypatch.setenv("APC_DISK_SHARD_MAX_BLOCKS", "1")
+        manager = managers("disk", blocks=1)
+        first, second = list(range(48)), list(range(100, 148))
+        manager.release(store_blocks(manager, first))
+        manager.disk.flush()
+        assert any(manager.disk.dir.glob(f"*{manager.disk.SUFFIX}"))
+        shutil.rmtree(manager.disk.dir)
+        assert not manager.disk.dir.exists()
+        manager.release(store_blocks(manager, second))
+        manager.disk.flush()
+        size = manager.disk.disk_bytes
+        assert size > 0 and manager.disk.dir.exists()
+        manager.close()
+        reader = managers("disk")
+        warm, count = reader.lookup_prefix_disk_cache(second)
+>       assert count == 48 and all(c.offset == 48 for c in warm)
+E       assert (0 == 48)
+
+mlx_vlm/tests/test_cache.py:1455: AssertionError
+_______________ test_disk_prefix_with_evicted_leading_blocks[1] ________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+managers = <function managers.<locals>.make at 0x1352ae7a0>, evicted = 1
+
+    @parametrize("evicted", [1, 2])
+    def test_disk_prefix_with_evicted_leading_blocks(managers, evicted):
+        manager = managers("disk", blocks=3)
+        tokens = list(range(48))
+        source = [filled(C.KVCache(), 48, heads=1, dim=4)]
+        stored = manager.store_kv_blocks(
+            tokens, [source[0].keys], [source[0].values], extra_hash=17
+        )
+        hashes = [block.block_hash for block in stored]
+        manager.release(stored)
+        manager.release(store_blocks(manager, list(range(100, 100 + 16 * evicted))))
+        manager.disk.flush()
+        assert all(h not in manager.hash_table for h in hashes[:evicted])
+        assert all(h in manager.hash_table for h in hashes[evicted:])
+        assert manager.lookup_prefix(tokens, extra_hash=17) == ([], 0)
+        residents = {h: b.ref_cnt for h, b in manager.hash_table.items()}
+    
+        hit = P.apc_lookup_plan(
+            manager,
+            tokens + [999],
+            extra_hash=17,
+            apc_mode="block",
+            safe_lookup_min=0,
+            suffix_is_text_only=lambda _: True,
+            prefix_has_media=lambda _: False,
+        )
+>       assert hit is not None and hit["prefix_len"] == 48
+E       assert (None is not None)
+
+mlx_vlm/tests/test_cache.py:1489: AssertionError
+_______________ test_disk_prefix_with_evicted_leading_blocks[2] ________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+managers = <function managers.<locals>.make at 0x1352aeca0>, evicted = 2
+
+    @parametrize("evicted", [1, 2])
+    def test_disk_prefix_with_evicted_leading_blocks(managers, evicted):
+        manager = managers("disk", blocks=3)
+        tokens = list(range(48))
+        source = [filled(C.KVCache(), 48, heads=1, dim=4)]
+        stored = manager.store_kv_blocks(
+            tokens, [source[0].keys], [source[0].values], extra_hash=17
+        )
+        hashes = [block.block_hash for block in stored]
+        manager.release(stored)
+        manager.release(store_blocks(manager, list(range(100, 100 + 16 * evicted))))
+        manager.disk.flush()
+        assert all(h not in manager.hash_table for h in hashes[:evicted])
+        assert all(h in manager.hash_table for h in hashes[evicted:])
+        assert manager.lookup_prefix(tokens, extra_hash=17) == ([], 0)
+        residents = {h: b.ref_cnt for h, b in manager.hash_table.items()}
+    
+        hit = P.apc_lookup_plan(
+            manager,
+            tokens + [999],
+            extra_hash=17,
+            apc_mode="block",
+            safe_lookup_min=0,
+            suffix_is_text_only=lambda _: True,
+            prefix_has_media=lambda _: False,
+        )
+>       assert hit is not None and hit["prefix_len"] == 48
+E       assert (None is not None)
+
+mlx_vlm/tests/test_cache.py:1489: AssertionError
+________________________ test_disk_policy_and_metadata _________________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+managers = <function managers.<locals>.make at 0x1352af240>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137e37b30>
+
+    def test_disk_policy_and_metadata(managers, monkeypatch):
+        monkeypatch.setenv("APC_DISK_SHARD_MAX_BLOCKS", "3")
+        manager = managers("disk")
+        tokens = list(range(48))
+        manager.release(store_blocks(manager, tokens))
+        manager.disk.flush()
+        assert manager.lookup_prefix_disk_cache(tokens) == (None, 0)
+        warm, count = manager.lookup_prefix_disk_cache(
+            tokens, allow_memory_overlap=True, max_prefix_tokens=32, min_prefix_tokens=16
+        )
+>       assert warm is not None and count == 32
+E       assert (None is not None)
+
+mlx_vlm/tests/test_cache.py:1505: AssertionError
+______________________ test_exact_promotion_and_priority _______________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+managers = <function managers.<locals>.make at 0x1352af9c0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137d50320>
+
+    def test_exact_promotion_and_priority(managers, monkeypatch):
+        monkeypatch.setenv("APC_EXACT_CACHE_ENTRIES", "0")
+        tokens = [list(range(20)), list(range(100, 120))]
+        writer = managers("disk")
+        for value, ids in enumerate(tokens, 1):
+            assert writer.store_exact_cache(ids, [allocated(20, value)])
+        writer.disk.flush()
+        writer.close()
+        monkeypatch.setenv("APC_EXACT_CACHE_ENTRIES", "1")
+        reader = managers("disk")
+        for index, hits in [(0, 1), (0, 1), (1, 2), (0, 3)]:
+            warm, count = reader.lookup_exact_cache(tokens[index] + [999])
+>           assert warm is not None and count == 20 and reader.stats.disk_hits == hits
+E           assert (None is not None)
+
+mlx_vlm/tests/test_cache.py:1538: AssertionError
+__________________________ test_self_check_and_plans ___________________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+managers = <function managers.<locals>.make at 0x1352cc180>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137d51430>
+caplog = <_pytest.logging.LogCaptureFixture object at 0x137d51f40>
+
+    def test_self_check_and_plans(managers, monkeypatch, caplog):
+        monkeypatch.delenv("APC_TRACE", raising=False)
+        layouts = [
+            ([C.KVCache(), C.KVCache()], "block"),
+            ([C.ArraysCache(2), C.KVCache()], "exact"),
+            ([C.RotatingKVCache(8), C.KVCache()], "exact"),
+            ([object()], None),
+        ]
+        assert P.model_apc_mode(object()) == "block"
+        assert A.apc_mode([]) is None
+        for caches, mode in layouts:
+            model = cache_model(caches)
+            assert P.model_apc_mode(model) == A.apc_mode(caches) == mode
+            if mode is None:
+                continue
+            plan = A.build_prefix_cache_plan(model)
+            assert plan.restorable and len(plan.components) == 2
+            assert plan.is_hybrid is (mode == "exact")
+            assert plan.strategy == ("checkpoint" if mode == "exact" else "block")
+            assert len(plan.groups) == (2 if mode == "exact" else 1)
+            if isinstance(caches[0], C.ArraysCache):
+                assert plan.capabilities == [A.Capability.CHECKPOINT, A.Capability.PAGEABLE]
+            if mode == "block":
+                assert plan.groups[0].layer_indices == (0, 1)
+            assert "PrefixCachePlan" in plan.describe()
+        plan = A.build_prefix_cache_plan(NS(language_model=NS(layers=[object()] * 3)))
+        assert plan.restorable and plan.strategy == "block"
+        assert len(plan.components) == 3 and len(plan.groups) == 1
+        assert (
+            P.classify_layer_for_apc(filled(C.QuantizedKVCache(), 8, dim=64)).status == "ok"
+        )
+        rejected = P.classify_layer_for_apc(object())
+        assert rejected.status == "unsupported" and rejected.reason
+        with caplog.at_level(logging.INFO, logger="mlx_vlm.apc"):
+            result = P.self_check_model_apc(
+                cache_model([batch_cache(k) for k in ("rotating", "uniform", "dense")]),
+                kv_bits=8.0,
+            )
+        assert result.ok and result.apc_mode == "exact"
+        assert any("APC self-check ok" in r.message for r in caplog.records)
+        assert not P.self_check_model_apc(object()).ok
+        broken = P.self_check_model_apc(
+            NS(make_cache=lambda: (_ for _ in ()).throw(RuntimeError("boom")))
+        )
+        assert not broken.ok and broken.notes
+        monkeypatch.setenv("APC_TRACE", "1")
+        with caplog.at_level(logging.INFO, logger="mlx_vlm.apc"):
+            assert not managers().store_exact_cache(
+                list(range(16)), [NS(keys="bad", values="bad")]
+            )
+>       assert any("APC_TRACE reject" in r.message for r in caplog.records)
+E       assert False
+E        +  where False = any(<generator object test_self_check_and_plans.<locals>.<genexpr> at 0x1356dbd30>)
+
+mlx_vlm/tests/test_cache.py:1597: AssertionError
+------------------------------ Captured log call -------------------------------
+INFO     mlx_vlm.apc:apc.py:4907 APC self-check ok mode=exact schema=v4 layers=3 types=[BatchRotatingKVCache,BatchQuantizedKVCache,BatchKVCache] caps=[windowed,pageable,pageable] kv_bits=8.0
+ERROR    mlx_vlm.apc:apc.py:4921 APC self-check failed mode=None schema=v4 layers=0 unsupported=['model has no make_cache'] notes=['model has no make_cache']
+ERROR    mlx_vlm.apc:apc.py:4921 APC self-check failed mode=None schema=v4 layers=0 unsupported=['no APC-compatible cache layout'] notes=['no APC-compatible cache layout']
+_____________________ test_float_extraction_and_harvesting _____________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+managers = <function managers.<locals>.make at 0x1352cd620>
+
+    def test_float_extraction_and_harvesting(managers):
+        for cache in (C.KVCache(), C.QuantizedKVCache(32, 8)):
+            keys, values = P.layer_kv_for_apc(filled(cache, 12))
+            assert keys.shape == values.shape == (1, 2, 12, 32)
+        bogus = NS(keys=(1, 2, 3), values=(4, 5, 6), offset=3)
+        assert P.layer_kv_for_apc(bogus) == (None, None)
+        source, target = managers(), managers()
+        full, short = list(range(32)), list(range(100, 116))
+        blocks = [store_blocks(source, ids) for ids in (full, short)]
+>       cache, _ = warm_blocks(
+            [
+                {"matched_blocks": b, "prefix_len": len(ids)}
+                for b, ids in zip(blocks, (full, short))
+            ],
+            num_layers=2,
+        )
+
+mlx_vlm/tests/test_cache.py:1652: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+mlx_vlm/apc.py:4269: in make_warm_batch_kv_cache_multi
+    sample_k, _ = layer_tensors(sample, 0)  # [1, H, prefix_len, D]
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+pick = {'matched_blocks': [], 'prefix_len': 32}, layer_idx = 0
+
+    def layer_tensors(pick: dict, layer_idx: int) -> Tuple[mx.array, mx.array]:
+        warm_cache = pick.get("warm_cache")
+        if warm_cache is not None:
+            c = warm_cache[layer_idx]
+            prefix_len = pick["prefix_len"]
+            return c.keys[..., :prefix_len, :], c.values[..., :prefix_len, :]
+        blocks = pick["matched_blocks"]
+        ks = [b.keys[layer_idx] for b in blocks]
+        vs = [b.values[layer_idx] for b in blocks]
+>       return mx.concatenate(ks, axis=2), mx.concatenate(vs, axis=2)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ValueError: [concatenate] No arrays provided for concatenation
+
+mlx_vlm/apc.py:4265: ValueError
+____________________ test_model_cache_contract[ArraysCache] ____________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('ArraysCache',)
+managers = <function managers.<locals>.make at 0x1352cdc60>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137e36bd0>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+>           assert manager.store_exact_cache(tokens, caches)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.ArraysCache object at 0x137e36db0>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137e36cc0>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:1909: AssertionError
+___________ test_model_cache_contract[ArraysCache+CacheList+KVCache] ___________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('ArraysCache', 'CacheList', 'KVCache')
+managers = <function managers.<locals>.make at 0x1352ce160>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1280a6150>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+>           assert manager.store_exact_cache(tokens, caches)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.ArraysCache object at 0x137e35ee0>, <mlx_vlm.models.cache.CacheList object at 0x137e360f0>, <mlx_vlm.models.cache.KVCache object at 0x137e365d0>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137e35ca0>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:1909: AssertionError
+____ test_model_cache_contract[ArraysCache+CacheList+KVCache+PoolingCache] _____
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('ArraysCache', 'CacheList', 'KVCache', 'PoolingCache')
+managers = <function managers.<locals>.make at 0x1352ce660>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137d52750>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+>           assert manager.store_exact_cache(tokens, caches)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.ArraysCache object at 0x137d51fa0>, <mlx_vlm.models.cache.CacheList object at 0x137d510d0>, <mlx_vlm.models.cache.KVCache object at 0x137d50560>, <mlx_vlm.models.cache.PoolingCache object at 0x137d513d0>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137d50fe0>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:1909: AssertionError
+___ test_model_cache_contract[ArraysCache+CacheList+KVCache+RotatingKVCache] ___
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('ArraysCache', 'CacheList', 'KVCache', 'RotatingKVCache')
+managers = <function managers.<locals>.make at 0x1352ce840>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137e34dd0>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+>           assert manager.store_exact_cache(tokens, caches)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.ArraysCache object at 0x137e356a0>, <mlx_vlm.models.cache.CacheList object at 0x137e34cb0>, <mlx_vlm.models.cache.KVCache object at 0x137e353d0>, <mlx_vlm.models.cache.RotatingKVCache object at 0x137e34d70>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x13800f9b0>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:1909: AssertionError
+________________ test_model_cache_contract[ArraysCache+KVCache] ________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('ArraysCache', 'KVCache')
+managers = <function managers.<locals>.make at 0x1352cd580>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137e36300>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+>           assert manager.store_exact_cache(tokens, caches)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.ArraysCache object at 0x137d51ee0>, <mlx_vlm.models.cache.KVCache object at 0x137d52180>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137d51430>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:1909: AssertionError
+________ test_model_cache_contract[ArraysCache+KVCache+RotatingKVCache] ________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('ArraysCache', 'KVCache', 'RotatingKVCache')
+managers = <function managers.<locals>.make at 0x1352cfce0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137d48ef0>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+>           assert manager.store_exact_cache(tokens, caches)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.ArraysCache object at 0x137d493a0>, <mlx_vlm.models.cache.KVCache object at 0x137d485c0>, <mlx_vlm.models.cache.RotatingKVCache object at 0x137d49310>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137d4b950>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:1909: AssertionError
+_____ test_model_cache_contract[ArraysCache+KVCache+SlidingWindowKVCache] ______
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('ArraysCache', 'KVCache', 'SlidingWindowKVCache')
+managers = <function managers.<locals>.make at 0x137c00220>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137d48c50>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+>           assert manager.store_exact_cache(tokens, caches)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.ArraysCache object at 0x137d49370>, <mlx_vlm.models.cache.KVCache object at 0x137d49460>, <mlx_vlm.models.cache.SlidingWindowKVCache object at 0x137d49430>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137d49760>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:1909: AssertionError
+______________ test_model_cache_contract[ArraysCache+QSAKVCache] _______________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('ArraysCache', 'QSAKVCache')
+managers = <function managers.<locals>.make at 0x137c004a0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137d4a840>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+>           assert manager.store_exact_cache(tokens, caches)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.ArraysCache object at 0x137d4ac60>, <mlx_vlm.models.qwen4_exp.language.QSAKVCache object at 0x137d4ad50>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137d4af00>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:1909: AssertionError
+____________ test_model_cache_contract[ArraysCache+RotatingKVCache] ____________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('ArraysCache', 'RotatingKVCache')
+managers = <function managers.<locals>.make at 0x137c00ae0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137d4bdd0>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+>           assert manager.store_exact_cache(tokens, caches)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.ArraysCache object at 0x137d49ac0>, <mlx_vlm.models.cache.RotatingKVCache object at 0x137d4a810>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137d4a9c0>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:1909: AssertionError
+_______________ test_model_cache_contract[CacheList+HyV4KVCache] _______________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('CacheList', 'HyV4KVCache')
+managers = <function managers.<locals>.make at 0x137c00fe0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137d645f0>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+>           assert manager.store_exact_cache(tokens, caches)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.CacheList object at 0x137d64740>, <mlx_vlm.models.hy_v4.cache.HyV4KVCache object at 0x137d64d70>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137d65040>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:1909: AssertionError
+_________________ test_model_cache_contract[CacheList+KVCache] _________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('CacheList', 'KVCache')
+managers = <function managers.<locals>.make at 0x137c014e0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1384ca3f0>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+>           assert manager.store_exact_cache(tokens, caches)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.CacheList object at 0x137d47f80>, <mlx_vlm.models.cache.KVCache object at 0x137d47b00>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137d4b6e0>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:1909: AssertionError
+______ test_model_cache_contract[CacheList+PoolingCache+RotatingKVCache] _______
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('CacheList', 'PoolingCache', 'RotatingKVCache')
+managers = <function managers.<locals>.make at 0x137c01a80>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137d66a20>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+>           assert manager.store_exact_cache(tokens, caches)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.CacheList object at 0x137d66570>, <mlx_vlm.models.cache.PoolingCache object at 0x137d66510>, <mlx_vlm.models.cache.RotatingKVCache object at 0x137d664e0>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137d66030>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:1909: AssertionError
+______________ test_model_cache_contract[CacheList+SimpleKVCache] ______________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('CacheList', 'SimpleKVCache')
+managers = <function managers.<locals>.make at 0x1352ce980>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137d649b0>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+>           assert manager.store_exact_cache(tokens, caches)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.CacheList object at 0x137d64e90>, <mlx_vlm.models.cache.SimpleKVCache object at 0x137d674d0>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137d670b0>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:1909: AssertionError
+______________ test_model_cache_contract[ChunkedKVCache+KVCache] _______________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('ChunkedKVCache', 'KVCache')
+managers = <function managers.<locals>.make at 0x137611080>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137cb1f40>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+>           assert manager.store_exact_cache(tokens, caches)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.ChunkedKVCache object at 0x137cb2420>, <mlx_vlm.models.cache.KVCache object at 0x137cb24b0>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137cb27e0>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:1909: AssertionError
+_________________ test_model_cache_contract[DeepseekV41Cache] __________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('DeepseekV41Cache',)
+managers = <function managers.<locals>.make at 0x1352cf240>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137d65100>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+>           assert manager.store_exact_cache(tokens, caches)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.deepseek_v41.language.DeepseekV41Cache object at 0x137d647d0>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137d64f20>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:1909: AssertionError
+______________________ test_model_cache_contract[KVCache] ______________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('KVCache',)
+managers = <function managers.<locals>.make at 0x1352cea20>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137cb0740>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+            assert manager.store_exact_cache(tokens, caches)
+        hit = runner.lookup(
+            tokens + [999],
+            extra_hash=0,
+            safe_lookup_min=0,
+            suffix_is_text_only=lambda _: True,
+            prefix_has_media=lambda _: False,
+        )
+>       assert hit is not None and hit["prefix_len"] == 16
+E       assert (None is not None)
+
+mlx_vlm/tests/test_cache.py:1917: AssertionError
+_____________ test_model_cache_contract[KVCache+MiniMaxM3KVCache] ______________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('KVCache', 'MiniMaxM3KVCache')
+managers = <function managers.<locals>.make at 0x137c00d60>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1096ecf80>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+>           assert manager.store_exact_cache(tokens, caches)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.KVCache object at 0x137ff8410>, <mlx_vlm.models.minimax_m3_vl.language.MiniMaxM3KVCache object at 0x137ff85c0>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137ff8830>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:1909: AssertionError
+____________ test_model_cache_contract[KVCache+RingSlidingKVCache] _____________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('KVCache', 'RingSlidingKVCache')
+managers = <function managers.<locals>.make at 0x137c01080>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137d65970>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+>           assert manager.store_exact_cache(tokens, caches)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.KVCache object at 0x137d66120>, <mlx_vlm.models.unlimited_ocr.language.RingSlidingKVCache object at 0x137d67590>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137d65370>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:1909: AssertionError
+______________ test_model_cache_contract[KVCache+RotatingKVCache] ______________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('KVCache', 'RotatingKVCache')
+managers = <function managers.<locals>.make at 0x137c00c20>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1096ed100>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+>           assert manager.store_exact_cache(tokens, caches)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.KVCache object at 0x137ff8e30>, <mlx_vlm.models.cache.RotatingKVCache object at 0x137ff8e00>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137ffbec0>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:1909: AssertionError
+____ test_model_cache_contract[KVCache+RotatingKVCache+StaticPrefixKVCache] ____
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('KVCache', 'RotatingKVCache', 'StaticPrefixKVCache')
+managers = <function managers.<locals>.make at 0x137c01800>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137d4bcb0>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+>           assert manager.store_exact_cache(tokens, caches)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.KVCache object at 0x137d4a330>, <mlx_vlm.models.cache.RotatingKVCache object at 0x137d4ac00>, <mlx_vlm.models.cache.StaticPrefixKVCache object at 0x137d4a9c0>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137d4b0b0>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:1909: AssertionError
+_____________________ test_model_cache_contract[Z1TCache] ______________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('Z1TCache',)
+managers = <function managers.<locals>.make at 0x137c00360>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x13800f2f0>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+            cache = sample(name)
+            assert A.build_prefix_cache_plan_from_caches([cache]).restorable
+            restored = clone(cache)
+            assert restored is not None
+            assert all(not p.fallback for p in memory_components([restored], 0))
+        caches = [sample(name, 16) for name in names]
+        plan = A.build_prefix_cache_plan_from_caches(caches)
+        assert plan.restorable, plan.describe()
+        manager = managers(block=8)
+        runner = coordinate(manager, caches)
+        assert runner.strategy == plan.strategy
+        tokens = list(range(16))
+        if plan.strategy == "block":
+            keys, values = [c.keys for c in caches], [c.values for c in caches]
+            manager.release(manager.store_kv_blocks(tokens, keys, values))
+        else:
+>           assert manager.store_exact_cache(tokens, caches)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.z1t.language.Z1TCache object at 0x13800e900>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x13800d760>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:1909: AssertionError
+_________________________ test_disk_custom_state[qsa] __________________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+kind = 'qsa', managers = <function managers.<locals>.make at 0x137c02480>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137d49a30>
+
+    @parametrize("kind", ["qsa", "deepseek", "composite", "ring-indexed"])
+    def test_disk_custom_state(kind, managers, monkeypatch):
+        monkeypatch.setenv("APC_EXACT_CACHE_ENTRIES", "1" if kind == "qsa" else "0")
+        monkeypatch.setenv("APC_EXACT_MIN_TOKENS", "1")
+        if kind == "qsa":
+            arrays, qsa = C.ArraysCache(1), sample("QSAKVCache", 40)
+            arrays[0] = mx.arange(6, dtype=mx.int64).reshape(1, 2, 3)
+            qsa.index_position_ids = mx.arange(120, dtype=mx.int64).reshape(3, 1, 40)
+            qsa.index_block_keys, qsa.index_block_ratio = mx.ones((1, 1, 10, 4)), 4
+            caches, length = [arrays, qsa], 40
+        elif kind == "deepseek":
+            rotating = C.RotatingKVCache(8, keep=0)
+            rotating.keys, rotating.values = mx.ones((1, 1, 8, 4), mx.bfloat16), mx.zeros(
+                (1, 1, 8, 0), mx.bfloat16
+            )
+            rotating.offset, rotating._idx = 40, 3
+            pools = [C.PoolingCache(4), C.PoolingCache(4)]
+            pools[0].pooled, pools[1].pooled = mx.ones((1, 6, 4), mx.bfloat16), mx.ones(
+                (1, 6, 2)
+            )
+            caches, length = [C.CacheList(rotating, *pools)], 40
+        elif kind == "composite":
+            caches, length = [
+                (sample("SimpleKVCache", 12), C.SimpleKVCache()),
+                C.CacheList(sample("PoolingCache", 10)),
+            ], 12
+        else:
+            ring = RingSlidingKVCache(4)
+            ring.keys, ring.values = mx.ones((1, 2, 8, 4)), mx.ones((1, 2, 8, 4)) * 2
+            ring.prefill_length, ring.offset, ring._ring_pos = 4, 11, 3
+            caches, length = [ring, sample("MiniMaxM3KVCache", 10)], 10
+>       restored, reader = disk_roundtrip(managers, list(range(length)), caches, block=4)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+mlx_vlm/tests/test_cache.py:1964: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+managers = <function managers.<locals>.make at 0x137c02480>
+tokens = [0, 1, 2, 3, 4, 5, ...]
+caches = [<mlx_vlm.models.cache.ArraysCache object at 0x137d496d0>, <mlx_vlm.models.qwen4_exp.language.QSAKVCache object at 0x137d49610>]
+kwargs = {'block': 4}
+
+    def disk_roundtrip(managers, tokens, caches, **kwargs):
+        writer = managers("disk", **kwargs)
+        assert writer.store_exact_cache(tokens, caches)
+        writer.disk.flush()
+        writer.close()
+        reader = managers("disk", **kwargs)
+        restored, count = reader.lookup_exact_cache(tokens + [999])
+>       assert count == len(tokens) and restored is not None
+E       assert (0 == 40)
+E        +  where 40 = len([0, 1, 2, 3, 4, 5, ...])
+
+mlx_vlm/tests/test_cache.py:1279: AssertionError
+_______________________ test_disk_custom_state[deepseek] _______________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+kind = 'deepseek', managers = <function managers.<locals>.make at 0x137c02c00>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x13800c620>
+
+    @parametrize("kind", ["qsa", "deepseek", "composite", "ring-indexed"])
+    def test_disk_custom_state(kind, managers, monkeypatch):
+        monkeypatch.setenv("APC_EXACT_CACHE_ENTRIES", "1" if kind == "qsa" else "0")
+        monkeypatch.setenv("APC_EXACT_MIN_TOKENS", "1")
+        if kind == "qsa":
+            arrays, qsa = C.ArraysCache(1), sample("QSAKVCache", 40)
+            arrays[0] = mx.arange(6, dtype=mx.int64).reshape(1, 2, 3)
+            qsa.index_position_ids = mx.arange(120, dtype=mx.int64).reshape(3, 1, 40)
+            qsa.index_block_keys, qsa.index_block_ratio = mx.ones((1, 1, 10, 4)), 4
+            caches, length = [arrays, qsa], 40
+        elif kind == "deepseek":
+            rotating = C.RotatingKVCache(8, keep=0)
+            rotating.keys, rotating.values = mx.ones((1, 1, 8, 4), mx.bfloat16), mx.zeros(
+                (1, 1, 8, 0), mx.bfloat16
+            )
+            rotating.offset, rotating._idx = 40, 3
+            pools = [C.PoolingCache(4), C.PoolingCache(4)]
+            pools[0].pooled, pools[1].pooled = mx.ones((1, 6, 4), mx.bfloat16), mx.ones(
+                (1, 6, 2)
+            )
+            caches, length = [C.CacheList(rotating, *pools)], 40
+        elif kind == "composite":
+            caches, length = [
+                (sample("SimpleKVCache", 12), C.SimpleKVCache()),
+                C.CacheList(sample("PoolingCache", 10)),
+            ], 12
+        else:
+            ring = RingSlidingKVCache(4)
+            ring.keys, ring.values = mx.ones((1, 2, 8, 4)), mx.ones((1, 2, 8, 4)) * 2
+            ring.prefill_length, ring.offset, ring._ring_pos = 4, 11, 3
+            caches, length = [ring, sample("MiniMaxM3KVCache", 10)], 10
+>       restored, reader = disk_roundtrip(managers, list(range(length)), caches, block=4)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+mlx_vlm/tests/test_cache.py:1964: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+managers = <function managers.<locals>.make at 0x137c02c00>
+tokens = [0, 1, 2, 3, 4, 5, ...]
+caches = [<mlx_vlm.models.cache.CacheList object at 0x13800d730>]
+kwargs = {'block': 4}
+
+    def disk_roundtrip(managers, tokens, caches, **kwargs):
+        writer = managers("disk", **kwargs)
+        assert writer.store_exact_cache(tokens, caches)
+        writer.disk.flush()
+        writer.close()
+        reader = managers("disk", **kwargs)
+        restored, count = reader.lookup_exact_cache(tokens + [999])
+>       assert count == len(tokens) and restored is not None
+E       assert (0 == 40)
+E        +  where 40 = len([0, 1, 2, 3, 4, 5, ...])
+
+mlx_vlm/tests/test_cache.py:1279: AssertionError
+______________________ test_disk_custom_state[composite] _______________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+kind = 'composite', managers = <function managers.<locals>.make at 0x137c03420>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137d4a8a0>
+
+    @parametrize("kind", ["qsa", "deepseek", "composite", "ring-indexed"])
+    def test_disk_custom_state(kind, managers, monkeypatch):
+        monkeypatch.setenv("APC_EXACT_CACHE_ENTRIES", "1" if kind == "qsa" else "0")
+        monkeypatch.setenv("APC_EXACT_MIN_TOKENS", "1")
+        if kind == "qsa":
+            arrays, qsa = C.ArraysCache(1), sample("QSAKVCache", 40)
+            arrays[0] = mx.arange(6, dtype=mx.int64).reshape(1, 2, 3)
+            qsa.index_position_ids = mx.arange(120, dtype=mx.int64).reshape(3, 1, 40)
+            qsa.index_block_keys, qsa.index_block_ratio = mx.ones((1, 1, 10, 4)), 4
+            caches, length = [arrays, qsa], 40
+        elif kind == "deepseek":
+            rotating = C.RotatingKVCache(8, keep=0)
+            rotating.keys, rotating.values = mx.ones((1, 1, 8, 4), mx.bfloat16), mx.zeros(
+                (1, 1, 8, 0), mx.bfloat16
+            )
+            rotating.offset, rotating._idx = 40, 3
+            pools = [C.PoolingCache(4), C.PoolingCache(4)]
+            pools[0].pooled, pools[1].pooled = mx.ones((1, 6, 4), mx.bfloat16), mx.ones(
+                (1, 6, 2)
+            )
+            caches, length = [C.CacheList(rotating, *pools)], 40
+        elif kind == "composite":
+            caches, length = [
+                (sample("SimpleKVCache", 12), C.SimpleKVCache()),
+                C.CacheList(sample("PoolingCache", 10)),
+            ], 12
+        else:
+            ring = RingSlidingKVCache(4)
+            ring.keys, ring.values = mx.ones((1, 2, 8, 4)), mx.ones((1, 2, 8, 4)) * 2
+            ring.prefill_length, ring.offset, ring._ring_pos = 4, 11, 3
+            caches, length = [ring, sample("MiniMaxM3KVCache", 10)], 10
+>       restored, reader = disk_roundtrip(managers, list(range(length)), caches, block=4)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+mlx_vlm/tests/test_cache.py:1964: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+managers = <function managers.<locals>.make at 0x137c03420>
+tokens = [0, 1, 2, 3, 4, 5, ...]
+caches = [(<mlx_vlm.models.cache.SimpleKVCache object at 0x137d49b80>, <mlx_vlm.models.cache.SimpleKVCache object at 0x1280a6d20>), <mlx_vlm.models.cache.CacheList object at 0x137d4aa20>]
+kwargs = {'block': 4}
+
+    def disk_roundtrip(managers, tokens, caches, **kwargs):
+        writer = managers("disk", **kwargs)
+        assert writer.store_exact_cache(tokens, caches)
+        writer.disk.flush()
+        writer.close()
+        reader = managers("disk", **kwargs)
+        restored, count = reader.lookup_exact_cache(tokens + [999])
+>       assert count == len(tokens) and restored is not None
+E       assert (0 == 12)
+E        +  where 12 = len([0, 1, 2, 3, 4, 5, ...])
+
+mlx_vlm/tests/test_cache.py:1279: AssertionError
+_____________________ test_disk_custom_state[ring-indexed] _____________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+kind = 'ring-indexed'
+managers = <function managers.<locals>.make at 0x137c03c40>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137d51c10>
+
+    @parametrize("kind", ["qsa", "deepseek", "composite", "ring-indexed"])
+    def test_disk_custom_state(kind, managers, monkeypatch):
+        monkeypatch.setenv("APC_EXACT_CACHE_ENTRIES", "1" if kind == "qsa" else "0")
+        monkeypatch.setenv("APC_EXACT_MIN_TOKENS", "1")
+        if kind == "qsa":
+            arrays, qsa = C.ArraysCache(1), sample("QSAKVCache", 40)
+            arrays[0] = mx.arange(6, dtype=mx.int64).reshape(1, 2, 3)
+            qsa.index_position_ids = mx.arange(120, dtype=mx.int64).reshape(3, 1, 40)
+            qsa.index_block_keys, qsa.index_block_ratio = mx.ones((1, 1, 10, 4)), 4
+            caches, length = [arrays, qsa], 40
+        elif kind == "deepseek":
+            rotating = C.RotatingKVCache(8, keep=0)
+            rotating.keys, rotating.values = mx.ones((1, 1, 8, 4), mx.bfloat16), mx.zeros(
+                (1, 1, 8, 0), mx.bfloat16
+            )
+            rotating.offset, rotating._idx = 40, 3
+            pools = [C.PoolingCache(4), C.PoolingCache(4)]
+            pools[0].pooled, pools[1].pooled = mx.ones((1, 6, 4), mx.bfloat16), mx.ones(
+                (1, 6, 2)
+            )
+            caches, length = [C.CacheList(rotating, *pools)], 40
+        elif kind == "composite":
+            caches, length = [
+                (sample("SimpleKVCache", 12), C.SimpleKVCache()),
+                C.CacheList(sample("PoolingCache", 10)),
+            ], 12
+        else:
+            ring = RingSlidingKVCache(4)
+            ring.keys, ring.values = mx.ones((1, 2, 8, 4)), mx.ones((1, 2, 8, 4)) * 2
+            ring.prefill_length, ring.offset, ring._ring_pos = 4, 11, 3
+            caches, length = [ring, sample("MiniMaxM3KVCache", 10)], 10
+>       restored, reader = disk_roundtrip(managers, list(range(length)), caches, block=4)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+mlx_vlm/tests/test_cache.py:1964: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+managers = <function managers.<locals>.make at 0x137c03c40>
+tokens = [0, 1, 2, 3, 4, 5, ...]
+caches = [<mlx_vlm.models.unlimited_ocr.language.RingSlidingKVCache object at 0x137d503e0>, <mlx_vlm.models.minimax_m3_vl.language.MiniMaxM3KVCache object at 0x137d53620>]
+kwargs = {'block': 4}
+
+    def disk_roundtrip(managers, tokens, caches, **kwargs):
+        writer = managers("disk", **kwargs)
+        assert writer.store_exact_cache(tokens, caches)
+        writer.disk.flush()
+        writer.close()
+        reader = managers("disk", **kwargs)
+        restored, count = reader.lookup_exact_cache(tokens + [999])
+>       assert count == len(tokens) and restored is not None
+E       assert (0 == 10)
+E        +  where 10 = len([0, 1, 2, 3, 4, 5, ...])
+
+mlx_vlm/tests/test_cache.py:1279: AssertionError
+__________________________ test_single_row_checkpoint __________________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+managers = <function managers.<locals>.make at 0x137bfe700>
+
+    def test_single_row_checkpoint(managers):
+        tokens = list(range(32))
+        arrays = C.ArraysCache(1)
+        arrays[0] = mx.ones((1, 3, 5))
+        rotating = sample("RotatingKVCache", 8)
+        rotating.max_size, rotating.offset, rotating._idx = 8, 32, 4
+        caches = [arrays, allocated(32), rotating]
+        batch = PromptProcessingBatch.__new__(PromptProcessingBatch)
+        batch.__dict__.update(
+            uids=[0],
+            prompt_cache=caches,
+            _right_pad_per_row=None,
+            _left_padding_per_row=[0],
+            _suffix_lens=[32],
+            _processed_prompt_columns=32,
+            _apc_mode="exact",
+            _apc_manager=managers(blocks=4, block=4),
+            _apc_meta=[
+                dict(full_input_ids=tokens, prefix_len=0, checkpoint_len=32, extra_hash=0)
+            ],
+        )
+        assert P.extract_prompt_cache_from_batch(caches, 0) is None
+        batch._store_apc_exact_checkpoints()
+        assert batch._apc_meta[0]["checkpoint_done"] is True
+>       assert batch._apc_manager.stats.exact_stores == 1
+E       assert 0 == 1
+E        +  where 0 = APCStats(hits=0, misses=0, matched_tokens=0, stored_tokens=0, restored_tokens=0, evictions=0, stores=0, pool_used=0, d...0, exact_hits=0, exact_stores=0, memory_evictions=0, memory_skips=1, rejects=0, rejects_by_reason={}, last_reject=None).exact_stores
+E        +    where APCStats(hits=0, misses=0, matched_tokens=0, stored_tokens=0, restored_tokens=0, evictions=0, stores=0, pool_used=0, d...0, exact_hits=0, exact_stores=0, memory_evictions=0, memory_skips=1, rejects=0, rejects_by_reason={}, last_reject=None) = <mlx_vlm.apc.APCManager object at 0x137d64740>.stats
+E        +      where <mlx_vlm.apc.APCManager object at 0x137d64740> = <mlx_vlm.generate.ar.PromptProcessingBatch object at 0x137d67470>._apc_manager
+
+mlx_vlm/tests/test_cache.py:2222: AssertionError
+_______________ test_tensor_limit_replaces_idle_history[memory] ________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+managers = <function managers.<locals>.make at 0x137bfe520>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137cb2480>
+tier = 'memory'
+
+    @parametrize("tier", ["memory", "disk"])
+    def test_tensor_limit_replaces_idle_history(managers, monkeypatch, tier):
+        monkeypatch.setenv("APC_MAX_POOL_TENSORS", "8")
+        manager = managers(tier, blocks=8)
+        old_tokens, compacted_tokens = list(range(32)), list(range(100, 132))
+        old = [allocated(32, value) for value in (1, 3)]
+        compacted = [allocated(32, value) for value in (5, 7)]
+        for tokens, caches in ((old_tokens, old), (compacted_tokens, compacted)):
+            stored = manager.store_kv_blocks(
+                tokens, [c.keys for c in caches], [c.values for c in caches]
+            )
+>           assert len(stored) == 2
+E           assert 0 == 2
+E            +  where 0 = len([])
+
+mlx_vlm/tests/test_cache.py:2249: AssertionError
+________________ test_tensor_limit_replaces_idle_history[disk] _________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+managers = <function managers.<locals>.make at 0x137bfede0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137d66060>
+tier = 'disk'
+
+    @parametrize("tier", ["memory", "disk"])
+    def test_tensor_limit_replaces_idle_history(managers, monkeypatch, tier):
+        monkeypatch.setenv("APC_MAX_POOL_TENSORS", "8")
+        manager = managers(tier, blocks=8)
+        old_tokens, compacted_tokens = list(range(32)), list(range(100, 132))
+        old = [allocated(32, value) for value in (1, 3)]
+        compacted = [allocated(32, value) for value in (5, 7)]
+        for tokens, caches in ((old_tokens, old), (compacted_tokens, compacted)):
+            stored = manager.store_kv_blocks(
+                tokens, [c.keys for c in caches], [c.values for c in caches]
+            )
+>           assert len(stored) == 2
+E           assert 0 == 2
+E            +  where 0 = len([])
+
+mlx_vlm/tests/test_cache.py:2249: AssertionError
+_________________ test_tensor_limit_preserves_active_blocks[1] _________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+managers = <function managers.<locals>.make at 0x137bff380>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137d65760>
+leased = 1
+
+    @parametrize("leased", [1, 2])
+    def test_tensor_limit_preserves_active_blocks(managers, monkeypatch, leased):
+        monkeypatch.setenv("APC_MAX_POOL_TENSORS", "8")
+        manager = managers("disk", blocks=8)
+        old = store_blocks(manager, list(range(32)))
+        active = [(b.block_hash, list(b.keys), list(b.values)) for b in old[:leased]]
+        manager.release(old[leased:])
+        new_tokens = list(range(100, 116))
+        new = store_blocks(manager, new_tokens)
+>       assert len(new) == 2 - leased
+E       assert 0 == (2 - 1)
+E        +  where 0 = len([])
+
+mlx_vlm/tests/test_cache.py:2278: AssertionError
+_________________ test_tensor_limit_preserves_active_blocks[2] _________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+managers = <function managers.<locals>.make at 0x137bff920>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137e36510>
+leased = 2
+
+    @parametrize("leased", [1, 2])
+    def test_tensor_limit_preserves_active_blocks(managers, monkeypatch, leased):
+        monkeypatch.setenv("APC_MAX_POOL_TENSORS", "8")
+        manager = managers("disk", blocks=8)
+        old = store_blocks(manager, list(range(32)))
+        active = [(b.block_hash, list(b.keys), list(b.values)) for b in old[:leased]]
+        manager.release(old[leased:])
+        new_tokens = list(range(100, 116))
+        new = store_blocks(manager, new_tokens)
+        assert len(new) == 2 - leased
+        for block, (block_hash, keys, values) in zip(old[:leased], active):
+            assert block.ref_cnt == 1 and block.block_hash == block_hash
+            same_arrays((block.keys, block.values), (keys, values))
+>       assert len(manager.hash_table) * 4 == manager._max_pool_tensors
+E       assert (0 * 4) == 8
+E        +  where 0 = len({})
+E        +    where {} = <mlx_vlm.apc.APCManager object at 0x137e37b60>.hash_table
+E        +  and   8 = <mlx_vlm.apc.APCManager object at 0x137e37b60>._max_pool_tensors
+
+mlx_vlm/tests/test_cache.py:2282: AssertionError
+_____________________ test_divergent_dense_prefix[memory] ______________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137bfefc0>
+tier = 'memory'
+
+    @parametrize("tier", ["memory", "disk", "disk-only"])
+    def test_divergent_dense_prefix(prefix_manager, tier):
+        stored = list(range(80))
+        divergent = stored[:37] + [999, 998, 997]
+        manager = prefix_manager(tier)
+        source = C.KVCache()
+        keys = mx.array(stored, dtype=mx.float32).reshape(1, 1, -1, 1)
+        source.update_and_fetch(keys, keys + 1)
+>       assert manager.store_exact_cache(stored, [source], extra_hash=7)
+E       assert False
+E        +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.KVCache object at 0x137be7590>], extra_hash=7)
+E        +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137be7770>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:2404: AssertionError
+______________________ test_divergent_dense_prefix[disk] _______________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137bffe20>, tier = 'disk'
+
+    @parametrize("tier", ["memory", "disk", "disk-only"])
+    def test_divergent_dense_prefix(prefix_manager, tier):
+        stored = list(range(80))
+        divergent = stored[:37] + [999, 998, 997]
+        manager = prefix_manager(tier)
+        source = C.KVCache()
+        keys = mx.array(stored, dtype=mx.float32).reshape(1, 1, -1, 1)
+        source.update_and_fetch(keys, keys + 1)
+        assert manager.store_exact_cache(stored, [source], extra_hash=7)
+        if manager.disk:
+            manager.close()
+            manager = prefix_manager(tier)
+        assert manager.lookup_exact_cache(divergent, extra_hash=8) == (None, 0)
+        restored, count = manager.lookup_exact_cache(divergent, extra_hash=7)
+>       assert count == 32
+E       assert 0 == 32
+
+mlx_vlm/tests/test_cache.py:2410: AssertionError
+____________________ test_divergent_dense_prefix[disk-only] ____________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137bf85e0>
+tier = 'disk-only'
+
+    @parametrize("tier", ["memory", "disk", "disk-only"])
+    def test_divergent_dense_prefix(prefix_manager, tier):
+        stored = list(range(80))
+        divergent = stored[:37] + [999, 998, 997]
+        manager = prefix_manager(tier)
+        source = C.KVCache()
+        keys = mx.array(stored, dtype=mx.float32).reshape(1, 1, -1, 1)
+        source.update_and_fetch(keys, keys + 1)
+        assert manager.store_exact_cache(stored, [source], extra_hash=7)
+        if manager.disk:
+            manager.close()
+            manager = prefix_manager(tier)
+        assert manager.lookup_exact_cache(divergent, extra_hash=8) == (None, 0)
+        restored, count = manager.lookup_exact_cache(divergent, extra_hash=7)
+>       assert count == 32
+E       assert 0 == 32
+
+mlx_vlm/tests/test_cache.py:2410: AssertionError
+_____________ test_checkpoint_divergence_is_scoped_and_media_safe ______________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137bf9620>
+
+    def test_checkpoint_divergence_is_scoped_and_media_safe(prefix_manager):
+        manager = prefix_manager()
+        manager.checkpoint_interval_tokens = 16
+        lead = manager.lead(cache_model([C.ArraysCache(1)]))
+        stored = list(range(75))
+        state = C.ArraysCache(1)
+        state[0] = mx.ones((1, 2))
+>       assert manager.store_exact_cache(stored, [state], extra_hash=7)
+E       assert False
+E        +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.ArraysCache object at 0x137be51c0>], extra_hash=7)
+E        +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137be5310>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:2454: AssertionError
+_______ test_hybrid_replaced_suffix_keeps_reusable_state[False-qwen3_5] ________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137bf9da0>
+model_name = 'qwen3_5', explicit_boundary = False
+
+    @parametrize("model_name", ["qwen3_5", "lfm2"])
+    @parametrize("explicit_boundary", [False, True])
+    def test_hybrid_replaced_suffix_keeps_reusable_state(
+        prefix_manager, model_name, explicit_boundary
+    ):
+        mx.random.seed(13)
+        lm = language_model(model_name)
+        manager = prefix_manager()
+        manager.checkpoint_interval_tokens = 16
+        for turn in range(8):
+            canonical = list(range(1, 22 + turn * 3))
+            tokens = canonical + [50 + turn] * 40
+            restored, count = manager.lookup_exact_cache(tokens)
+            if explicit_boundary and turn:
+                assert count == len(canonical) - 3
+            if turn >= 2:
+>               assert count >= 21 + (turn - 2) * 3
+E               assert 0 >= (21 + ((2 - 2) * 3))
+
+mlx_vlm/tests/test_cache.py:2481: AssertionError
+_________ test_hybrid_replaced_suffix_keeps_reusable_state[False-lfm2] _________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137bf9d00>
+model_name = 'lfm2', explicit_boundary = False
+
+    @parametrize("model_name", ["qwen3_5", "lfm2"])
+    @parametrize("explicit_boundary", [False, True])
+    def test_hybrid_replaced_suffix_keeps_reusable_state(
+        prefix_manager, model_name, explicit_boundary
+    ):
+        mx.random.seed(13)
+        lm = language_model(model_name)
+        manager = prefix_manager()
+        manager.checkpoint_interval_tokens = 16
+        for turn in range(8):
+            canonical = list(range(1, 22 + turn * 3))
+            tokens = canonical + [50 + turn] * 40
+            restored, count = manager.lookup_exact_cache(tokens)
+            if explicit_boundary and turn:
+                assert count == len(canonical) - 3
+            if turn >= 2:
+>               assert count >= 21 + (turn - 2) * 3
+E               assert 0 >= (21 + ((2 - 2) * 3))
+
+mlx_vlm/tests/test_cache.py:2481: AssertionError
+________ test_hybrid_replaced_suffix_keeps_reusable_state[True-qwen3_5] ________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137bfbce0>
+model_name = 'qwen3_5', explicit_boundary = True
+
+    @parametrize("model_name", ["qwen3_5", "lfm2"])
+    @parametrize("explicit_boundary", [False, True])
+    def test_hybrid_replaced_suffix_keeps_reusable_state(
+        prefix_manager, model_name, explicit_boundary
+    ):
+        mx.random.seed(13)
+        lm = language_model(model_name)
+        manager = prefix_manager()
+        manager.checkpoint_interval_tokens = 16
+        for turn in range(8):
+            canonical = list(range(1, 22 + turn * 3))
+            tokens = canonical + [50 + turn] * 40
+            restored, count = manager.lookup_exact_cache(tokens)
+            if explicit_boundary and turn:
+>               assert count == len(canonical) - 3
+E               assert 0 == (24 - 3)
+E                +  where 24 = len([1, 2, 3, 4, 5, 6, ...])
+
+mlx_vlm/tests/test_cache.py:2479: AssertionError
+_________ test_hybrid_replaced_suffix_keeps_reusable_state[True-lfm2] __________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137bfb100>
+model_name = 'lfm2', explicit_boundary = True
+
+    @parametrize("model_name", ["qwen3_5", "lfm2"])
+    @parametrize("explicit_boundary", [False, True])
+    def test_hybrid_replaced_suffix_keeps_reusable_state(
+        prefix_manager, model_name, explicit_boundary
+    ):
+        mx.random.seed(13)
+        lm = language_model(model_name)
+        manager = prefix_manager()
+        manager.checkpoint_interval_tokens = 16
+        for turn in range(8):
+            canonical = list(range(1, 22 + turn * 3))
+            tokens = canonical + [50 + turn] * 40
+            restored, count = manager.lookup_exact_cache(tokens)
+            if explicit_boundary and turn:
+>               assert count == len(canonical) - 3
+E               assert 0 == (24 - 3)
+E                +  where 24 = len([1, 2, 3, 4, 5, 6, ...])
+
+mlx_vlm/tests/test_cache.py:2479: AssertionError
+________________________ test_lfm_padded_prefill[None] _________________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137b44720>
+prefill_step_size = None
+
+    @parametrize("prefill_step_size", [None, 4, 16, 32])
+    def test_lfm_padded_prefill(prefix_manager, prefill_step_size):
+        mx.random.seed(19)
+        lm = language_model("lfm2")
+        manager = prefix_manager()
+        manager._exact_cache_max = 8
+        manager.checkpoint_interval_tokens = 16
+        warm_tokens = [i % 50 + 1 for i in range(71)]
+        cold_tokens = [i % 30 + 51 for i in range(25)]
+        seed_cache = lm.make_cache()
+        lm(mx.array([warm_tokens[:64]]), cache=seed_cache)
+>       assert manager.store_exact_cache(warm_tokens[:64], seed_cache)
+E       assert False
+E        +  where False = store_exact_cache([1, 2, 3, 4, 5, 6, ...], [<mlx_vlm.models.cache.ArraysCache object at 0x138044530>, <mlx_vlm.models.cache.KVCache object at 0x138044c50>])
+E        +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x1380be360>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:2561: AssertionError
+__________________________ test_lfm_padded_prefill[4] __________________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137b44220>
+prefill_step_size = 4
+
+    @parametrize("prefill_step_size", [None, 4, 16, 32])
+    def test_lfm_padded_prefill(prefix_manager, prefill_step_size):
+        mx.random.seed(19)
+        lm = language_model("lfm2")
+        manager = prefix_manager()
+        manager._exact_cache_max = 8
+        manager.checkpoint_interval_tokens = 16
+        warm_tokens = [i % 50 + 1 for i in range(71)]
+        cold_tokens = [i % 30 + 51 for i in range(25)]
+        seed_cache = lm.make_cache()
+        lm(mx.array([warm_tokens[:64]]), cache=seed_cache)
+>       assert manager.store_exact_cache(warm_tokens[:64], seed_cache)
+E       assert False
+E        +  where False = store_exact_cache([1, 2, 3, 4, 5, 6, ...], [<mlx_vlm.models.cache.ArraysCache object at 0x13589d2b0>, <mlx_vlm.models.cache.KVCache object at 0x13589d910>])
+E        +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x1380bd490>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:2561: AssertionError
+_________________________ test_lfm_padded_prefill[16] __________________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137b44b80>
+prefill_step_size = 16
+
+    @parametrize("prefill_step_size", [None, 4, 16, 32])
+    def test_lfm_padded_prefill(prefix_manager, prefill_step_size):
+        mx.random.seed(19)
+        lm = language_model("lfm2")
+        manager = prefix_manager()
+        manager._exact_cache_max = 8
+        manager.checkpoint_interval_tokens = 16
+        warm_tokens = [i % 50 + 1 for i in range(71)]
+        cold_tokens = [i % 30 + 51 for i in range(25)]
+        seed_cache = lm.make_cache()
+        lm(mx.array([warm_tokens[:64]]), cache=seed_cache)
+>       assert manager.store_exact_cache(warm_tokens[:64], seed_cache)
+E       assert False
+E        +  where False = store_exact_cache([1, 2, 3, 4, 5, 6, ...], [<mlx_vlm.models.cache.ArraysCache object at 0x138044350>, <mlx_vlm.models.cache.KVCache object at 0x138044110>])
+E        +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x1380479b0>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:2561: AssertionError
+_________________________ test_lfm_padded_prefill[32] __________________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137b44fe0>
+prefill_step_size = 32
+
+    @parametrize("prefill_step_size", [None, 4, 16, 32])
+    def test_lfm_padded_prefill(prefix_manager, prefill_step_size):
+        mx.random.seed(19)
+        lm = language_model("lfm2")
+        manager = prefix_manager()
+        manager._exact_cache_max = 8
+        manager.checkpoint_interval_tokens = 16
+        warm_tokens = [i % 50 + 1 for i in range(71)]
+        cold_tokens = [i % 30 + 51 for i in range(25)]
+        seed_cache = lm.make_cache()
+        lm(mx.array([warm_tokens[:64]]), cache=seed_cache)
+>       assert manager.store_exact_cache(warm_tokens[:64], seed_cache)
+E       assert False
+E        +  where False = store_exact_cache([1, 2, 3, 4, 5, 6, ...], [<mlx_vlm.models.cache.ArraysCache object at 0x137e35a90>, <mlx_vlm.models.cache.KVCache object at 0x137e35ee0>])
+E        +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137e35190>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:2561: AssertionError
+________________________ test_diffusion_suffix[memory] _________________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137b45440>
+tier = 'memory'
+
+    @parametrize("tier", ["memory", "disk"])
+    def test_diffusion_suffix(prefix_manager, tier):
+        from mlx_vlm.generate import stream_generate
+        from mlx_vlm.models.diffusion_gemma import Model, ModelConfig
+        from mlx_vlm.tests.test_diffusion_models import (
+            FakeProcessor,
+            RecordingEncoder,
+            tiny_config_dict,
+        )
+    
+        mx.random.seed(7)
+        model = Model(ModelConfig.from_dict(tiny_config_dict()))
+        recorder = RecordingEncoder(model.model.encoder)
+        model.model.encoder = recorder
+        settings = dict(block=2, checkpoint_interval_tokens=4, exact_cache_min_tokens=1)
+        manager = prefix_manager(tier, **settings)
+        tokens = list(range(2, 13))
+    
+        def generate(ids):
+            return list(
+                stream_generate(
+                    model,
+                    FakeProcessor(),
+                    "",
+                    input_ids=mx.array([ids]),
+                    _apc_manager=manager,
+                    max_tokens=2,
+                    max_denoising_steps=1,
+                    _apc_semantic_hash=11,
+                )
+            )
+    
+        generate(tokens)
+>       assert generate(tokens)[-1].cached_tokens == 10
+E       AssertionError: assert 0 == 10
+E        +  where 0 = GenerationResult(text='', token=40, logprobs=None, prompt_tokens=11, generation_tokens=2, total_tokens=13, prompt_tps=...e, diffusion_step=0, diffusion_total_steps=0, diffusion_canvas_index=0, diffusion_block_complete=False, token_ids=None).cached_tokens
+
+mlx_vlm/tests/test_cache.py:2631: AssertionError
+_________________________ test_diffusion_suffix[disk] __________________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137bf9da0>, tier = 'disk'
+
+    @parametrize("tier", ["memory", "disk"])
+    def test_diffusion_suffix(prefix_manager, tier):
+        from mlx_vlm.generate import stream_generate
+        from mlx_vlm.models.diffusion_gemma import Model, ModelConfig
+        from mlx_vlm.tests.test_diffusion_models import (
+            FakeProcessor,
+            RecordingEncoder,
+            tiny_config_dict,
+        )
+    
+        mx.random.seed(7)
+        model = Model(ModelConfig.from_dict(tiny_config_dict()))
+        recorder = RecordingEncoder(model.model.encoder)
+        model.model.encoder = recorder
+        settings = dict(block=2, checkpoint_interval_tokens=4, exact_cache_min_tokens=1)
+        manager = prefix_manager(tier, **settings)
+        tokens = list(range(2, 13))
+    
+        def generate(ids):
+            return list(
+                stream_generate(
+                    model,
+                    FakeProcessor(),
+                    "",
+                    input_ids=mx.array([ids]),
+                    _apc_manager=manager,
+                    max_tokens=2,
+                    max_denoising_steps=1,
+                    _apc_semantic_hash=11,
+                )
+            )
+    
+        generate(tokens)
+>       assert generate(tokens)[-1].cached_tokens == 10
+E       AssertionError: assert 0 == 10
+E        +  where 0 = GenerationResult(text='', token=40, logprobs=None, prompt_tokens=11, generation_tokens=2, total_tokens=13, prompt_tps=...e, diffusion_step=0, diffusion_total_steps=0, diffusion_canvas_index=0, diffusion_block_complete=False, token_ids=None).cached_tokens
+
+mlx_vlm/tests/test_cache.py:2631: AssertionError
+_____________ test_hybrid_prefix_generation[stream-memory-gemma4] ______________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137bf93a0>
+model_name = 'gemma4', tier = 'memory', path = 'stream'
+
+    @parametrize("model_name", ["gemma4", "qwen3_5"])
+    @parametrize("tier", ["memory", "disk"])
+    @parametrize("path", ["stream", "batch"])
+    def test_hybrid_prefix_generation(prefix_manager, model_name, tier, path):
+        from mlx_vlm.generate.ar import generate_step
+        from mlx_vlm.models.base import InputEmbeddingsFeatures
+    
+        mx.random.seed(13)
+        lm = language_model(model_name)
+        assert P.model_apc_mode(lm) == "exact"
+        manager = prefix_manager(tier)
+        manager.checkpoint_interval_tokens = 16
+        lead = manager.lead(lm)
+        tokens = [i % 50 + 1 for i in range(70)] + [51, 52, 53, 54, 55]
+        boundaries = lead.checkpoint_lengths(tokens, set())
+        assert boundaries == [64, 74]
+        ids = mx.array([tokens])
+        if path == "stream":
+            wrapper = NS(
+                language_model=lm,
+                get_input_embeddings=lambda ids, *a, **kw: InputEmbeddingsFeatures(
+                    inputs_embeds=embeddings(lm, ids)
+                ),
+            )
+            list(
+                generate_step(
+                    ids,
+                    wrapper,
+                    None,
+                    None,
+                    max_tokens=1,
+                    temperature=0,
+                    prefill_step_size=16,
+                    prompt_cache=lm.make_cache(),
+                    prompt_cache_checkpoint_lengths=boundaries,
+                    prompt_cache_checkpoint=lambda n, caches: lead.store_checkpoint(
+                        tokens[:n], caches
+                    ),
+                )
+            )
+        else:
+            finish_batch(prompt_batch(lm, manager, [tokens], [0], lm.make_cache()))
+            lengths = sorted(len(e.token_ids) for e in manager._exact_cache.values())
+            assert lengths == boundaries
+        if manager.disk:
+            manager.close()
+            manager = prefix_manager(tier)
+        divergent = tokens[:70] + [60, 61, 62, 63]
+        restored, count = manager.lookup_exact_cache(divergent)
+>       assert count == 64
+E       assert 0 == 64
+
+mlx_vlm/tests/test_cache.py:2690: AssertionError
+_____________ test_hybrid_prefix_generation[stream-memory-qwen3_5] _____________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137b44400>
+model_name = 'qwen3_5', tier = 'memory', path = 'stream'
+
+    @parametrize("model_name", ["gemma4", "qwen3_5"])
+    @parametrize("tier", ["memory", "disk"])
+    @parametrize("path", ["stream", "batch"])
+    def test_hybrid_prefix_generation(prefix_manager, model_name, tier, path):
+        from mlx_vlm.generate.ar import generate_step
+        from mlx_vlm.models.base import InputEmbeddingsFeatures
+    
+        mx.random.seed(13)
+        lm = language_model(model_name)
+        assert P.model_apc_mode(lm) == "exact"
+        manager = prefix_manager(tier)
+        manager.checkpoint_interval_tokens = 16
+        lead = manager.lead(lm)
+        tokens = [i % 50 + 1 for i in range(70)] + [51, 52, 53, 54, 55]
+        boundaries = lead.checkpoint_lengths(tokens, set())
+        assert boundaries == [64, 74]
+        ids = mx.array([tokens])
+        if path == "stream":
+            wrapper = NS(
+                language_model=lm,
+                get_input_embeddings=lambda ids, *a, **kw: InputEmbeddingsFeatures(
+                    inputs_embeds=embeddings(lm, ids)
+                ),
+            )
+            list(
+                generate_step(
+                    ids,
+                    wrapper,
+                    None,
+                    None,
+                    max_tokens=1,
+                    temperature=0,
+                    prefill_step_size=16,
+                    prompt_cache=lm.make_cache(),
+                    prompt_cache_checkpoint_lengths=boundaries,
+                    prompt_cache_checkpoint=lambda n, caches: lead.store_checkpoint(
+                        tokens[:n], caches
+                    ),
+                )
+            )
+        else:
+            finish_batch(prompt_batch(lm, manager, [tokens], [0], lm.make_cache()))
+            lengths = sorted(len(e.token_ids) for e in manager._exact_cache.values())
+            assert lengths == boundaries
+        if manager.disk:
+            manager.close()
+            manager = prefix_manager(tier)
+        divergent = tokens[:70] + [60, 61, 62, 63]
+        restored, count = manager.lookup_exact_cache(divergent)
+>       assert count == 64
+E       assert 0 == 64
+
+mlx_vlm/tests/test_cache.py:2690: AssertionError
+______________ test_hybrid_prefix_generation[stream-disk-gemma4] _______________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137b463e0>
+model_name = 'gemma4', tier = 'disk', path = 'stream'
+
+    @parametrize("model_name", ["gemma4", "qwen3_5"])
+    @parametrize("tier", ["memory", "disk"])
+    @parametrize("path", ["stream", "batch"])
+    def test_hybrid_prefix_generation(prefix_manager, model_name, tier, path):
+        from mlx_vlm.generate.ar import generate_step
+        from mlx_vlm.models.base import InputEmbeddingsFeatures
+    
+        mx.random.seed(13)
+        lm = language_model(model_name)
+        assert P.model_apc_mode(lm) == "exact"
+        manager = prefix_manager(tier)
+        manager.checkpoint_interval_tokens = 16
+        lead = manager.lead(lm)
+        tokens = [i % 50 + 1 for i in range(70)] + [51, 52, 53, 54, 55]
+        boundaries = lead.checkpoint_lengths(tokens, set())
+        assert boundaries == [64, 74]
+        ids = mx.array([tokens])
+        if path == "stream":
+            wrapper = NS(
+                language_model=lm,
+                get_input_embeddings=lambda ids, *a, **kw: InputEmbeddingsFeatures(
+                    inputs_embeds=embeddings(lm, ids)
+                ),
+            )
+            list(
+                generate_step(
+                    ids,
+                    wrapper,
+                    None,
+                    None,
+                    max_tokens=1,
+                    temperature=0,
+                    prefill_step_size=16,
+                    prompt_cache=lm.make_cache(),
+                    prompt_cache_checkpoint_lengths=boundaries,
+                    prompt_cache_checkpoint=lambda n, caches: lead.store_checkpoint(
+                        tokens[:n], caches
+                    ),
+                )
+            )
+        else:
+            finish_batch(prompt_batch(lm, manager, [tokens], [0], lm.make_cache()))
+            lengths = sorted(len(e.token_ids) for e in manager._exact_cache.values())
+            assert lengths == boundaries
+        if manager.disk:
+            manager.close()
+            manager = prefix_manager(tier)
+        divergent = tokens[:70] + [60, 61, 62, 63]
+        restored, count = manager.lookup_exact_cache(divergent)
+>       assert count == 64
+E       assert 0 == 64
+
+mlx_vlm/tests/test_cache.py:2690: AssertionError
+______________ test_hybrid_prefix_generation[stream-disk-qwen3_5] ______________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137b45260>
+model_name = 'qwen3_5', tier = 'disk', path = 'stream'
+
+    @parametrize("model_name", ["gemma4", "qwen3_5"])
+    @parametrize("tier", ["memory", "disk"])
+    @parametrize("path", ["stream", "batch"])
+    def test_hybrid_prefix_generation(prefix_manager, model_name, tier, path):
+        from mlx_vlm.generate.ar import generate_step
+        from mlx_vlm.models.base import InputEmbeddingsFeatures
+    
+        mx.random.seed(13)
+        lm = language_model(model_name)
+        assert P.model_apc_mode(lm) == "exact"
+        manager = prefix_manager(tier)
+        manager.checkpoint_interval_tokens = 16
+        lead = manager.lead(lm)
+        tokens = [i % 50 + 1 for i in range(70)] + [51, 52, 53, 54, 55]
+        boundaries = lead.checkpoint_lengths(tokens, set())
+        assert boundaries == [64, 74]
+        ids = mx.array([tokens])
+        if path == "stream":
+            wrapper = NS(
+                language_model=lm,
+                get_input_embeddings=lambda ids, *a, **kw: InputEmbeddingsFeatures(
+                    inputs_embeds=embeddings(lm, ids)
+                ),
+            )
+            list(
+                generate_step(
+                    ids,
+                    wrapper,
+                    None,
+                    None,
+                    max_tokens=1,
+                    temperature=0,
+                    prefill_step_size=16,
+                    prompt_cache=lm.make_cache(),
+                    prompt_cache_checkpoint_lengths=boundaries,
+                    prompt_cache_checkpoint=lambda n, caches: lead.store_checkpoint(
+                        tokens[:n], caches
+                    ),
+                )
+            )
+        else:
+            finish_batch(prompt_batch(lm, manager, [tokens], [0], lm.make_cache()))
+            lengths = sorted(len(e.token_ids) for e in manager._exact_cache.values())
+            assert lengths == boundaries
+        if manager.disk:
+            manager.close()
+            manager = prefix_manager(tier)
+        divergent = tokens[:70] + [60, 61, 62, 63]
+        restored, count = manager.lookup_exact_cache(divergent)
+>       assert count == 64
+E       assert 0 == 64
+
+mlx_vlm/tests/test_cache.py:2690: AssertionError
+______________ test_hybrid_prefix_generation[batch-memory-gemma4] ______________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137b46840>
+model_name = 'gemma4', tier = 'memory', path = 'batch'
+
+    @parametrize("model_name", ["gemma4", "qwen3_5"])
+    @parametrize("tier", ["memory", "disk"])
+    @parametrize("path", ["stream", "batch"])
+    def test_hybrid_prefix_generation(prefix_manager, model_name, tier, path):
+        from mlx_vlm.generate.ar import generate_step
+        from mlx_vlm.models.base import InputEmbeddingsFeatures
+    
+        mx.random.seed(13)
+        lm = language_model(model_name)
+        assert P.model_apc_mode(lm) == "exact"
+        manager = prefix_manager(tier)
+        manager.checkpoint_interval_tokens = 16
+        lead = manager.lead(lm)
+        tokens = [i % 50 + 1 for i in range(70)] + [51, 52, 53, 54, 55]
+        boundaries = lead.checkpoint_lengths(tokens, set())
+        assert boundaries == [64, 74]
+        ids = mx.array([tokens])
+        if path == "stream":
+            wrapper = NS(
+                language_model=lm,
+                get_input_embeddings=lambda ids, *a, **kw: InputEmbeddingsFeatures(
+                    inputs_embeds=embeddings(lm, ids)
+                ),
+            )
+            list(
+                generate_step(
+                    ids,
+                    wrapper,
+                    None,
+                    None,
+                    max_tokens=1,
+                    temperature=0,
+                    prefill_step_size=16,
+                    prompt_cache=lm.make_cache(),
+                    prompt_cache_checkpoint_lengths=boundaries,
+                    prompt_cache_checkpoint=lambda n, caches: lead.store_checkpoint(
+                        tokens[:n], caches
+                    ),
+                )
+            )
+        else:
+            finish_batch(prompt_batch(lm, manager, [tokens], [0], lm.make_cache()))
+            lengths = sorted(len(e.token_ids) for e in manager._exact_cache.values())
+>           assert lengths == boundaries
+E           assert [] == [64, 74]
+E             
+E             Right contains 2 more items, first extra item: 64
+E             Use -v to get more diff
+
+mlx_vlm/tests/test_cache.py:2684: AssertionError
+_____________ test_hybrid_prefix_generation[batch-memory-qwen3_5] ______________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137b471a0>
+model_name = 'qwen3_5', tier = 'memory', path = 'batch'
+
+    @parametrize("model_name", ["gemma4", "qwen3_5"])
+    @parametrize("tier", ["memory", "disk"])
+    @parametrize("path", ["stream", "batch"])
+    def test_hybrid_prefix_generation(prefix_manager, model_name, tier, path):
+        from mlx_vlm.generate.ar import generate_step
+        from mlx_vlm.models.base import InputEmbeddingsFeatures
+    
+        mx.random.seed(13)
+        lm = language_model(model_name)
+        assert P.model_apc_mode(lm) == "exact"
+        manager = prefix_manager(tier)
+        manager.checkpoint_interval_tokens = 16
+        lead = manager.lead(lm)
+        tokens = [i % 50 + 1 for i in range(70)] + [51, 52, 53, 54, 55]
+        boundaries = lead.checkpoint_lengths(tokens, set())
+        assert boundaries == [64, 74]
+        ids = mx.array([tokens])
+        if path == "stream":
+            wrapper = NS(
+                language_model=lm,
+                get_input_embeddings=lambda ids, *a, **kw: InputEmbeddingsFeatures(
+                    inputs_embeds=embeddings(lm, ids)
+                ),
+            )
+            list(
+                generate_step(
+                    ids,
+                    wrapper,
+                    None,
+                    None,
+                    max_tokens=1,
+                    temperature=0,
+                    prefill_step_size=16,
+                    prompt_cache=lm.make_cache(),
+                    prompt_cache_checkpoint_lengths=boundaries,
+                    prompt_cache_checkpoint=lambda n, caches: lead.store_checkpoint(
+                        tokens[:n], caches
+                    ),
+                )
+            )
+        else:
+            finish_batch(prompt_batch(lm, manager, [tokens], [0], lm.make_cache()))
+            lengths = sorted(len(e.token_ids) for e in manager._exact_cache.values())
+>           assert lengths == boundaries
+E           assert [] == [64, 74]
+E             
+E             Right contains 2 more items, first extra item: 64
+E             Use -v to get more diff
+
+mlx_vlm/tests/test_cache.py:2684: AssertionError
+_______________ test_hybrid_prefix_generation[batch-disk-gemma4] _______________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137b47a60>
+model_name = 'gemma4', tier = 'disk', path = 'batch'
+
+    @parametrize("model_name", ["gemma4", "qwen3_5"])
+    @parametrize("tier", ["memory", "disk"])
+    @parametrize("path", ["stream", "batch"])
+    def test_hybrid_prefix_generation(prefix_manager, model_name, tier, path):
+        from mlx_vlm.generate.ar import generate_step
+        from mlx_vlm.models.base import InputEmbeddingsFeatures
+    
+        mx.random.seed(13)
+        lm = language_model(model_name)
+        assert P.model_apc_mode(lm) == "exact"
+        manager = prefix_manager(tier)
+        manager.checkpoint_interval_tokens = 16
+        lead = manager.lead(lm)
+        tokens = [i % 50 + 1 for i in range(70)] + [51, 52, 53, 54, 55]
+        boundaries = lead.checkpoint_lengths(tokens, set())
+        assert boundaries == [64, 74]
+        ids = mx.array([tokens])
+        if path == "stream":
+            wrapper = NS(
+                language_model=lm,
+                get_input_embeddings=lambda ids, *a, **kw: InputEmbeddingsFeatures(
+                    inputs_embeds=embeddings(lm, ids)
+                ),
+            )
+            list(
+                generate_step(
+                    ids,
+                    wrapper,
+                    None,
+                    None,
+                    max_tokens=1,
+                    temperature=0,
+                    prefill_step_size=16,
+                    prompt_cache=lm.make_cache(),
+                    prompt_cache_checkpoint_lengths=boundaries,
+                    prompt_cache_checkpoint=lambda n, caches: lead.store_checkpoint(
+                        tokens[:n], caches
+                    ),
+                )
+            )
+        else:
+            finish_batch(prompt_batch(lm, manager, [tokens], [0], lm.make_cache()))
+            lengths = sorted(len(e.token_ids) for e in manager._exact_cache.values())
+>           assert lengths == boundaries
+E           assert [] == [64, 74]
+E             
+E             Right contains 2 more items, first extra item: 64
+E             Use -v to get more diff
+
+mlx_vlm/tests/test_cache.py:2684: AssertionError
+______________ test_hybrid_prefix_generation[batch-disk-qwen3_5] _______________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+prefix_manager = <function managers.<locals>.make at 0x137b46de0>
+model_name = 'qwen3_5', tier = 'disk', path = 'batch'
+
+    @parametrize("model_name", ["gemma4", "qwen3_5"])
+    @parametrize("tier", ["memory", "disk"])
+    @parametrize("path", ["stream", "batch"])
+    def test_hybrid_prefix_generation(prefix_manager, model_name, tier, path):
+        from mlx_vlm.generate.ar import generate_step
+        from mlx_vlm.models.base import InputEmbeddingsFeatures
+    
+        mx.random.seed(13)
+        lm = language_model(model_name)
+        assert P.model_apc_mode(lm) == "exact"
+        manager = prefix_manager(tier)
+        manager.checkpoint_interval_tokens = 16
+        lead = manager.lead(lm)
+        tokens = [i % 50 + 1 for i in range(70)] + [51, 52, 53, 54, 55]
+        boundaries = lead.checkpoint_lengths(tokens, set())
+        assert boundaries == [64, 74]
+        ids = mx.array([tokens])
+        if path == "stream":
+            wrapper = NS(
+                language_model=lm,
+                get_input_embeddings=lambda ids, *a, **kw: InputEmbeddingsFeatures(
+                    inputs_embeds=embeddings(lm, ids)
+                ),
+            )
+            list(
+                generate_step(
+                    ids,
+                    wrapper,
+                    None,
+                    None,
+                    max_tokens=1,
+                    temperature=0,
+                    prefill_step_size=16,
+                    prompt_cache=lm.make_cache(),
+                    prompt_cache_checkpoint_lengths=boundaries,
+                    prompt_cache_checkpoint=lambda n, caches: lead.store_checkpoint(
+                        tokens[:n], caches
+                    ),
+                )
+            )
+        else:
+            finish_batch(prompt_batch(lm, manager, [tokens], [0], lm.make_cache()))
+            lengths = sorted(len(e.token_ids) for e in manager._exact_cache.values())
+>           assert lengths == boundaries
+E           assert [] == [64, 74]
+E             
+E             Right contains 2 more items, first extra item: 64
+E             Use -v to get more diff
+
+mlx_vlm/tests/test_cache.py:2684: AssertionError
+_________________ test_packed_disk_and_batch[uniform-8-False] __________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+kind = 'uniform', bits = 8, split = False
+managers = <function managers.<locals>.make at 0x137b47b00>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1380465d0>
+
+    @parametrize(
+        "kind,bits,split",
+        [
+            ("uniform", 8, False),
+            ("turbo", 4.0, False),
+            ("turbo", 3.5, False),
+            ("turbo", 3.5, True),
+        ],
+    )
+    def test_packed_disk_and_batch(kind, bits, split, managers, monkeypatch):
+        monkeypatch.setenv("APC_EXACT_CACHE_ENTRIES", "0")
+        kwargs = {"bits": bits} | ({"key_bits": bits, "value_bits": bits} if split else {})
+        source = filled(batch_cache(kind, **kwargs))
+        expected = source.extract(0)
+        if split:
+            assert all(
+                isinstance(c, _SplitCodec) for c in (source.key_codec, source.value_codec)
+            )
+        factory = C.QuantizedKVCache if kind == "uniform" else TurboQuantKVCache
+        forbid(monkeypatch, factory, "dequantize_for_apc")
+        if kind == "uniform":
+            forbid(monkeypatch, mx, "quantize")
+        snapshot = snapshot_row([source], 0)
+        assert isinstance(snapshot[0], factory)
+        same_arrays(snapshot[0].state, expected.state)
+>       restored, _ = disk_roundtrip(managers, list(range(32)), snapshot)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+mlx_vlm/tests/test_cache.py:2727: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+managers = <function managers.<locals>.make at 0x137b47b00>
+tokens = [0, 1, 2, 3, 4, 5, ...]
+caches = [<mlx_vlm.models.cache.QuantizedKVCache object at 0x1380462a0>]
+kwargs = {}
+
+    def disk_roundtrip(managers, tokens, caches, **kwargs):
+        writer = managers("disk", **kwargs)
+        assert writer.store_exact_cache(tokens, caches)
+        writer.disk.flush()
+        writer.close()
+        reader = managers("disk", **kwargs)
+        restored, count = reader.lookup_exact_cache(tokens + [999])
+>       assert count == len(tokens) and restored is not None
+E       assert (0 == 32)
+E        +  where 32 = len([0, 1, 2, 3, 4, 5, ...])
+
+mlx_vlm/tests/test_cache.py:1279: AssertionError
+_________________ test_packed_disk_and_batch[turbo-4.0-False] __________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+kind = 'turbo', bits = 4.0, split = False
+managers = <function managers.<locals>.make at 0x137b46660>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1380be5a0>
+
+    @parametrize(
+        "kind,bits,split",
+        [
+            ("uniform", 8, False),
+            ("turbo", 4.0, False),
+            ("turbo", 3.5, False),
+            ("turbo", 3.5, True),
+        ],
+    )
+    def test_packed_disk_and_batch(kind, bits, split, managers, monkeypatch):
+        monkeypatch.setenv("APC_EXACT_CACHE_ENTRIES", "0")
+        kwargs = {"bits": bits} | ({"key_bits": bits, "value_bits": bits} if split else {})
+        source = filled(batch_cache(kind, **kwargs))
+        expected = source.extract(0)
+        if split:
+            assert all(
+                isinstance(c, _SplitCodec) for c in (source.key_codec, source.value_codec)
+            )
+        factory = C.QuantizedKVCache if kind == "uniform" else TurboQuantKVCache
+        forbid(monkeypatch, factory, "dequantize_for_apc")
+        if kind == "uniform":
+            forbid(monkeypatch, mx, "quantize")
+        snapshot = snapshot_row([source], 0)
+        assert isinstance(snapshot[0], factory)
+        same_arrays(snapshot[0].state, expected.state)
+>       restored, _ = disk_roundtrip(managers, list(range(32)), snapshot)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+mlx_vlm/tests/test_cache.py:2727: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+managers = <function managers.<locals>.make at 0x137b46660>
+tokens = [0, 1, 2, 3, 4, 5, ...]
+caches = [<mlx_vlm.turboquant.TurboQuantKVCache object at 0x1380bd5e0>]
+kwargs = {}
+
+    def disk_roundtrip(managers, tokens, caches, **kwargs):
+        writer = managers("disk", **kwargs)
+        assert writer.store_exact_cache(tokens, caches)
+        writer.disk.flush()
+        writer.close()
+        reader = managers("disk", **kwargs)
+        restored, count = reader.lookup_exact_cache(tokens + [999])
+>       assert count == len(tokens) and restored is not None
+E       assert (0 == 32)
+E        +  where 32 = len([0, 1, 2, 3, 4, 5, ...])
+
+mlx_vlm/tests/test_cache.py:1279: AssertionError
+_________________ test_packed_disk_and_batch[turbo-3.5-False] __________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+kind = 'turbo', bits = 3.5, split = False
+managers = <function managers.<locals>.make at 0x137b44220>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x13589f3b0>
+
+    @parametrize(
+        "kind,bits,split",
+        [
+            ("uniform", 8, False),
+            ("turbo", 4.0, False),
+            ("turbo", 3.5, False),
+            ("turbo", 3.5, True),
+        ],
+    )
+    def test_packed_disk_and_batch(kind, bits, split, managers, monkeypatch):
+        monkeypatch.setenv("APC_EXACT_CACHE_ENTRIES", "0")
+        kwargs = {"bits": bits} | ({"key_bits": bits, "value_bits": bits} if split else {})
+        source = filled(batch_cache(kind, **kwargs))
+        expected = source.extract(0)
+        if split:
+            assert all(
+                isinstance(c, _SplitCodec) for c in (source.key_codec, source.value_codec)
+            )
+        factory = C.QuantizedKVCache if kind == "uniform" else TurboQuantKVCache
+        forbid(monkeypatch, factory, "dequantize_for_apc")
+        if kind == "uniform":
+            forbid(monkeypatch, mx, "quantize")
+        snapshot = snapshot_row([source], 0)
+        assert isinstance(snapshot[0], factory)
+        same_arrays(snapshot[0].state, expected.state)
+>       restored, _ = disk_roundtrip(managers, list(range(32)), snapshot)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+mlx_vlm/tests/test_cache.py:2727: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+managers = <function managers.<locals>.make at 0x137b44220>
+tokens = [0, 1, 2, 3, 4, 5, ...]
+caches = [<mlx_vlm.turboquant.TurboQuantKVCache object at 0x13589d400>]
+kwargs = {}
+
+    def disk_roundtrip(managers, tokens, caches, **kwargs):
+        writer = managers("disk", **kwargs)
+        assert writer.store_exact_cache(tokens, caches)
+        writer.disk.flush()
+        writer.close()
+        reader = managers("disk", **kwargs)
+        restored, count = reader.lookup_exact_cache(tokens + [999])
+>       assert count == len(tokens) and restored is not None
+E       assert (0 == 32)
+E        +  where 32 = len([0, 1, 2, 3, 4, 5, ...])
+
+mlx_vlm/tests/test_cache.py:1279: AssertionError
+__________________ test_packed_disk_and_batch[turbo-3.5-True] __________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+kind = 'turbo', bits = 3.5, split = True
+managers = <function managers.<locals>.make at 0x137bf40e0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1358e0440>
+
+    @parametrize(
+        "kind,bits,split",
+        [
+            ("uniform", 8, False),
+            ("turbo", 4.0, False),
+            ("turbo", 3.5, False),
+            ("turbo", 3.5, True),
+        ],
+    )
+    def test_packed_disk_and_batch(kind, bits, split, managers, monkeypatch):
+        monkeypatch.setenv("APC_EXACT_CACHE_ENTRIES", "0")
+        kwargs = {"bits": bits} | ({"key_bits": bits, "value_bits": bits} if split else {})
+        source = filled(batch_cache(kind, **kwargs))
+        expected = source.extract(0)
+        if split:
+            assert all(
+                isinstance(c, _SplitCodec) for c in (source.key_codec, source.value_codec)
+            )
+        factory = C.QuantizedKVCache if kind == "uniform" else TurboQuantKVCache
+        forbid(monkeypatch, factory, "dequantize_for_apc")
+        if kind == "uniform":
+            forbid(monkeypatch, mx, "quantize")
+        snapshot = snapshot_row([source], 0)
+        assert isinstance(snapshot[0], factory)
+        same_arrays(snapshot[0].state, expected.state)
+>       restored, _ = disk_roundtrip(managers, list(range(32)), snapshot)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+mlx_vlm/tests/test_cache.py:2727: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+managers = <function managers.<locals>.make at 0x137bf40e0>
+tokens = [0, 1, 2, 3, 4, 5, ...]
+caches = [<mlx_vlm.turboquant.TurboQuantKVCache object at 0x1358e3ec0>]
+kwargs = {}
+
+    def disk_roundtrip(managers, tokens, caches, **kwargs):
+        writer = managers("disk", **kwargs)
+        assert writer.store_exact_cache(tokens, caches)
+        writer.disk.flush()
+        writer.close()
+        reader = managers("disk", **kwargs)
+        restored, count = reader.lookup_exact_cache(tokens + [999])
+>       assert count == len(tokens) and restored is not None
+E       assert (0 == 32)
+E        +  where 32 = len([0, 1, 2, 3, 4, 5, ...])
+
+mlx_vlm/tests/test_cache.py:1279: AssertionError
+_______________________ test_quantized_hybrid_snapshots ________________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+managers = <function managers.<locals>.make at 0x137bf4680>
+
+    def test_quantized_hybrid_snapshots(managers):
+        arrays = C.ArraysCache(2)
+        arrays.cache = [mx.zeros((1, 32, 32))] * 2
+        arrays.left_padding = mx.array([0])
+        caches = [arrays, filled(batch_cache("dense")), filled(batch_cache("uniform"))]
+        assert all(A.apc_exact_eligible(c) for c in caches)
+        cloned = P._clone_cache_entry_for_apc(
+            caches[1], min_capacity_tokens=None, eval_targets=[]
+        )
+        assert isinstance(cloned, C.KVCache) and cloned.offset == 32
+        cloned = P._clone_prompt_cache_for_apc(caches)
+        assert [type(c) for c in cloned] == [C.ArraysCache, C.KVCache, C.QuantizedKVCache]
+        manager = managers()
+>       assert manager.store_exact_cache(list(range(32)), caches)
+E       assert False
+E        +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.ArraysCache object at 0x1358e07a0>, <mlx_vlm.models.cache.BatchKVCache object at 0x1358e16a0>, <mlx_vlm.models.cache.BatchQuantizedKVCache object at 0x1358e18e0>])
+E        +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x1358e0bc0>.store_exact_cache
+E        +    and   [0, 1, 2, 3, 4, 5, ...] = list(range(0, 32))
+E        +      where range(0, 32) = range(32)
+
+mlx_vlm/tests/test_cache.py:2753: AssertionError
+_________________ test_warm_cache_quantization_policy[uniform] _________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+scheme = 'uniform', managers = <function managers.<locals>.make at 0x137bf4c20>
+
+    @parametrize("scheme", ["uniform", "turboquant"])
+    def test_warm_cache_quantization_policy(scheme, managers):
+        bits = 8 if scheme == "uniform" else 3.5
+        config = dict(bits=bits, group_size=32, scheme=scheme)
+        manager = managers(blocks=32)
+        tokens = list(range(32 if scheme == "uniform" else 16))
+        blocks = store_blocks(manager, tokens, layers=4, dim=32)
+        manager.release(blocks)
+        blocks, count = manager.lookup_prefix(tokens)
+>       assert count == len(tokens)
+E       assert 0 == 32
+E        +  where 32 = len([0, 1, 2, 3, 4, 5, ...])
+
+mlx_vlm/tests/test_cache.py:2768: AssertionError
+_______________ test_warm_cache_quantization_policy[turboquant] ________________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+scheme = 'turboquant'
+managers = <function managers.<locals>.make at 0x137bf4fe0>
+
+    @parametrize("scheme", ["uniform", "turboquant"])
+    def test_warm_cache_quantization_policy(scheme, managers):
+        bits = 8 if scheme == "uniform" else 3.5
+        config = dict(bits=bits, group_size=32, scheme=scheme)
+        manager = managers(blocks=32)
+        tokens = list(range(32 if scheme == "uniform" else 16))
+        blocks = store_blocks(manager, tokens, layers=4, dim=32)
+        manager.release(blocks)
+        blocks, count = manager.lookup_prefix(tokens)
+>       assert count == len(tokens)
+E       assert 0 == 16
+E        +  where 16 = len([0, 1, 2, 3, 4, 5, ...])
+
+mlx_vlm/tests/test_cache.py:2768: AssertionError
+_____________ test_block_lookup_leaves_a_generation_suffix[32-16] ______________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+managers = <function managers.<locals>.make at 0x137bf4b80>, length = 32
+expected = 16
+
+    @parametrize("length, expected", [(16, 0), (32, 16), (33, 32)])
+    def test_block_lookup_leaves_a_generation_suffix(managers, length, expected):
+        manager = managers()
+        tokens = list(range(length))
+        manager.release(store_blocks(manager, tokens))
+        hit = P.apc_lookup_plan(
+            manager,
+            tokens,
+            extra_hash=0,
+            apc_mode="block",
+            safe_lookup_min=0,
+            suffix_is_text_only=lambda _: True,
+            prefix_has_media=lambda _: False,
+        )
+>       assert (hit["prefix_len"] if hit else 0) == expected
+E       assert 0 == 16
+
+mlx_vlm/tests/test_cache.py:2833: AssertionError
+_____________ test_block_lookup_leaves_a_generation_suffix[33-32] ______________
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+managers = <function managers.<locals>.make at 0x137bf5800>, length = 33
+expected = 32
+
+    @parametrize("length, expected", [(16, 0), (32, 16), (33, 32)])
+    def test_block_lookup_leaves_a_generation_suffix(managers, length, expected):
+        manager = managers()
+        tokens = list(range(length))
+        manager.release(store_blocks(manager, tokens))
+        hit = P.apc_lookup_plan(
+            manager,
+            tokens,
+            extra_hash=0,
+            apc_mode="block",
+            safe_lookup_min=0,
+            suffix_is_text_only=lambda _: True,
+            prefix_has_media=lambda _: False,
+        )
+>       assert (hit["prefix_len"] if hit else 0) == expected
+E       assert 0 == 32
+
+mlx_vlm/tests/test_cache.py:2833: AssertionError
+_____ test_restored_tokens_count_successful_restores[single-memory-block] ______
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+mode = 'block', tier = 'memory', restore = 'single'
+managers = <function managers.<locals>.make at 0x137bf4540>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x135921790>
+
+    @parametrize("mode", ["block", "exact"])
+    @parametrize("tier", ["memory", "disk"])
+    @parametrize("restore", ["single", "batch", "failed-batch"])
+    def test_restored_tokens_count_successful_restores(
+        mode, tier, restore, managers, monkeypatch
+    ):
+        manager = managers(tier, namespace="stats")
+        tokens = list(range(32))
+        row = [sample("ArraysCache", 32), sample("KVCache", 32)]
+        if mode == "exact":
+            assert manager.store_exact_cache(tokens, row)
+        else:
+            manager.release(manager.store_kv_blocks(tokens, [row[1].keys], [row[1].values]))
+        stats = manager.stats_snapshot()
+        assert stats["restored_tokens"] == 0
+>       assert stats["stored_tokens"] == (32 if mode == "block" else 0)
+E       assert 0 == 32
+
+mlx_vlm/tests/test_cache.py:3497: AssertionError
+_____ test_restored_tokens_count_successful_restores[single-memory-exact] ______
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+mode = 'exact', tier = 'memory', restore = 'single'
+managers = <function managers.<locals>.make at 0x137b44220>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137f85310>
+
+    @parametrize("mode", ["block", "exact"])
+    @parametrize("tier", ["memory", "disk"])
+    @parametrize("restore", ["single", "batch", "failed-batch"])
+    def test_restored_tokens_count_successful_restores(
+        mode, tier, restore, managers, monkeypatch
+    ):
+        manager = managers(tier, namespace="stats")
+        tokens = list(range(32))
+        row = [sample("ArraysCache", 32), sample("KVCache", 32)]
+        if mode == "exact":
+>           assert manager.store_exact_cache(tokens, row)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.ArraysCache object at 0x137f84fe0>, <mlx_vlm.models.cache.KVCache object at 0x137f87710>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x137f863c0>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:3492: AssertionError
+______ test_restored_tokens_count_successful_restores[single-disk-block] _______
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+mode = 'block', tier = 'disk', restore = 'single'
+managers = <function managers.<locals>.make at 0x137b46980>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x135923200>
+
+    @parametrize("mode", ["block", "exact"])
+    @parametrize("tier", ["memory", "disk"])
+    @parametrize("restore", ["single", "batch", "failed-batch"])
+    def test_restored_tokens_count_successful_restores(
+        mode, tier, restore, managers, monkeypatch
+    ):
+        manager = managers(tier, namespace="stats")
+        tokens = list(range(32))
+        row = [sample("ArraysCache", 32), sample("KVCache", 32)]
+        if mode == "exact":
+            assert manager.store_exact_cache(tokens, row)
+        else:
+            manager.release(manager.store_kv_blocks(tokens, [row[1].keys], [row[1].values]))
+        stats = manager.stats_snapshot()
+        assert stats["restored_tokens"] == 0
+>       assert stats["stored_tokens"] == (32 if mode == "block" else 0)
+E       assert 0 == 32
+
+mlx_vlm/tests/test_cache.py:3497: AssertionError
+______ test_restored_tokens_count_successful_restores[single-disk-exact] _______
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+mode = 'exact', tier = 'disk', restore = 'single'
+managers = <function managers.<locals>.make at 0x137b477e0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137f869f0>
+
+    @parametrize("mode", ["block", "exact"])
+    @parametrize("tier", ["memory", "disk"])
+    @parametrize("restore", ["single", "batch", "failed-batch"])
+    def test_restored_tokens_count_successful_restores(
+        mode, tier, restore, managers, monkeypatch
+    ):
+        manager = managers(tier, namespace="stats")
+        tokens = list(range(32))
+        row = [sample("ArraysCache", 32), sample("KVCache", 32)]
+        if mode == "exact":
+            assert manager.store_exact_cache(tokens, row)
+        else:
+            manager.release(manager.store_kv_blocks(tokens, [row[1].keys], [row[1].values]))
+        stats = manager.stats_snapshot()
+        assert stats["restored_tokens"] == 0
+        assert stats["stored_tokens"] == (32 if mode == "block" else 0)
+        if tier == "disk":
+            manager.close()
+            manager = managers(tier, namespace="stats")
+        caches = [ArraysCache(2), KVCache()] if mode == "exact" else [KVCache()]
+        runner = coordinate(manager, caches)
+        hit = runner.lookup(
+            tokens + [99],
+            extra_hash=0,
+            safe_lookup_min=0,
+            suffix_is_text_only=lambda _: True,
+            prefix_has_media=lambda _: False,
+        )
+>       assert hit is not None
+E       assert None is not None
+
+mlx_vlm/tests/test_cache.py:3510: AssertionError
+______ test_restored_tokens_count_successful_restores[batch-memory-block] ______
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+mode = 'block', tier = 'memory', restore = 'batch'
+managers = <function managers.<locals>.make at 0x136190a40>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1359236b0>
+
+    @parametrize("mode", ["block", "exact"])
+    @parametrize("tier", ["memory", "disk"])
+    @parametrize("restore", ["single", "batch", "failed-batch"])
+    def test_restored_tokens_count_successful_restores(
+        mode, tier, restore, managers, monkeypatch
+    ):
+        manager = managers(tier, namespace="stats")
+        tokens = list(range(32))
+        row = [sample("ArraysCache", 32), sample("KVCache", 32)]
+        if mode == "exact":
+            assert manager.store_exact_cache(tokens, row)
+        else:
+            manager.release(manager.store_kv_blocks(tokens, [row[1].keys], [row[1].values]))
+        stats = manager.stats_snapshot()
+        assert stats["restored_tokens"] == 0
+>       assert stats["stored_tokens"] == (32 if mode == "block" else 0)
+E       assert 0 == 32
+
+mlx_vlm/tests/test_cache.py:3497: AssertionError
+______ test_restored_tokens_count_successful_restores[batch-memory-exact] ______
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+mode = 'exact', tier = 'memory', restore = 'batch'
+managers = <function managers.<locals>.make at 0x136190900>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1380466f0>
+
+    @parametrize("mode", ["block", "exact"])
+    @parametrize("tier", ["memory", "disk"])
+    @parametrize("restore", ["single", "batch", "failed-batch"])
+    def test_restored_tokens_count_successful_restores(
+        mode, tier, restore, managers, monkeypatch
+    ):
+        manager = managers(tier, namespace="stats")
+        tokens = list(range(32))
+        row = [sample("ArraysCache", 32), sample("KVCache", 32)]
+        if mode == "exact":
+>           assert manager.store_exact_cache(tokens, row)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.ArraysCache object at 0x138044cb0>, <mlx_vlm.models.cache.KVCache object at 0x1380463c0>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x138046660>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:3492: AssertionError
+_______ test_restored_tokens_count_successful_restores[batch-disk-block] _______
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+mode = 'block', tier = 'disk', restore = 'batch'
+managers = <function managers.<locals>.make at 0x136190ea0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137be4860>
+
+    @parametrize("mode", ["block", "exact"])
+    @parametrize("tier", ["memory", "disk"])
+    @parametrize("restore", ["single", "batch", "failed-batch"])
+    def test_restored_tokens_count_successful_restores(
+        mode, tier, restore, managers, monkeypatch
+    ):
+        manager = managers(tier, namespace="stats")
+        tokens = list(range(32))
+        row = [sample("ArraysCache", 32), sample("KVCache", 32)]
+        if mode == "exact":
+            assert manager.store_exact_cache(tokens, row)
+        else:
+            manager.release(manager.store_kv_blocks(tokens, [row[1].keys], [row[1].values]))
+        stats = manager.stats_snapshot()
+        assert stats["restored_tokens"] == 0
+>       assert stats["stored_tokens"] == (32 if mode == "block" else 0)
+E       assert 0 == 32
+
+mlx_vlm/tests/test_cache.py:3497: AssertionError
+_______ test_restored_tokens_count_successful_restores[batch-disk-exact] _______
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+mode = 'exact', tier = 'disk', restore = 'batch'
+managers = <function managers.<locals>.make at 0x136191440>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1358e20c0>
+
+    @parametrize("mode", ["block", "exact"])
+    @parametrize("tier", ["memory", "disk"])
+    @parametrize("restore", ["single", "batch", "failed-batch"])
+    def test_restored_tokens_count_successful_restores(
+        mode, tier, restore, managers, monkeypatch
+    ):
+        manager = managers(tier, namespace="stats")
+        tokens = list(range(32))
+        row = [sample("ArraysCache", 32), sample("KVCache", 32)]
+        if mode == "exact":
+            assert manager.store_exact_cache(tokens, row)
+        else:
+            manager.release(manager.store_kv_blocks(tokens, [row[1].keys], [row[1].values]))
+        stats = manager.stats_snapshot()
+        assert stats["restored_tokens"] == 0
+        assert stats["stored_tokens"] == (32 if mode == "block" else 0)
+        if tier == "disk":
+            manager.close()
+            manager = managers(tier, namespace="stats")
+        caches = [ArraysCache(2), KVCache()] if mode == "exact" else [KVCache()]
+        runner = coordinate(manager, caches)
+        hit = runner.lookup(
+            tokens + [99],
+            extra_hash=0,
+            safe_lookup_min=0,
+            suffix_is_text_only=lambda _: True,
+            prefix_has_media=lambda _: False,
+        )
+>       assert hit is not None
+E       assert None is not None
+
+mlx_vlm/tests/test_cache.py:3510: AssertionError
+__ test_restored_tokens_count_successful_restores[failed-batch-memory-block] ___
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+mode = 'block', tier = 'memory', restore = 'failed-batch'
+managers = <function managers.<locals>.make at 0x136191b20>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1358e0050>
+
+    @parametrize("mode", ["block", "exact"])
+    @parametrize("tier", ["memory", "disk"])
+    @parametrize("restore", ["single", "batch", "failed-batch"])
+    def test_restored_tokens_count_successful_restores(
+        mode, tier, restore, managers, monkeypatch
+    ):
+        manager = managers(tier, namespace="stats")
+        tokens = list(range(32))
+        row = [sample("ArraysCache", 32), sample("KVCache", 32)]
+        if mode == "exact":
+            assert manager.store_exact_cache(tokens, row)
+        else:
+            manager.release(manager.store_kv_blocks(tokens, [row[1].keys], [row[1].values]))
+        stats = manager.stats_snapshot()
+        assert stats["restored_tokens"] == 0
+>       assert stats["stored_tokens"] == (32 if mode == "block" else 0)
+E       assert 0 == 32
+
+mlx_vlm/tests/test_cache.py:3497: AssertionError
+__ test_restored_tokens_count_successful_restores[failed-batch-memory-exact] ___
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+mode = 'exact', tier = 'memory', restore = 'failed-batch'
+managers = <function managers.<locals>.make at 0x136191f80>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x13589d760>
+
+    @parametrize("mode", ["block", "exact"])
+    @parametrize("tier", ["memory", "disk"])
+    @parametrize("restore", ["single", "batch", "failed-batch"])
+    def test_restored_tokens_count_successful_restores(
+        mode, tier, restore, managers, monkeypatch
+    ):
+        manager = managers(tier, namespace="stats")
+        tokens = list(range(32))
+        row = [sample("ArraysCache", 32), sample("KVCache", 32)]
+        if mode == "exact":
+>           assert manager.store_exact_cache(tokens, row)
+E           assert False
+E            +  where False = store_exact_cache([0, 1, 2, 3, 4, 5, ...], [<mlx_vlm.models.cache.ArraysCache object at 0x13589f6b0>, <mlx_vlm.models.cache.KVCache object at 0x13589fc50>])
+E            +    where store_exact_cache = <mlx_vlm.apc.APCManager object at 0x1380bef00>.store_exact_cache
+
+mlx_vlm/tests/test_cache.py:3492: AssertionError
+___ test_restored_tokens_count_successful_restores[failed-batch-disk-block] ____
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+mode = 'block', tier = 'disk', restore = 'failed-batch'
+managers = <function managers.<locals>.make at 0x1361923e0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x137e35d00>
+
+    @parametrize("mode", ["block", "exact"])
+    @parametrize("tier", ["memory", "disk"])
+    @parametrize("restore", ["single", "batch", "failed-batch"])
+    def test_restored_tokens_count_successful_restores(
+        mode, tier, restore, managers, monkeypatch
+    ):
+        manager = managers(tier, namespace="stats")
+        tokens = list(range(32))
+        row = [sample("ArraysCache", 32), sample("KVCache", 32)]
+        if mode == "exact":
+            assert manager.store_exact_cache(tokens, row)
+        else:
+            manager.release(manager.store_kv_blocks(tokens, [row[1].keys], [row[1].values]))
+        stats = manager.stats_snapshot()
+        assert stats["restored_tokens"] == 0
+>       assert stats["stored_tokens"] == (32 if mode == "block" else 0)
+E       assert 0 == 32
+
+mlx_vlm/tests/test_cache.py:3497: AssertionError
+___ test_restored_tokens_count_successful_restores[failed-batch-disk-exact] ____
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+mode = 'exact', tier = 'disk', restore = 'failed-batch'
+managers = <function managers.<locals>.make at 0x136192980>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x13594a420>
+
+    @parametrize("mode", ["block", "exact"])
+    @parametrize("tier", ["memory", "disk"])
+    @parametrize("restore", ["single", "batch", "failed-batch"])
+    def test_restored_tokens_count_successful_restores(
+        mode, tier, restore, managers, monkeypatch
+    ):
+        manager = managers(tier, namespace="stats")
+        tokens = list(range(32))
+        row = [sample("ArraysCache", 32), sample("KVCache", 32)]
+        if mode == "exact":
+            assert manager.store_exact_cache(tokens, row)
+        else:
+            manager.release(manager.store_kv_blocks(tokens, [row[1].keys], [row[1].values]))
+        stats = manager.stats_snapshot()
+        assert stats["restored_tokens"] == 0
+        assert stats["stored_tokens"] == (32 if mode == "block" else 0)
+        if tier == "disk":
+            manager.close()
+            manager = managers(tier, namespace="stats")
+        caches = [ArraysCache(2), KVCache()] if mode == "exact" else [KVCache()]
+        runner = coordinate(manager, caches)
+        hit = runner.lookup(
+            tokens + [99],
+            extra_hash=0,
+            safe_lookup_min=0,
+            suffix_is_text_only=lambda _: True,
+            prefix_has_media=lambda _: False,
+        )
+>       assert hit is not None
+E       assert None is not None
+
+mlx_vlm/tests/test_cache.py:3510: AssertionError
+=============================== warnings summary ===============================
+mlx_vlm/tests/test_processors.py::test_prepare_inputs_text_length_options[no-truncation-left-False]
+mlx_vlm/tests/test_processors.py::test_prepare_inputs_text_length_options[no-truncation-left-True]
+mlx_vlm/tests/test_processors.py::test_prepare_inputs_text_length_options[no-truncation-right-False]
+mlx_vlm/tests/test_processors.py::test_prepare_inputs_text_length_options[no-truncation-right-True]
+mlx_vlm/tests/test_processors.py::test_prepare_inputs_text_preserves_custom_length_defaults[disabled]
+  ~/.venvs/inkling/lib/python3.12/site-packages/transformers/tokenization_utils_base.py:2387: UserWarning: `max_length` is ignored when `padding`=`True` and there is no truncation strategy. To pad to max length, use `padding='max_length'`.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED mlx_vlm/tests/test_generate.py::test_precomputed_semantic_hash_reuses_actual_growing_apc_prefix
+FAILED mlx_vlm/tests/test_cache.py::test_blocks_and_statistics - assert 0 == 3
+FAILED mlx_vlm/tests/test_cache.py::test_layer_major_threshold - assert (0 ==...
+FAILED mlx_vlm/tests/test_cache.py::test_disk_block_lifecycle - assert (0 == 48)
+FAILED mlx_vlm/tests/test_cache.py::test_disk_prefix_with_evicted_leading_blocks[1]
+FAILED mlx_vlm/tests/test_cache.py::test_disk_prefix_with_evicted_leading_blocks[2]
+FAILED mlx_vlm/tests/test_cache.py::test_disk_policy_and_metadata - assert (N...
+FAILED mlx_vlm/tests/test_cache.py::test_exact_promotion_and_priority - asser...
+FAILED mlx_vlm/tests/test_cache.py::test_self_check_and_plans - assert False
+FAILED mlx_vlm/tests/test_cache.py::test_float_extraction_and_harvesting - Va...
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[ArraysCache] - ...
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[ArraysCache+CacheList+KVCache]
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[ArraysCache+CacheList+KVCache+PoolingCache]
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[ArraysCache+CacheList+KVCache+RotatingKVCache]
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[ArraysCache+KVCache]
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[ArraysCache+KVCache+RotatingKVCache]
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[ArraysCache+KVCache+SlidingWindowKVCache]
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[ArraysCache+QSAKVCache]
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[ArraysCache+RotatingKVCache]
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[CacheList+HyV4KVCache]
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[CacheList+KVCache]
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[CacheList+PoolingCache+RotatingKVCache]
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[CacheList+SimpleKVCache]
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[ChunkedKVCache+KVCache]
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[DeepseekV41Cache]
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[KVCache] - asse...
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[KVCache+MiniMaxM3KVCache]
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[KVCache+RingSlidingKVCache]
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[KVCache+RotatingKVCache]
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[KVCache+RotatingKVCache+StaticPrefixKVCache]
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[Z1TCache] - ass...
+FAILED mlx_vlm/tests/test_cache.py::test_disk_custom_state[qsa] - assert (0 =...
+FAILED mlx_vlm/tests/test_cache.py::test_disk_custom_state[deepseek] - assert...
+FAILED mlx_vlm/tests/test_cache.py::test_disk_custom_state[composite] - asser...
+FAILED mlx_vlm/tests/test_cache.py::test_disk_custom_state[ring-indexed] - as...
+FAILED mlx_vlm/tests/test_cache.py::test_single_row_checkpoint - assert 0 == 1
+FAILED mlx_vlm/tests/test_cache.py::test_tensor_limit_replaces_idle_history[memory]
+FAILED mlx_vlm/tests/test_cache.py::test_tensor_limit_replaces_idle_history[disk]
+FAILED mlx_vlm/tests/test_cache.py::test_tensor_limit_preserves_active_blocks[1]
+FAILED mlx_vlm/tests/test_cache.py::test_tensor_limit_preserves_active_blocks[2]
+FAILED mlx_vlm/tests/test_cache.py::test_divergent_dense_prefix[memory] - ass...
+FAILED mlx_vlm/tests/test_cache.py::test_divergent_dense_prefix[disk] - asser...
+FAILED mlx_vlm/tests/test_cache.py::test_divergent_dense_prefix[disk-only] - ...
+FAILED mlx_vlm/tests/test_cache.py::test_checkpoint_divergence_is_scoped_and_media_safe
+FAILED mlx_vlm/tests/test_cache.py::test_hybrid_replaced_suffix_keeps_reusable_state[False-qwen3_5]
+FAILED mlx_vlm/tests/test_cache.py::test_hybrid_replaced_suffix_keeps_reusable_state[False-lfm2]
+FAILED mlx_vlm/tests/test_cache.py::test_hybrid_replaced_suffix_keeps_reusable_state[True-qwen3_5]
+FAILED mlx_vlm/tests/test_cache.py::test_hybrid_replaced_suffix_keeps_reusable_state[True-lfm2]
+FAILED mlx_vlm/tests/test_cache.py::test_lfm_padded_prefill[None] - assert False
+FAILED mlx_vlm/tests/test_cache.py::test_lfm_padded_prefill[4] - assert False
+FAILED mlx_vlm/tests/test_cache.py::test_lfm_padded_prefill[16] - assert False
+FAILED mlx_vlm/tests/test_cache.py::test_lfm_padded_prefill[32] - assert False
+FAILED mlx_vlm/tests/test_cache.py::test_diffusion_suffix[memory] - Assertion...
+FAILED mlx_vlm/tests/test_cache.py::test_diffusion_suffix[disk] - AssertionEr...
+FAILED mlx_vlm/tests/test_cache.py::test_hybrid_prefix_generation[stream-memory-gemma4]
+FAILED mlx_vlm/tests/test_cache.py::test_hybrid_prefix_generation[stream-memory-qwen3_5]
+FAILED mlx_vlm/tests/test_cache.py::test_hybrid_prefix_generation[stream-disk-gemma4]
+FAILED mlx_vlm/tests/test_cache.py::test_hybrid_prefix_generation[stream-disk-qwen3_5]
+FAILED mlx_vlm/tests/test_cache.py::test_hybrid_prefix_generation[batch-memory-gemma4]
+FAILED mlx_vlm/tests/test_cache.py::test_hybrid_prefix_generation[batch-memory-qwen3_5]
+FAILED mlx_vlm/tests/test_cache.py::test_hybrid_prefix_generation[batch-disk-gemma4]
+FAILED mlx_vlm/tests/test_cache.py::test_hybrid_prefix_generation[batch-disk-qwen3_5]
+FAILED mlx_vlm/tests/test_cache.py::test_packed_disk_and_batch[uniform-8-False]
+FAILED mlx_vlm/tests/test_cache.py::test_packed_disk_and_batch[turbo-4.0-False]
+FAILED mlx_vlm/tests/test_cache.py::test_packed_disk_and_batch[turbo-3.5-False]
+FAILED mlx_vlm/tests/test_cache.py::test_packed_disk_and_batch[turbo-3.5-True]
+FAILED mlx_vlm/tests/test_cache.py::test_quantized_hybrid_snapshots - assert ...
+FAILED mlx_vlm/tests/test_cache.py::test_warm_cache_quantization_policy[uniform]
+FAILED mlx_vlm/tests/test_cache.py::test_warm_cache_quantization_policy[turboquant]
+FAILED mlx_vlm/tests/test_cache.py::test_block_lookup_leaves_a_generation_suffix[32-16]
+FAILED mlx_vlm/tests/test_cache.py::test_block_lookup_leaves_a_generation_suffix[33-32]
+FAILED mlx_vlm/tests/test_cache.py::test_restored_tokens_count_successful_restores[single-memory-block]
+FAILED mlx_vlm/tests/test_cache.py::test_restored_tokens_count_successful_restores[single-memory-exact]
+FAILED mlx_vlm/tests/test_cache.py::test_restored_tokens_count_successful_restores[single-disk-block]
+FAILED mlx_vlm/tests/test_cache.py::test_restored_tokens_count_successful_restores[single-disk-exact]
+FAILED mlx_vlm/tests/test_cache.py::test_restored_tokens_count_successful_restores[batch-memory-block]
+FAILED mlx_vlm/tests/test_cache.py::test_restored_tokens_count_successful_restores[batch-memory-exact]
+FAILED mlx_vlm/tests/test_cache.py::test_restored_tokens_count_successful_restores[batch-disk-block]
+FAILED mlx_vlm/tests/test_cache.py::test_restored_tokens_count_successful_restores[batch-disk-exact]
+FAILED mlx_vlm/tests/test_cache.py::test_restored_tokens_count_successful_restores[failed-batch-memory-block]
+FAILED mlx_vlm/tests/test_cache.py::test_restored_tokens_count_successful_restores[failed-batch-memory-exact]
+FAILED mlx_vlm/tests/test_cache.py::test_restored_tokens_count_successful_restores[failed-batch-disk-block]
+FAILED mlx_vlm/tests/test_cache.py::test_restored_tokens_count_successful_restores[failed-batch-disk-exact]
+83 failed, 5074 passed, 16 skipped, 5 warnings, 301 subtests passed in 465.95s (0:07:45)

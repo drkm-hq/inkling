@@ -1,0 +1,9 @@
+$ git log --oneline -6; git status --short | head
+a963af71 tests : banded flash attention tolerance for the CUDA MMA kernel
+478c3d7c ggml : q_offset for the banded flash attention (proposal for #25731)
+7f580469 tests : banded flash attention cases
+37660bb1 metal : add GGML_OP_FLASH_ATTN_EXT_BANDED
+3582c5ee Fix merge conflicts
+41f46497 Fix merge conflicts
+
+[rc=0]

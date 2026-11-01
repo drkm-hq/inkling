@@ -1,0 +1,43 @@
+W1029 03:45:46.086000 71933 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+[03:45:46] {"kind": "meta", "tag": "p32k-clean", "model": "~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit/snapshots/f8a0af554e168077bdaf48e1fb6682fb395c807c/", "mlx": "0.32.4", "mlx_vlm": "0.7.11", "device": "Apple M5 Max", "argv": ["baseline/bench_mlx.py", "--no-lock", "--tag", "p32k-clean", "--prompts", "p_32k", "--repeats", "3", "--max-tokens", "128", "--warmup-tokens", "32", "--quiet-wait", "60", "--time-limit", "300"], "pid": 71933, "load1": 8.55126953125}
+[03:45:58] load: lazy 0.6s, chunked eval 11.2s, 82.3 GiB of parameters, active 82.4 GiB, peak 82.4 GiB
+[03:45:58] prompt p_32k: 128212 chars, 32807 tokens; head='<|message_system|><|content_text|>Thinking effort level: 0<|end_message|><|message_user|><|content_text|>CHAPTER 1. Loomings.\n\nCHAPTER 2. Th' tail='entence, who is the narrator of the text above and what is the name of the ship? Answer:<|end_message|><|message_model|>'
+[03:45:58] prompt p_short: 833 chars, 239 tokens; head='<|message_system|><|content_text|>Thinking effort level: 0<|end_message|><|message_user|><|content_text|>CHAPTER 1. Loomings.\n\nCHAPTER 2. Th' tail='entence, who is the narrator of the text above and what is the name of the ship? Answer:<|end_message|><|message_model|>'
+[03:45:58] gen kwargs: {'max_tokens': 128, 'temperature': 0.0, 'top_p': 1.0, 'top_k': 0, 'verbose': False}
+[03:45:58] warm-up with p_short (32 tokens)
+[03:47:59] quiet-wait of 120.0s exhausted; proceeding with competing processes: [{'pid': 68757, 'pcpu': 0.0, 'etime': '14:20', 'cmd': '/bin/zsh -c source ~/.claude/shell-snapshots/snapshot-zsh-1793235868149-pcc7x1.sh 2>', 'gpu_suspect': True}, {'pid': 68758, 'pcpu': 0.0, 'etime': '14:20', 'cmd': 'tail -n 0 -F llama-server-fa0-c16k.client.log llama-server-fa1-c16k.client.log mlx-p32k-clean.log', 'gpu_suspect': True}]
+[03:48:06] warmup p_short rep0: prompt 239 tok, prefill 5.52s (43.3 tok/s api), TTFT wall 6.82s, decode 32 tok 48.20 tok/s wall (49.74 api), total 7.5s, peak 89.5 GB api / 83.3 GiB, rss 58.5 GiB, eos@16 ok=True aborted=None load1=4.6
+[03:48:06]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the'
+[03:48:06]   cache: {'kinds': {'InklingCacheList(SlidingWindowKVCache,ArraysCache)': 35, 'InklingCacheList(KVCache,ArraysCache)': 7}, 'offsets': [271], 'state_gib': 0.04822540283203125}
+[03:50:07] quiet-wait of 120.0s exhausted; proceeding with competing processes: [{'pid': 68757, 'pcpu': 0.0, 'etime': '16:28', 'cmd': '/bin/zsh -c source ~/.claude/shell-snapshots/snapshot-zsh-1793235868149-pcc7x1.sh 2>', 'gpu_suspect': True}, {'pid': 68758, 'pcpu': 0.0, 'etime': '16:28', 'cmd': 'tail -n 0 -F llama-server-fa0-c16k.client.log llama-server-fa1-c16k.client.log mlx-p32k-clean.log', 'gpu_suspect': True}]
+[03:50:47] run p_32k rep1: prompt 32807 tok, prefill 36.57s (897.1 tok/s api), TTFT wall 36.60s, decode 128 tok 35.38 tok/s wall (35.65 api), total 40.2s, peak 102.3 GB api / 95.3 GiB, rss 58.5 GiB, eos@16 ok=True aborted=None load1=3.9
+[03:50:47]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" The text is clearly Moby-Dick (Melville). The narrator is Ishmael ("Call'
+[03:50:47]   cache: {'kinds': {'InklingCacheList(SlidingWindowKVCache,ArraysCache)': 35, 'InklingCacheList(KVCache,ArraysCache)': 7}, 'offsets': [32935], 'state_gib': 0.9747886657714844}
+[03:52:48] quiet-wait of 120.0s exhausted; proceeding with competing processes: [{'pid': 68757, 'pcpu': 0.0, 'etime': '19:09', 'cmd': '/bin/zsh -c source ~/.claude/shell-snapshots/snapshot-zsh-1793235868149-pcc7x1.sh 2>', 'gpu_suspect': True}, {'pid': 68758, 'pcpu': 0.0, 'etime': '19:09', 'cmd': 'tail -n 0 -F llama-server-fa0-c16k.client.log llama-server-fa1-c16k.client.log mlx-p32k-clean.log', 'gpu_suspect': True}]
+[03:53:28] run p_32k rep2: prompt 32807 tok, prefill 37.03s (886.0 tok/s api), TTFT wall 37.06s, decode 128 tok 37.76 tok/s wall (38.05 api), total 40.4s, peak 102.3 GB api / 95.3 GiB, rss 58.5 GiB, eos@16 ok=True aborted=None load1=3.8
+[03:53:28]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" The text is clearly Moby-Dick (Melville). The narrator is Ishmael ("Call'
+[03:53:28]   cache: {'kinds': {'InklingCacheList(SlidingWindowKVCache,ArraysCache)': 35, 'InklingCacheList(KVCache,ArraysCache)': 7}, 'offsets': [32935], 'state_gib': 0.9747886657714844}
+[03:55:29] quiet-wait of 120.0s exhausted; proceeding with competing processes: [{'pid': 68757, 'pcpu': 0.0, 'etime': '21:50', 'cmd': '/bin/zsh -c source ~/.claude/shell-snapshots/snapshot-zsh-1793235868149-pcc7x1.sh 2>', 'gpu_suspect': True}, {'pid': 68758, 'pcpu': 0.0, 'etime': '21:50', 'cmd': 'tail -n 0 -F llama-server-fa0-c16k.client.log llama-server-fa1-c16k.client.log mlx-p32k-clean.log', 'gpu_suspect': True}]
+[03:56:09] run p_32k rep3: prompt 32807 tok, prefill 37.13s (883.5 tok/s api), TTFT wall 37.16s, decode 128 tok 38.64 tok/s wall (38.94 api), total 40.5s, peak 102.3 GB api / 95.3 GiB, rss 58.5 GiB, eos@16 ok=True aborted=None load1=3.5
+[03:56:09]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" The text is clearly Moby-Dick (Melville). The narrator is Ishmael ("Call'
+[03:56:09]   cache: {'kinds': {'InklingCacheList(SlidingWindowKVCache,ArraysCache)': 35, 'InklingCacheList(KVCache,ArraysCache)': 7}, 'offsets': [32935], 'state_gib': 0.9747886657714844}
+[03:56:09] SUMMARY p_32k: prompt 32807 tok | prefill 886.0 tok/s (spread 1.5%) | TTFT 37.06s | decode 37.76 tok/s wall (spread 8.6%) | peak 102.3 GB | answer_ok=True identical=True
+[03:56:09] done; maxrss 58.5 GiB, mx peak 95.3 GiB
+      629.83 real        15.51 user        55.12 sys
+         62820188160  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+             5465001  page reclaims
+                 824  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                7895  voluntary context switches
+             1014996  involuntary context switches
+        468001862508  instructions retired
+        272334877695  cycles elapsed
+        106702076544  peak memory footprint

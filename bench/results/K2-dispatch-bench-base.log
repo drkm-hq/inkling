@@ -1,0 +1,7 @@
+W1029 00:00:09.440000 58131 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+decode step, tiny widths, 42 layers, context 600 (sliding window full), bf16 [~/.venvs/inkling-base]
+  mlx-vlm LanguageModel        17.36 ms/token (best 14.51)
+  mlx-vlm LanguageModel        18.21 ms/token (best 16.01)
+decode step, tiny widths, 42 layers, context 600 (sliding window full), bf16 [~/.venvs/inkling]
+  mlx-lm inkling_mm_model      17.98 ms/token (best 13.98)
+  mlx-lm inkling_mm_model      20.54 ms/token (best 16.76)

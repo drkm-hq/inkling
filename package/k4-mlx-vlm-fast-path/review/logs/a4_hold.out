@@ -1,0 +1,29 @@
+=== 01:46:39 waiting for the GPU: queue [M1 K2 K4 A4 A3 ], lock: 5195 2026-10-29T05:06:40Z M1 llama
+=== 02:50:12 hold acquired by pid 25241 (queue head: A4); budget 2100s; load1 { 7.79 6.45 8.21 }
+=== 02:50:12 after tree: 026dd58 dirty=[] diff vs eb93183 in mlx_vlm (non-test): 
+=== 02:50:18 before wheel: ~/.venvs/inkling-base/lib/python3.12/site-packages/mlx_vlm/__init__.py
+=== 02:50:18 start a4-before-gen (~/.venvs/inkling-base/bin/python) --prompts p_short,p_8k --repeats 3 --max-tokens 64 load1 { 7.73 6.46 8.20 }
+=== 02:52:31 end a4-before-gen rc=0 (elapsed 139s)
+=== 02:52:31 start a4-tf-before-2048 (~/.venvs/inkling-base/bin/python) --teacher-forced <workdir>/package/k4-mlx-vlm-fast-path/review/results/a4-before-gen.jsonl --max-tokens 64 --prompts p_short,p_8k --prefill-step-size 2048 load1 { 5.96 6.16 7.82 }
+=== 02:53:24 end a4-tf-before-2048 rc=0 (elapsed 192s)
+=== 02:53:24 start a4-tf-before-512 (~/.venvs/inkling-base/bin/python) --teacher-forced <workdir>/package/k4-mlx-vlm-fast-path/review/results/a4-before-gen.jsonl --max-tokens 64 --prompts p_short,p_8k --prefill-step-size 512 --tf-reference a4-tf-before-2048 load1 { 4.86 5.87 7.62 }
+=== 02:54:40 end a4-tf-before-512 rc=0 (elapsed 268s)
+=== 02:54:40 start a4-after-gen (~/.venvs/inkling-a4/bin/python) --prompts p_short,p_8k --repeats 3 --max-tokens 64 load1 { 6.11 6.03 7.52 }
+=== 02:56:33 end a4-after-gen rc=0 (elapsed 381s)
+=== 02:56:33 start a4-tf-after-2048 (~/.venvs/inkling-a4/bin/python) --teacher-forced <workdir>/package/k4-mlx-vlm-fast-path/review/results/a4-before-gen.jsonl --max-tokens 64 --prompts p_short,p_8k --prefill-step-size 2048 --tf-reference a4-tf-before-2048 load1 { 4.49 5.51 7.14 }
+=== 02:57:24 end a4-tf-after-2048 rc=0 (elapsed 432s)
+=== 02:57:24 start a4-after-32k (~/.venvs/inkling-a4/bin/python) --prompts p_32k --repeats 3 --max-tokens 64 --warmup-prompt p_short load1 { 4.39 5.37 6.99 }
+=== 03:02:19 end a4-after-32k rc=0 (elapsed 727s)
+=== 03:02:19 start a4-before-32k (~/.venvs/inkling-base/bin/python) --prompts p_32k --repeats 3 --max-tokens 64 --warmup-prompt p_short load1 { 3.10 4.06 5.90 }
+=== 03:07:55 end a4-before-32k rc=0 (elapsed 1063s)
+=== 03:07:55 start a4-after-kv8 (~/.venvs/inkling-a4/bin/python) --prompts p_short,p_8k --repeats 1 --max-tokens 64 --kv-bits 8 --kv-group-size 64 --quantized-kv-start 0 load1 { 3.79 3.74 5.15 }
+=== 03:08:51 end a4-after-kv8 rc=0 (elapsed 1119s)
+=== 03:08:51 start a4-tf-after-kv8 (~/.venvs/inkling-a4/bin/python) --teacher-forced <workdir>/package/k4-mlx-vlm-fast-path/review/results/a4-before-gen.jsonl --max-tokens 64 --prompts p_short,p_8k --prefill-step-size 2048 --tf-reference a4-tf-before-2048 --kv-bits 8 --kv-group-size 64 --quantized-kv-start 0 load1 { 5.47 4.34 5.28 }
+=== 03:09:43 end a4-tf-after-kv8 rc=0 (elapsed 1171s)
+=== 03:09:43 start a4-after-gen2k (~/.venvs/inkling-a4/bin/python) --prompts p_short --repeats 1 --max-tokens 2048 load1 { 4.49 4.26 5.20 }
+=== 03:13:12 end a4-after-gen2k rc=0 (elapsed 1380s)
+=== 03:13:12 start a4-after-eager (~/.venvs/inkling-a4/bin/python) --eager-load --prompts p_short --repeats 1 --max-tokens 16 load1 { 6.13 5.54 5.56 }
+=== 03:13:38 end a4-after-eager rc=0 (elapsed 1406s)
+=== 03:13:38 all done after 1406s
+=== 03:13:38 lock released
+=== 03:13:38 removed A4 from GPU_QUEUE: now [K2 A2 M1 A3 ]

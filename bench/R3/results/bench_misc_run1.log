@@ -1,0 +1,30 @@
+{"section": "lm_head 4096 -> 201024"}
+lm_head bf16 (as shipped in mlx-community checkpoints)     | r1:    3.160 ms (best    3.086)    521 GB/s | r8:    2.959 ms (best    2.863)    557 GB/s
+lm_head 8-bit affine g64                                   | r1:    1.883 ms (best    1.761)    465 GB/s | r8:    1.641 ms (best    1.524)    533 GB/s
+lm_head 6-bit affine g64                                   | r1:    8.192 ms (best    3.222)     82 GB/s | r8:    3.166 ms (best    2.519)    211 GB/s
+lm_head 4-bit affine g64                                   | r1:    1.752 ms (best    1.475)    264 GB/s | r8:    1.323 ms (best    0.948)    350 GB/s
+{"section": "attention projections per layer (q 4096->4096, k/v 4096->1024, r 4096->512, o 4096->4096)"}
+attention 5 projections bf16                               | r1:    0.579 ms (best    0.502)    152 GB/s | r8:    0.262 ms (best    0.233)    336 GB/s
+{"label": "attention projections bf16 x42 layers", "ms_per_token": 11.012}
+attention 5 projections 8                                  | r1:    0.940 ms (best    0.442)     50 GB/s | r8:    0.205 ms (best    0.117)    228 GB/s
+{"label": "attention projections 8 x42 layers", "ms_per_token": 8.623}
+attention 5 projections 4                                  | r1:    0.907 ms (best    0.378)     27 GB/s | r8:    0.281 ms (best    0.136)     88 GB/s
+{"label": "attention projections 4 x42 layers", "ms_per_token": 11.815}
+{"section": "dense MLP layers 0-1"}
+dense GLU 4096->16384->4096 8-bit                          | r1:    1.144 ms (best    0.980)    187 GB/s | r8:    0.442 ms (best    0.420)    484 GB/s
+dense GLU 4096->16384->4096 4-bit                          | r1:    0.661 ms (best    0.534)    171 GB/s | r8:    0.451 ms (best    0.193)    251 GB/s
+{"section": "sconv depthwise conv1d k=4 C=4096"}
+sconv decode T=1 conv1d groups=C padding=0 (+state concat/slice) mlx.core.float32 | r1:    0.459 ms (best    0.241)      0 GB/s | r8:    0.063 ms (best    0.042)      3 GB/s
+sconv decode T=1 elementwise mul+sum mlx.core.float32      | r1:    0.410 ms (best    0.237)      0 GB/s | r8:    0.170 ms (best    0.055)      1 GB/s
+sconv prefill T=2048 conv1d padding=0 after explicit pad (depthwise fast path) mlx.core.float32 | r1:    2.308 ms (best    1.213)     29 GB/s | r4:    0.922 ms (best    0.617)     73 GB/s
+sconv prefill T=2048 conv1d padding=3 (vendored no-cache path) mlx.core.float32 | r1:    2.080 ms (best    1.973)     32 GB/s | r4:    1.171 ms (best    1.031)     57 GB/s
+sconv prefill T=2048 elementwise 4-tap mlx.core.float32    | r1:    1.682 ms (best    1.550)     40 GB/s | r4:    1.586 ms (best    1.505)     42 GB/s
+sconv decode T=1 conv1d groups=C padding=0 (+state concat/slice) mlx.core.bfloat16 | r1:    0.715 ms (best    0.247)      0 GB/s | r8:    0.056 ms (best    0.039)      2 GB/s
+sconv decode T=1 elementwise mul+sum mlx.core.bfloat16     | r1:    0.279 ms (best    0.230)      0 GB/s | r8:    0.061 ms (best    0.041)      2 GB/s
+sconv prefill T=2048 conv1d padding=0 after explicit pad (depthwise fast path) mlx.core.bfloat16 | r1:    0.571 ms (best    0.413)     59 GB/s | r4:    0.300 ms (best    0.278)    112 GB/s
+sconv prefill T=2048 conv1d padding=3 (vendored no-cache path) mlx.core.bfloat16 | r1:    1.318 ms (best    1.138)     25 GB/s | r4:    1.073 ms (best    0.943)     31 GB/s
+sconv prefill T=2048 elementwise 4-tap mlx.core.bfloat16   | r1:    1.573 ms (best    0.961)     21 GB/s | r4:    0.761 ms (best    0.742)     44 GB/s
+{"section": "small per-layer ops"}
+rms_norm 4096 (one call)                                   | r1:    0.204 ms (best    0.176)      0 GB/s | r8:    0.028 ms (best    0.025)      1 GB/s
+rms_norm per-head [1,1,32,128]                             | r1:    0.178 ms (best    0.151)      0 GB/s | r8:    0.027 ms (best    0.024)      1 GB/s
+add residual [1,1,4096]                                    | r1:    0.172 ms (best    0.153)      0 GB/s | r8:    0.026 ms (best    0.023)      1 GB/s

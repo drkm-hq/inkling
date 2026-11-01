@@ -1,0 +1,58 @@
+[2026-10-29T06:48:43Z] A2 hold script start (pid 53800); queue: K4 A4 K2 A2 M1 A3 
+[02:48:43] waiting: queue head 'K4', GPU busy: ['GPU_LOCK held by pid 2298', 'pid 52463 rss 30.8 GiB: ~/.venvs/inkling/bin/python <workdir>/package/k4-mlx-vlm-fast-path/bench/eq']
+[02:50:04] waiting: queue head 'A4', GPU free
+[02:50:25] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241']
+[02:50:45] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241', 'pid 54407 rss 37.4 GiB: ~/.venvs/inkling-base/bin/python <workdir>/package/k4-mlx-vlm-fast-path/rev']
+[02:52:45] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241', 'pid 55029 rss 56.4 GiB: ~/.venvs/inkling-base/bin/python <workdir>/package/k4-mlx-vlm-fast-path/rev']
+[02:53:05] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241', 'pid 55029 rss 38.7 GiB: ~/.venvs/inkling-base/bin/python <workdir>/package/k4-mlx-vlm-fast-path/rev']
+[02:53:25] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241']
+[02:53:46] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241', 'pid 55256 rss 35.4 GiB: ~/.venvs/inkling-base/bin/python <workdir>/package/k4-mlx-vlm-fast-path/rev']
+[02:54:47] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241', 'pid 55715 rss 41.5 GiB: ~/.venvs/inkling-a4/bin/python <workdir>/package/k4-mlx-vlm-fast-path/revie']
+[02:55:07] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241', 'pid 55715 rss 40.3 GiB: ~/.venvs/inkling-a4/bin/python <workdir>/package/k4-mlx-vlm-fast-path/revie']
+[02:56:47] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241', 'pid 56230 rss 39.3 GiB: ~/.venvs/inkling-a4/bin/python <workdir>/package/k4-mlx-vlm-fast-path/revie']
+[02:57:07] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241', 'pid 56230 rss 29.4 GiB: ~/.venvs/inkling-a4/bin/python <workdir>/package/k4-mlx-vlm-fast-path/revie']
+[02:57:27] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241']
+[02:57:47] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241', 'pid 56508 rss 38.9 GiB: ~/.venvs/inkling-a4/bin/python <workdir>/package/k4-mlx-vlm-fast-path/revie']
+[03:02:27] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241']
+[03:02:48] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241', 'pid 57477 rss 39.5 GiB: ~/.venvs/inkling-base/bin/python <workdir>/package/k4-mlx-vlm-fast-path/rev']
+[03:08:08] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241', 'pid 58625 rss 39.7 GiB: ~/.venvs/inkling-a4/bin/python <workdir>/package/k4-mlx-vlm-fast-path/revie']
+[03:08:28] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241', 'pid 58625 rss 38.3 GiB: ~/.venvs/inkling-a4/bin/python <workdir>/package/k4-mlx-vlm-fast-path/revie']
+[03:09:08] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241', 'pid 59060 rss 35.1 GiB: ~/.venvs/inkling-a4/bin/python <workdir>/package/k4-mlx-vlm-fast-path/revie']
+[03:09:28] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241', 'pid 59060 rss 32.7 GiB: ~/.venvs/inkling-a4/bin/python <workdir>/package/k4-mlx-vlm-fast-path/revie']
+[03:09:48] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241', 'pid 59329 rss 41.4 GiB: ~/.venvs/inkling-a4/bin/python <workdir>/package/k4-mlx-vlm-fast-path/revie']
+[03:10:09] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241', 'pid 59329 rss 36.9 GiB: ~/.venvs/inkling-a4/bin/python <workdir>/package/k4-mlx-vlm-fast-path/revie']
+[03:13:29] waiting: queue head 'A4', GPU busy: ['GPU_LOCK held by pid 25241', 'pid 60357 rss 32.1 GiB: ~/.venvs/inkling-a4/bin/python <workdir>/package/k4-mlx-vlm-fast-path/revie']
+[03:13:49] waiting: queue head 'K2', GPU free
+[03:14:10] waiting: queue head 'K2', GPU busy: ['GPU_LOCK held by pid 44596']
+[03:16:11] waiting: queue head 'K2', GPU busy: ['GPU_LOCK held by pid 44596', 'pid 61063 rss 31.8 GiB: python bench_mlx_lm.py --tag mlxlm-2bit-dense-h3 --no-lock --prompts p_short,p_8k --repeats 3']
+[03:16:31] waiting: queue head 'K2', GPU busy: ['GPU_LOCK held by pid 44596', 'pid 61063 rss 31.4 GiB: python bench_mlx_lm.py --tag mlxlm-2bit-dense-h3 --no-lock --prompts p_short,p_8k --repeats 3']
+[03:18:11] waiting: queue head 'K2', GPU busy: ['GPU_LOCK held by pid 44596']
+[03:18:31] waiting: queue head 'K2', GPU busy: ['GPU_LOCK held by pid 44596', 'pid 61661 rss 80.7 GiB: python profile_decode.py']
+[03:18:51] waiting: queue head 'K2', GPU busy: ['GPU_LOCK held by pid 44596', 'pid 61819 rss 81.0 GiB: ~/.venvs/inkling-base/bin/python profile_decode_vlm.py']
+[03:19:11] waiting: queue head 'K2', GPU busy: ['GPU_LOCK held by pid 44596']
+[03:19:51] waiting: queue head 'K2', GPU busy: ['GPU_LOCK held by pid 44596', 'pid 62240 rss 44.3 GiB: python equiv.py --impl mlx_lm --no-lock --model ~/models/inkling-small/mlx-2bit-attn8 --prompts p_short ']
+[03:20:11] waiting: queue head 'K2', GPU busy: ['GPU_LOCK held by pid 44596', 'pid 62731 rss 41.8 GiB: python bench_mlx_lm.py --tag mlxlm-attn8-h3 --no-lock --model ~/models/inkling-small/mlx-2bit-attn8 --pr']
+[03:20:32] waiting: queue head 'K2', GPU busy: ['GPU_LOCK held by pid 44596', 'pid 62731 rss 39.6 GiB: python bench_mlx_lm.py --tag mlxlm-attn8-h3 --no-lock --model ~/models/inkling-small/mlx-2bit-attn8 --pr']
+[03:20:52] waiting: queue head 'A2', GPU busy: ['GPU_LOCK held by pid 44596', 'pid 63662 rss 19.8 GiB: python -m mlx_lm generate --model ~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit']
+[03:21:12] waiting: queue head 'A2', GPU busy: ['GPU_LOCK held by pid 44596', 'pid 63662 rss 32.2 GiB: python -m mlx_lm generate --model ~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit']
+[03:21:32] waiting: queue head 'K2', GPU busy: ['GPU_LOCK held by pid 63735', 'pid 64280 rss 55.2 GiB: python equiv.py --impl mlx_lm --no-lock --prompts p_short --chat-efforts  --out <workdir>/b']
+[03:21:52] waiting: queue head 'K2', GPU busy: ['GPU_LOCK held by pid 63735', 'pid 64470 rss 34.0 GiB: python equiv.py --impl mlx_lm --no-lock --model ~/models/inkling-small/mlx-2bit-attn8 --prompts p_short ']
+[03:22:12] waiting: queue head 'K2', GPU busy: ['GPU_LOCK held by pid 63735', 'pid 64470 rss 44.4 GiB: python equiv.py --impl mlx_lm --no-lock --model ~/models/inkling-small/mlx-2bit-attn8 --prompts p_short ']
+[03:22:32] waiting: queue head 'K2', GPU busy: ['GPU_LOCK held by pid 63735', 'pid 64717 rss 80.6 GiB: python equiv.py --impl mlx_lm --no-lock --teacher <workdir>/bench/results/K2-equiv-mlx_vlm.']
+[03:22:52] waiting: queue head 'K2', GPU busy: ['GPU_LOCK held by pid 63735', 'pid 65093 rss 80.7 GiB: python profile_decode.py']
+[03:23:12] waiting: queue head 'K2', GPU busy: ['GPU_LOCK held by pid 63735', 'pid 65093 rss 80.6 GiB: python profile_decode.py']
+[2026-10-29T07:23:32Z] hold started; load=6.33 5.97 5.63
+inkling head: cc6a6fe 2026-10-29 02:54:57 -0400 Warn when kv_bits cannot apply, CPU exactness test, acknowledgment
+reviewed tree (<workdir>/upstream/mlx-lm-a2): 963f755 2026-10-29 02:50:41 -0400 A2 review: exercise filter/extract/extend in the BatchGenerator test
+worktree status: 
+[2026-10-29T07:25:40Z] mlx_lm forced rc=0 (1972s left)
+[2026-10-29T07:26:18Z] mlx_vlm forced rc=0 (1934s left)
+[2026-10-29T07:26:54Z] cli done (1898s left)
+[2026-10-29T07:27:10Z] server smoke done (1882s left)
+[2026-10-29T07:29:48Z] bench mlx-lm rc=0 (1724s left)
+[2026-10-29T07:32:31Z] bench mlx-vlm rc=0 (1561s left)
+[2026-10-29T07:32:52Z] attn8 forced rc=0 (1540s left)
+[2026-10-29T07:33:33Z] bench attn8 rc=0 (1499s left)
+[2026-10-29T07:33:33Z] hold done after 601s
+[2026-10-29T07:33:33Z] GPU_LOCK released
+[2026-10-29T07:33:33Z] A2 left the queue; queue now: M1 A3 

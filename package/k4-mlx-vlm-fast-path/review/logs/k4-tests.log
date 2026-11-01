@@ -1,0 +1,10 @@
+01:18:00 branch head eb93183, working tree: 0 dirty files
+01:18:01 load1 { 15.70 18.22 19.36 }
+01:18:06 k4 new tests rc=0 : no tests ran in 0.00s
+01:18:09 k4 new tests TF32=0 rc=0 : no tests ran in 0.00s
+01:18:58 full suite start, free RAM 5 GiB, load1 { 22.96 19.89 19.92 }
+01:37:02 full suite rc=0 : 83 failed, 5074 passed, 16 skipped, 5 warnings, 301 subtests passed in 1081.67s (0:18:01)
+01:37:02 skips:
+E        +  where 0 = APCStats(hits=0, misses=0, matched_tokens=0, stored_tokens=0, restored_tokens=0, evictions=0, stores=0, pool_used=0, d...0, exact_hits=0, exact_stores=0, memory_evictions=0, memory_skips=1, rejects=0, rejects_by_reason={}, last_reject=None).exact_stores
+E        +    where APCStats(hits=0, misses=0, matched_tokens=0, stored_tokens=0, restored_tokens=0, evictions=0, stores=0, pool_used=0, d...0, exact_hits=0, exact_stores=0, memory_evictions=0, memory_skips=1, rejects=0, rejects_by_reason={}, last_reject=None) = <mlx_vlm.apc.APCManager object at 0x13bfba900>.stats
+83 failed, 5074 passed, 16 skipped, 5 warnings, 301 subtests passed in 1081.67s (0:18:01)

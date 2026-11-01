@@ -1,0 +1,41 @@
+[22:36:07] GPU_LOCK acquired by pid 63289
+W1028 22:36:14.139000 63289 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+[22:36:15] {"kind": "meta", "tag": "kv8-rerun", "model": "~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit/snapshots/f8a0af554e168077bdaf48e1fb6682fb395c807c/", "mlx": "0.32.4", "mlx_vlm": "0.7.11", "device": "Apple M5 Max", "argv": ["baseline/bench_mlx.py", "--tag", "kv8-rerun", "--max-tokens", "128", "--quiet-wait", "600", "--prompts", "p_short,p_8k", "--repeats", "3", "--kv-bits", "8", "--kv-group-size", "64", "--quantized-kv-start", "0"], "pid": 63289, "load1": 14.814453125}
+[22:36:30] load: lazy 1.0s, chunked eval 13.9s, 82.3 GiB of parameters, active 82.4 GiB, peak 82.4 GiB
+[22:36:30] prompt p_short: 833 chars, 239 tokens; head='<|message_system|><|content_text|>Thinking effort level: 0<|end_message|><|message_user|><|content_text|>CHAPTER 1. Loomings.\n\nCHAPTER 2. Th' tail='entence, who is the narrator of the text above and what is the name of the ship? Answer:<|end_message|><|message_model|>'
+[22:36:30] prompt p_8k: 30131 chars, 8231 tokens; head='<|message_system|><|content_text|>Thinking effort level: 0<|end_message|><|message_user|><|content_text|>CHAPTER 1. Loomings.\n\nCHAPTER 2. Th' tail='entence, who is the narrator of the text above and what is the name of the ship? Answer:<|end_message|><|message_model|>'
+[22:36:30] gen kwargs: {'max_tokens': 128, 'temperature': 0.0, 'top_p': 1.0, 'top_k': 0, 'verbose': False, 'kv_bits': 8.0, 'kv_group_size': 64, 'kv_quant_scheme': 'uniform', 'quantized_kv_start': 0}
+[22:36:30] warm-up with p_short (128 tokens)
+[22:37:47] warmup p_short rep0: prompt 239 tok, prefill 8.49s (28.1 tok/s api), TTFT wall 9.97s, decode 128 tok 19.59 tok/s wall (19.75 api), total 16.5s, peak 89.4 GB api / 83.2 GiB, rss 54.6 GiB, eos@16 ok=True aborted=None load1=14.6
+[22:37:47]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[22:37:47]   cache: {'kinds': {'CacheList(KVCache,ArraysCache)': 42}, 'offsets': [367], 'state_gib': 0.06360626220703125}
+[22:38:39] run p_short rep1: prompt 239 tok, prefill 1.51s (158.8 tok/s api), TTFT wall 1.51s, decode 128 tok 26.38 tok/s wall (26.58 api), total 6.3s, peak 89.4 GB api / 83.2 GiB, rss 54.6 GiB, eos@16 ok=True aborted=None load1=11.6
+[22:38:39]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[22:38:39]   cache: {'kinds': {'CacheList(KVCache,ArraysCache)': 42}, 'offsets': [367], 'state_gib': 0.06360626220703125}
+[22:39:01] run p_short rep2: prompt 239 tok, prefill 1.80s (133.0 tok/s api), TTFT wall 1.80s, decode 128 tok 25.22 tok/s wall (25.41 api), total 6.8s, peak 89.4 GB api / 83.2 GiB, rss 54.6 GiB, eos@16 ok=True aborted=None load1=10.5
+[22:39:01]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[22:39:01]   cache: {'kinds': {'CacheList(KVCache,ArraysCache)': 42}, 'offsets': [367], 'state_gib': 0.06360626220703125}
+[22:49:07] quiet-wait of 600.0s exhausted; proceeding with competing processes: [{'pid': 75537, 'pcpu': 0.0, 'etime': '04:46', 'cmd': '/bin/zsh -c source ~/.claude/shell-snapshots/snapshot-zsh-1793235868149-pcc7x1.sh 2>', 'gpu_suspect': True}, {'pid': 75538, 'pcpu': 0.0, 'etime': '04:46', 'cmd': 'tail -n 0 -F phase3.log mlx-kv8h.log mlx-kv8tq.log mlx-p64k.log mlx-cli-p_short.log mlx-cli-wheel-p_', 'gpu_suspect': True}, {'pid': 82355, 'pcpu': 41.3, 'etime': '00:01', 'cmd': '<workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server --po', 'gpu_suspect': True}, {'pid': 82362, 'pcpu': 33.6, 'etime': '00:01', 'cmd': '<workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server --po', 'gpu_suspect': True}, {'pid': 82363, 'pcpu': 12.9, 'etime': '00:00', 'cmd': '(llama-server)', 'gpu_suspect': True}]
+[22:49:21] run p_short rep3: prompt 239 tok, prefill 5.17s (46.3 tok/s api), TTFT wall 5.17s, decode 128 tok 14.45 tok/s wall (14.57 api), total 14.0s, peak 89.1 GB api / 83.0 GiB, rss 54.6 GiB, eos@16 ok=True aborted=None load1=15.0
+[22:49:21]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[22:49:21]   cache: {'kinds': {'CacheList(KVCache,ArraysCache)': 42}, 'offsets': [367], 'state_gib': 0.06360626220703125}
+[22:49:21] SUMMARY p_short: prompt 239 tok | prefill 133.0 tok/s (spread 84.6%) | TTFT 1.80s | decode 25.22 tok/s wall (spread 47.3%) | peak 89.4 GB | answer_ok=True identical=True
+[22:52:08] GPU_LOCK released
+      962.68 real        22.83 user        58.09 sys
+         58581172224  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+             5548754  page reclaims
+                 114  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   1  signals received
+                2395  voluntary context switches
+             1092305  involuntary context switches
+        347293509253  instructions retired
+        264413672780  cycles elapsed
+         90527628000  peak memory footprint

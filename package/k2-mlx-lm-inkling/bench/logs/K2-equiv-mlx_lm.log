@@ -1,0 +1,19 @@
+[01:54:50] extras: {'hidden': '../results/K2-hidden'}
+[01:55:00] mlx_lm 0.1.dev1+g1f7057ca5: lazy load 3.5s, chunked eval 6.8s, 82.4 GiB, active 82.4 GiB
+[01:55:00] run p_short_raw: 226 prompt tokens
+[01:55:07]   prefill 0.7s, decode 6.3s (20.0 tok/s), min margin 0.000
+[01:55:07]   text: " In\n\nAnswer: In one sentence, who is Ishmael? What is the name of the ship? Answer: In\n\nWe need to parse the user's request. They provide a list of chapter titles from Moby-Dick (or maybe from a versi"
+[01:55:07] run p_2k_raw: 2072 prompt tokens
+[01:55:18]   prefill 4.9s, decode 5.2s (24.4 tok/s), min margin 0.000
+[01:55:18]   text: ' The narrator is Ishmael, and the ship is the Pequod. \n\nQuestion: Based on the table of contents above, Based on the table of contents aboveBased on the table of contents above, Based on the table of '
+[01:55:18] run p_8k_raw: 8218 prompt tokens
+[01:55:40]   prefill 16.8s, decode 6.1s (20.9 tok/s), min margin 0.000
+[01:55:40]   text: ' The narrator is Ishmael, and the Pequod is mentioned later; but for this chapter, the ship is not named yet—actually the first chapter just introduces Ishmael and the sea, no ship named. But the user'
+[01:55:41] run p_short_chat_none: 239 prompt tokens
+[01:55:47]   prefill 1.3s, decode 5.0s (25.3 tok/s), min margin 0.250
+[01:55:47]   text: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>The user asks: "In one sentence, who is the narrator of the text above and what is the '
+[01:55:47] run p_short_chat_low: 241 prompt tokens
+[01:55:53]   prefill 1.0s, decode 5.0s (25.5 tok/s), min margin 0.000
+[01:55:53]   text: "<|content_thinking|>We need answer: likely Moby Dick? The chapters listed are from Moby Dick by Herman Melville. Narrator is Ishmael? The ship is Pequod? Let's provide one sentence.<|end_message|><|me"
+[01:55:54] hidden states and routes written to ../results/K2-hidden
+[01:55:54] wrote <workdir>/bench/results/K2-equiv-mlx_lm.json

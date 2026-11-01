@@ -1,0 +1,7 @@
+$ ./build/bin/test-flash-attn-bias cuda overflow
+ggml_cuda_init: found 1 CUDA devices (Total VRAM: 81071 MiB):
+  Device 0: NVIDIA H100 80GB HBM3, compute capability 9.0, VMM: yes, VRAM: 81071 MiB
+overflow_check offset=137438953468 (>INT32_MAX) large_T=1099511627776 rel_dist=1023 PASS
+overflow_kernel backend=cuda rel_query_stride=2147487744 allocated_bytes=2147491584 naive_max_abs=4.47034836e-08 naive_mean_abs=7.7416189e-09 naive_max_rel=2.06081464e-07 naive_mean_rel=3.52853585e-08 naive_rmse=1.42769047e-08 PASS
+
+[rc=0]

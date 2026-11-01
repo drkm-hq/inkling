@@ -1,0 +1,14 @@
+$ git am /patches/0001-metal-add-GGML_OP_FLASH_ATTN_EXT_BANDED.patch /patches/0002-tests-banded-flash-attention-cases.patch /patches/0003-ggml-q_offset-for-the-banded-flash-attention-proposa.patch /patches/0004-tests-banded-flash-attention-tolerance-for-the-CUDA-.patch
+Applying: metal : add GGML_OP_FLASH_ATTN_EXT_BANDED
+Applying: tests : banded flash attention cases
+Applying: ggml : q_offset for the banded flash attention (proposal for #25731)
+Applying: tests : banded flash attention tolerance for the CUDA MMA kernel
+
+[rc=0]
+$ git log --oneline -4
+a963af71 tests : banded flash attention tolerance for the CUDA MMA kernel
+478c3d7c ggml : q_offset for the banded flash attention (proposal for #25731)
+7f580469 tests : banded flash attention cases
+37660bb1 metal : add GGML_OP_FLASH_ATTN_EXT_BANDED
+
+[rc=0]

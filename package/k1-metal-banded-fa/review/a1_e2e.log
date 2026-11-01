@@ -1,0 +1,23 @@
+[04:32:36Z] lock acquired (pid 80456)
+[04:32:51Z] perf repeat 1 done at 0 min
+[04:33:09Z] perf repeat 2 done at 0 min
+[04:33:32Z] perf repeat 3 done at 0 min
+[04:34:09Z] server k1-faon-c8k up after ~38 s (time-wrapper 80870, server 80874)
+[04:34:33Z] server stopped: 97393868800  maximum resident set size
+[04:34:33Z] k1 greedy done at 1 min
+[04:34:45Z] server base-faon-c8k up after ~12 s (time-wrapper 81424, server 81426)
+[04:35:25Z] server stopped: 99062824960  maximum resident set size
+[04:35:25Z] base greedy done at 2 min
+[04:36:08Z] ppl -fa on exit=0  101817532416  maximum resident set size
+[04:36:53Z] ppl -fa off exit=0  101905645568  maximum resident set size
+[04:36:53Z] ppl done at 4 min
+[04:38:09Z] llama-bench -fa 1 exit=0 98731737088  maximum resident set size
+[04:39:16Z] llama-bench -fa 0 exit=0 98836676608  maximum resident set size
+[04:39:16Z] llama-bench done at 6 min
+[04:39:22Z] server k1-faon-c70k up after ~8 s (time-wrapper 83992, server 83994)
+[04:41:27Z] p_32k done at 8 min
+[04:46:13Z] p_64k done at 13 min
+[04:46:15Z] server stopped: 100737253376  maximum resident set size
+[04:49:30Z] base ppl exit=0 
+[04:49:30Z] all done at 16 min
+[04:49:30Z] lock released, queue line removed

@@ -1,0 +1,827 @@
+From 60fa608fb8a16bbbf6322a07d3ba8a753b1a240a Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Wed, 28 Oct 2026 23:04:00 -0400
+Subject: [PATCH 05/10] Inkling: use RotatingKVCache for the sliding layers,
+ drop the shifting caches
+
+A decode microbenchmark (bench/K2/cache_bench.py) put the in-place rotating
+cache at or slightly ahead of the shifting designs, so the sliding layers use
+RotatingKVCache and BatchRotatingKVCache. The relative bias of a single
+token is gathered with one slot-to-distance index per forward, provided by
+the new RotatingKVCache.key_distances(); the bias bank is stored reversed so
+the global layers slice it without a flip.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ mlx_lm/models/cache.py            | 354 ++----------------------------
+ mlx_lm/models/inkling_mm_model.py | 103 ++++++---
+ tests/test_inkling.py             | 119 +++-------
+ 3 files changed, 122 insertions(+), 454 deletions(-)
+
+diff --git a/mlx_lm/models/cache.py b/mlx_lm/models/cache.py
+index 1e73ab9..034d8ee 100644
+--- a/mlx_lm/models/cache.py
++++ b/mlx_lm/models/cache.py
+@@ -530,6 +530,19 @@ class RotatingKVCache(_BaseCache):
+         else:
+             return self.keys, self.values
+ 
++    def key_distances(self):
++        """How many positions behind the most recent key each cached key is, in
++        the order ``update_and_fetch`` returned them (the cache may be rotated)."""
++        S = min(self.offset, self.keys.shape[2])
++        s = mx.arange(S)
++        if self.keys.shape[2] > self.max_size:
++            # Temporal order, right after a multi-token update
++            return S - 1 - s
++        dist = (self._idx - 1 - s) % (self.max_size - self.keep)
++        if self.keep > 0:
++            dist = mx.where(s < self.keep, self.offset - 1 - s, dist)
++        return dist
++
+     def size(self):
+         return min(self.offset, self.max_size)
+ 
+@@ -593,123 +606,6 @@ class RotatingKVCache(_BaseCache):
+         return self.keys.nbytes + self.values.nbytes
+ 
+ 
+-class ShiftingWindowCache(_BaseCache):
+-    """A sliding-window KV cache whose entries stay in temporal order.
+-
+-    The cache retains the ``max_size - 1`` most recent keys and values.
+-    ``update_and_fetch`` returns them followed by the new entries, so a causal
+-    mask with window ``max_size`` over the result is exactly the sliding
+-    window, and a single new token needs no mask at all. Unlike
+-    ``RotatingKVCache`` the entries are never rotated, so a mask that depends
+-    on the distance between a query and a key (for example a relative position
+-    bias) can be built by slicing instead of gathering.
+-
+-    Entries are written in place into a buffer that is reallocated every
+-    ``step`` tokens; a decode step costs one slice update per array.
+-    """
+-
+-    step = 256
+-
+-    def __init__(self, max_size):
+-        self.keys = None
+-        self.values = None
+-        self.offset = 0
+-        self.max_size = max_size
+-        self._idx = 0
+-
+-    @property
+-    def _n_retained(self):
+-        return min(self.offset, self.max_size - 1)
+-
+-    def update_and_fetch(self, keys, values):
+-        B, n_kv_heads, L, k_head_dim = keys.shape
+-        v_head_dim = values.shape[3]
+-        n_retained = self._n_retained
+-        if self.keys is None or self._idx + L > self.keys.shape[2]:
+-            # (Re)allocate with room for ``step`` more tokens and move the
+-            # retained entries to the front.
+-            capacity = self.max_size - 1 + max(self.step, L)
+-            k_shape = (B, n_kv_heads, capacity - n_retained, k_head_dim)
+-            v_shape = (B, n_kv_heads, capacity - n_retained, v_head_dim)
+-            new_k = mx.zeros(k_shape, keys.dtype)
+-            new_v = mx.zeros(v_shape, values.dtype)
+-            if n_retained > 0:
+-                start = self._idx - n_retained
+-                new_k = mx.concatenate(
+-                    [self.keys[..., start : self._idx, :], new_k], axis=2
+-                )
+-                new_v = mx.concatenate(
+-                    [self.values[..., start : self._idx, :], new_v], axis=2
+-                )
+-            self.keys, self.values = new_k, new_v
+-            self._idx = n_retained
+-
+-        self.keys[..., self._idx : self._idx + L, :] = keys
+-        self.values[..., self._idx : self._idx + L, :] = values
+-        self._idx += L
+-        self.offset += L
+-        start = self._idx - L - n_retained
+-        return (
+-            self.keys[..., start : self._idx, :],
+-            self.values[..., start : self._idx, :],
+-        )
+-
+-    def keys_and_values(self):
+-        n = min(self.offset, self.max_size)
+-        return (
+-            self.keys[..., self._idx - n : self._idx, :],
+-            self.values[..., self._idx - n : self._idx, :],
+-        )
+-
+-    def size(self):
+-        return min(self.offset, self.max_size)
+-
+-    @property
+-    def state(self):
+-        return self.keys, self.values, self.offset, self.max_size, self._idx
+-
+-    @state.setter
+-    def state(self, v):
+-        self.keys, self.values, self.offset, self.max_size, self._idx = v
+-
+-    def is_trimmable(self):
+-        # Entries are discarded once the window is full
+-        return self.offset < self.max_size
+-
+-    def trim(self, n):
+-        n = min(self.offset, n)
+-        self.offset -= n
+-        self._idx -= n
+-        return n
+-
+-    def to_quantized(self, group_size: int = 64, bits: int = 4) -> QuantizedKVCache:
+-        raise NotImplementedError("ShiftingWindowCache Quantization NYI")
+-
+-    def make_mask(
+-        self, N: int, window_size: Optional[int] = None, return_array: bool = False
+-    ):
+-        window_size = window_size or self.max_size
+-        if N > 1:
+-            return create_causal_mask(N, self._n_retained, window_size=window_size)
+-        if window_size >= self.max_size:
+-            return None
+-        S = self._n_retained + 1
+-        return mx.arange(S) >= (S - window_size)
+-
+-    @classmethod
+-    def merge(_, caches):
+-        return BatchShiftingWindowCache.merge(caches)
+-
+-    def empty(self):
+-        return self.keys is None
+-
+-    @property
+-    def nbytes(self):
+-        if self.keys is None:
+-            return 0
+-        return self.keys.nbytes + self.values.nbytes
+-
+-
+ class ArraysCache(_BaseCache):
+     def __init__(self, size, left_padding: Optional[List[int]] = None):
+         self.cache = [None] * size
+@@ -1357,6 +1253,14 @@ class BatchRotatingKVCache(_BaseCache):
+         else:
+             return self.keys, self.values
+ 
++    def key_distances(self):
++        """See ``RotatingKVCache.key_distances``."""
++        S = min(self._offset, self.keys.shape[2])
++        s = mx.arange(S)
++        if self.keys.shape[2] > self.max_size:
++            return S - 1 - s
++        return (self._idx - 1 - s) % self.max_size
++
+     def prepare(self, *, left_padding=None, lengths=None, right_padding=None):
+         if left_padding is not None:
+             if self.keys is not None:
+@@ -1576,222 +1480,6 @@ class BatchRotatingKVCache(_BaseCache):
+         return self.keys.nbytes + self.values.nbytes
+ 
+ 
+-class BatchShiftingWindowCache(_BaseCache):
+-    """The batched ``ShiftingWindowCache``: left-padded sequences, entries in
+-    temporal order, at most ``max_size - 1`` of them retained (see
+-    ``BatchKVCache`` for the padding convention)."""
+-
+-    def __init__(self, max_size, left_padding: List[int]):
+-        self.keys = None
+-        self.values = None
+-        self.max_size = max_size
+-        self.left_padding = mx.array(left_padding)
+-        self.offset = mx.array([-l for l in left_padding])
+-        self._offset = 0
+-        self._lengths = None
+-
+-    def update_and_fetch(self, keys, values):
+-        L = keys.shape[2]
+-        if self.keys is None:
+-            k_all, v_all = keys, values
+-        else:
+-            k_all = mx.concatenate([self.keys, keys], axis=2)
+-            v_all = mx.concatenate([self.values, values], axis=2)
+-        self.offset = self.offset + L
+-        self._offset += L
+-
+-        k_store, v_store = k_all, v_all
+-        if self._lengths is not None:
+-            # Right padded prompts: roll the padding to the front so that it
+-            # is evicted first and the valid entries stay in the window
+-            roll = mx.maximum(0, self.offset - self._lengths)
+-            k_store = dynamic_roll(k_store, roll[:, None], axis=2)
+-            v_store = dynamic_roll(v_store, roll[:, None], axis=2)
+-            self.left_padding = self.left_padding + roll
+-            self.offset = self.offset - roll
+-        trim_size = k_store.shape[2] - (self.max_size - 1)
+-        if trim_size > 0:
+-            k_store = k_store[..., trim_size:, :]
+-            v_store = v_store[..., trim_size:, :]
+-            self.left_padding = mx.maximum(self.left_padding - trim_size, 0)
+-        # Make sure left_padding and offset are evaluated with the keys
+-        self.keys = mx.depends(k_store, (self.left_padding, self.offset))
+-        self.values = v_store
+-        return k_all, v_all
+-
+-    def keys_and_values(self):
+-        return self.keys, self.values
+-
+-    def prepare(self, *, left_padding=None, lengths=None, right_padding=None):
+-        if left_padding is not None:
+-            if self.keys is not None:
+-                raise ValueError(
+-                    "Left padding can only be added to an empty BatchShiftingWindowCache"
+-                )
+-            left_padding = mx.array(left_padding)
+-            self.left_padding += left_padding
+-            self.offset = self.offset - left_padding
+-        if right_padding is not None and max(right_padding) > 0:
+-            self._lengths = mx.array(lengths) + self.offset
+-
+-    def finalize(self):
+-        self._lengths = None
+-
+-    @property
+-    def state(self):
+-        return (
+-            self.keys,
+-            self.values,
+-            self.offset,
+-            self.left_padding,
+-            self.max_size,
+-            self._offset,
+-        )
+-
+-    @state.setter
+-    def state(self, v):
+-        (
+-            self.keys,
+-            self.values,
+-            self.offset,
+-            self.left_padding,
+-            self.max_size,
+-            self._offset,
+-        ) = v
+-        self._lengths = None
+-
+-    def is_trimmable(self):
+-        return self._offset < self.max_size
+-
+-    def trim(self, n):
+-        n = min(self._offset, n)
+-        if n > 0:
+-            self.keys = self.keys[..., :-n, :]
+-            self.values = self.values[..., :-n, :]
+-        self._offset -= n
+-        self.offset = self.offset - n
+-        return n
+-
+-    def to_quantized(self, group_size: int = 64, bits: int = 4) -> QuantizedKVCache:
+-        raise NotImplementedError("BatchShiftingWindowCache Quantization NYI")
+-
+-    def make_mask(self, N: int, window_size: Optional[int] = None, **kwargs):
+-        n_retained = 0 if self.keys is None else self.keys.shape[2]
+-        return create_causal_mask(
+-            N,
+-            offset=n_retained,
+-            window_size=window_size or self.max_size,
+-            left_padding=self.left_padding,
+-        )
+-
+-    def filter(self, batch_indices):
+-        """
+-        In-place filter to keep just the given indices in the cache.
+-        """
+-        if self.keys is not None:
+-            self.keys = self.keys[batch_indices]
+-            self.values = self.values[batch_indices]
+-        self.offset = self.offset[batch_indices]
+-        self.left_padding = self.left_padding[batch_indices]
+-
+-        # Drop entries that are padding for every remaining sequence
+-        min_left_pad = min(self.left_padding.tolist())
+-        if min_left_pad > 0:
+-            self.keys = self.keys[..., min_left_pad:, :]
+-            self.values = self.values[..., min_left_pad:, :]
+-            self.left_padding -= min_left_pad
+-
+-    def extend(self, other):
+-        """
+-        In-place extend this cache with the other cache.
+-        """
+-        if self.keys is None and other.keys is None:
+-            self.left_padding = mx.concatenate([self.left_padding, other.left_padding])
+-            self.offset = mx.concatenate([self.offset, other.offset])
+-            return
+-
+-        L1 = 0 if self.keys is None else self.keys.shape[2]
+-        L2 = 0 if other.keys is None else other.keys.shape[2]
+-        ref = self.keys if self.keys is not None else other.keys
+-        B, H, _, D = ref.shape
+-        M = (self.values if self.values is not None else other.values).shape[3]
+-        n = max(L1, L2)
+-
+-        def pad(c, Lc):
+-            k, v = c.keys, c.values
+-            if k is None:
+-                Bc = c.offset.shape[0]
+-                k = mx.zeros((Bc, H, 0, D), dtype=ref.dtype)
+-                v = mx.zeros((Bc, H, 0, M), dtype=ref.dtype)
+-            left = n - Lc
+-            if left > 0:
+-                k = mx.pad(k, [(0, 0), (0, 0), (left, 0), (0, 0)])
+-                v = mx.pad(v, [(0, 0), (0, 0), (left, 0), (0, 0)])
+-            return k, v, c.offset, c.left_padding + left
+-
+-        self.keys, self.values, self.offset, self.left_padding = map(
+-            mx.concatenate, zip(*(pad(self, L1), pad(other, L2)))
+-        )
+-        self._offset = max(self._offset, other._offset)
+-
+-    def extract(self, idx):
+-        mx.eval(self.left_padding, self.offset)
+-        cache = ShiftingWindowCache(self.max_size)
+-        padding = max(0, self.left_padding.tolist()[idx])
+-        cache.keys = mx.contiguous(self.keys[idx : idx + 1, :, padding:])
+-        cache.values = mx.contiguous(self.values[idx : idx + 1, :, padding:])
+-        cache.offset = self.offset.tolist()[idx]
+-        cache._idx = cache.keys.shape[2]
+-        return cache
+-
+-    @classmethod
+-    def merge(cls, caches):
+-        if not all(c.max_size == caches[0].max_size for c in caches):
+-            raise ValueError(
+-                "BatchShiftingWindowCache can only merge caches with the same maximum size"
+-            )
+-        lengths = [c._n_retained for c in caches]
+-        max_length = max(lengths)
+-
+-        # No cache has content so make an empty one
+-        if max_length == 0:
+-            return cls(caches[0].max_size, [0] * len(caches))
+-
+-        padding = [max_length - l for l in lengths]
+-        B = len(caches)
+-        H = max(c.keys.shape[1] for c in caches if c.keys is not None)
+-        Dk = max(c.keys.shape[3] for c in caches if c.keys is not None)
+-        Dv = max(c.values.shape[3] for c in caches if c.values is not None)
+-        dt = next(iter(c.keys.dtype for c in caches if c.keys is not None))
+-
+-        keys = mx.zeros((B, H, max_length, Dk), dtype=dt)
+-        values = mx.zeros((B, H, max_length, Dv), dtype=dt)
+-        for i, (p, l, c) in enumerate(zip(padding, lengths, caches)):
+-            if l == 0:
+-                continue
+-            keys[i : i + 1, :, p:] = c.keys[..., c._idx - l : c._idx, :]
+-            values[i : i + 1, :, p:] = c.values[..., c._idx - l : c._idx, :]
+-
+-        cache = cls(caches[0].max_size, padding)
+-        cache.keys = keys
+-        cache.values = values
+-        cache.offset = mx.array([c.offset for c in caches])
+-        cache._offset = max_length
+-        return cache
+-
+-    def size(self):
+-        return min(self._offset, self.max_size)
+-
+-    def empty(self):
+-        return self.keys is None
+-
+-    @property
+-    def nbytes(self):
+-        if self.keys is None:
+-            return 0
+-        return self.keys.nbytes + self.values.nbytes
+-
+-
+ class TokenBuffer:
+     """A simple token buffer that can be efficiently appended to in a similar
+     fashion to the KVCache.
+diff --git a/mlx_lm/models/inkling_mm_model.py b/mlx_lm/models/inkling_mm_model.py
+index 20e071b..a45c846 100644
+--- a/mlx_lm/models/inkling_mm_model.py
++++ b/mlx_lm/models/inkling_mm_model.py
+@@ -9,7 +9,7 @@ import mlx.nn as nn
+ 
+ from .activations import swiglu
+ from .base import BaseModelArgs, scaled_dot_product_attention
+-from .cache import ArraysCache, CacheList, KVCache, ShiftingWindowCache
++from .cache import ArraysCache, CacheList, KVCache, RotatingKVCache
+ from .switch_layers import SwitchGLU
+ 
+ 
+@@ -194,7 +194,7 @@ _BANDED_MASK_SRC = """
+         uint b = bh / H;
+         uint h = bh % H;
+         val = rel[b * rel_strides[0] + h * rel_strides[1] + i * rel_strides[2]
+-                  + uint(dist) * rel_strides[3]];
++                  + uint(EXTENT - 1 - dist) * rel_strides[3]];
+     } else {
+         val = T(0);
+     }
+@@ -220,11 +220,12 @@ _banded_mask_kernel = _make_banded_mask_kernel()
+ def banded_mask(rel_logits, n_keys, window, extent):
+     """Additive attention mask carrying the relative position bias.
+ 
+-    ``rel_logits`` is ``[B, H, L, extent]``, the bias of each query against a
+-    key ``d`` positions back. The ``L`` queries are the last ``L`` of the
+-    ``n_keys`` positions. Keys that are in the future, or at least ``window``
+-    positions back when ``window > 0``, get ``-inf``; keys at least ``extent``
+-    positions back get ``0``.
++    ``rel_logits`` is ``[B, H, L, extent]`` in reversed distance order: column
++    ``extent - 1 - d`` is the bias of a query against the key ``d`` positions
++    back. The ``L`` queries are the last ``L`` of the ``n_keys`` positions. Keys
++    that are in the future, or at least ``window`` positions back when
++    ``window > 0``, get ``-inf``; keys at least ``extent`` positions back get
++    ``0``.
+     """
+     B, H, L, E = rel_logits.shape
+     dtype = rel_logits.dtype
+@@ -238,7 +239,8 @@ def banded_mask(rel_logits, n_keys, window, extent):
+             output_dtypes=[dtype],
+         )[0]
+     dist = (mx.arange(L) + (n_keys - L))[:, None] - mx.arange(n_keys)[None]
+-    idx = mx.broadcast_to(mx.clip(dist, 0, E - 1)[None, None], (B, H, L, n_keys))
++    idx = E - 1 - mx.clip(dist, 0, E - 1)
++    idx = mx.broadcast_to(idx[None, None], (B, H, L, n_keys))
+     bias = mx.take_along_axis(rel_logits, idx, axis=-1)
+     bias = mx.where(dist >= E, mx.array(0, dtype), bias)
+     masked = dist < 0
+@@ -248,11 +250,18 @@ def banded_mask(rel_logits, n_keys, window, extent):
+ 
+ 
+ class RelativeLogits(nn.Module):
+-    """A learned bank of ``d_rel`` bias-vs-distance profiles, ``[d_rel, extent]``."""
++    """A learned bank of ``d_rel`` bias-vs-distance profiles.
++
++    ``proj_reversed`` is the checkpoint's ``proj`` ``[d_rel, extent]`` with the
++    distance axis reversed (``sanitize`` does that), so that ``r @ proj_reversed``
++    lists the bias of a query against the keys ``extent - 1, ..., 0`` positions
++    back in key order: the bias of a single query against its last ``S`` keys
++    is the last ``S`` columns, no gather or flip needed.
++    """
+ 
+     def __init__(self, d_rel: int, extent: int):
+         super().__init__()
+-        self.proj = mx.zeros((d_rel, extent))
++        self.proj_reversed = mx.zeros((d_rel, extent))
+ 
+ 
+ class Attention(nn.Module):
+@@ -279,7 +288,7 @@ class Attention(nn.Module):
+         self.splits = (dims, dims + 2 * kv_dims)
+         # q, k, v and r are one projection (fused by ``sanitize``)
+         self.qkvr_proj = nn.Linear(
+-            args.hidden_size, dims + 2 * kv_dims + self.n_heads * self.d_rel, False
++            args.hidden_size, dims + 2 * kv_dims + self.n_heads * self.d_rel, bias=False
+         )
+         self.wo_ud = nn.Linear(dims, args.hidden_size, bias=False)
+         # k and v go through their short convolutions before the norm and the cache
+@@ -288,7 +297,7 @@ class Attention(nn.Module):
+         self.k_norm = nn.RMSNorm(self.head_dim, eps=args.rms_norm_eps)
+         self.rel_logits_proj = RelativeLogits(self.d_rel, self.extent)
+ 
+-    def __call__(self, x, cache=None, conv_cache=None, conv_mask=None):
++    def __call__(self, x, cache=None, conv_cache=None, conv_mask=None, rel_index=None):
+         B, L, _ = x.shape
+         q, kv, r = mx.split(self.qkvr_proj(x), self.splits, axis=-1)
+         kv = self.kv_sconv(kv, conv_cache, conv_mask)
+@@ -299,26 +308,30 @@ class Attention(nn.Module):
+         v = v.reshape(B, L, self.n_kv_heads, -1).transpose(0, 2, 1, 3)
+ 
+         q_offset = cache.offset if cache is not None else 0
++        # Batched caches mask their padding (and rotation) with a boolean mask
++        # that describes the cache after this update
++        valid = cache.make_mask(L) if hasattr(cache, "left_padding") else None
+         if cache is not None:
+             k, v = cache.update_and_fetch(k, v)
+         S = k.shape[2]
+ 
+-        # Bias of every query against the keys 0 .. extent - 1 positions back
+-        r = r.reshape(B, L, self.n_heads, self.d_rel) @ self.rel_logits_proj.proj
+-        rel_logits = r.transpose(0, 2, 1, 3)
+-        if L == 1:
+-            # A single query: the bias is the reversed row over the last keys
+-            mask = rel_logits[..., ::-1]
+-            if S <= self.extent:
+-                mask = mask[..., self.extent - S :]
+-            else:
+-                mask = mx.pad(mask, [(0, 0), (0, 0), (0, 0), (S - self.extent, 0)])
+-        else:
++        # Bias of every query against the keys extent - 1 .. 0 positions back
++        r = r.reshape(B, L, self.n_heads, self.d_rel)
++        rel_logits = (r @ self.rel_logits_proj.proj_reversed).transpose(0, 2, 1, 3)
++        if L > 1:
+             mask = banded_mask(rel_logits, S, self.window, self.extent)
+-        left_padding = getattr(cache, "left_padding", None)
+-        if left_padding is not None:
+-            valid = mx.arange(S)[None] >= left_padding[:, None]
+-            mask = mx.where(valid[:, None, None, :], mask, -float("inf"))
++        elif self.window > 0 and cache is not None:
++            # The rotating cache of a sliding layer: gather by slot distance
++            if rel_index is None:
++                rel_index = self.slot_rel_index(cache)
++            mask = mx.take_along_axis(rel_logits, rel_index, axis=-1)
++        elif S <= self.extent:
++            # A single query against the last S keys in temporal order
++            mask = rel_logits[..., self.extent - S :]
++        else:
++            mask = mx.pad(rel_logits, [(0, 0), (0, 0), (0, 0), (S - self.extent, 0)])
++        if valid is not None:
++            mask = mx.where(valid, mask, -float("inf"))
+ 
+         if self.log_scaling_n_floor is not None:
+             # Long-context log scaling of the logits, tau is 1 below the floor
+@@ -342,6 +355,11 @@ class Attention(nn.Module):
+         out = out.transpose(0, 2, 1, 3).reshape(B, L, -1)
+         return self.wo_ud(out)
+ 
++    def slot_rel_index(self, cache):
++        """The column of the reversed bias bank for every slot of a rotating
++        cache after a single-token update."""
++        return (self.extent - 1 - cache.key_distances())[None, None, None]
++
+ 
+ class DenseMLP(nn.Module):
+     def __init__(self, args: TextArgs):
+@@ -438,12 +456,12 @@ class DecoderLayer(nn.Module):
+         self.attn_sconv = ShortConv(args.hidden_size, args.sconv_kernel_size, slot=1)
+         self.mlp_sconv = ShortConv(args.hidden_size, args.sconv_kernel_size, slot=2)
+ 
+-    def __call__(self, x, cache=None):
++    def __call__(self, x, cache=None, rel_index=None):
+         kv_cache = conv_cache = conv_mask = None
+         if cache is not None:
+             kv_cache, conv_cache = cache[0], cache[1]
+             conv_mask = conv_cache.make_mask(x.shape[1])
+-        r = self.attn(self.attn_norm(x), kv_cache, conv_cache, conv_mask)
++        r = self.attn(self.attn_norm(x), kv_cache, conv_cache, conv_mask, rel_index)
+         h = self.attn_sconv(r, conv_cache, conv_mask, residual=x)
+         r = self.mlp(self.mlp_norm(h))
+         out = self.mlp_sconv(r, conv_cache, conv_mask, residual=h)
+@@ -462,6 +480,9 @@ class InklingTextModel(nn.Module):
+         self.layers = [DecoderLayer(args, i) for i in range(args.num_hidden_layers)]
+         self.norm = nn.RMSNorm(args.hidden_size, eps=args.rms_norm_eps)
+         self.unembed = nn.Linear(args.hidden_size, args.vocab_size, bias=False)
++        self.first_sliding = next(
++            (i for i in range(args.num_hidden_layers) if args.layer_is_sliding(i)), None
++        )
+ 
+     def embed_tokens(self, inputs):
+         h = self.embed(inputs)
+@@ -477,8 +498,13 @@ class InklingTextModel(nn.Module):
+         )
+         if cache is None:
+             cache = [None] * len(self.layers)
+-        for layer, c in zip(self.layers, cache):
+-            h = layer(h, c)
++        # The sliding layers' rotating caches move in lockstep, so the slot
++        # index of the first one serves all of them for a single token
++        rel_index = None
++        for i, (layer, c) in enumerate(zip(self.layers, cache)):
++            h = layer(h, c, rel_index if layer.attn.window > 0 else None)
++            if i == self.first_sliding and c is not None and h.shape[1] == 1:
++                rel_index = layer.attn.slot_rel_index(c[0])
+         h = self.norm(h) * (1.0 / self.args.logits_mup_width_multiplier)
+         logits = self.unembed(h)
+         if self.args.unpadded_vocab_size is not None:
+@@ -511,13 +537,16 @@ class Model(nn.Module):
+         caches = []
+         for i in range(args.num_hidden_layers):
+             if args.layer_is_sliding(i):
+-                kv = ShiftingWindowCache(args.sliding_window_size)
++                kv = RotatingKVCache(max_size=args.sliding_window_size)
+             else:
+                 kv = KVCache()
+             caches.append(CacheList(kv, ArraysCache(size=3)))
+         return caches
+ 
+     def sanitize(self, weights):
++        """Accepts the mlx-community layout (split gate/up, ``[C, K, 1]`` convs)
++        and the HF source layout (interleaved ``w13`` rows, ``[C, 1, K]`` convs),
++        then fuses q/k/v/r, k|v convs and routed|shared experts."""
+         args = self.args.text_config
+         drop = ("model.visual.", "model.audio.", "model.mtp.")
+         weights = {k: v for k, v in weights.items() if not k.startswith(drop)}
+@@ -554,14 +583,16 @@ class Model(nn.Module):
+                 out[k[: -len("shared_w2_weight")] + "down_proj.weight"] = v
+             elif k.endswith(".mlp.gate.weight"):
+                 out[k] = v.astype(mx.float32)
++            elif k.endswith(".rel_logits_proj.proj"):
++                out[k + "_reversed"] = v[:, ::-1]
+             else:
+                 out[k] = v
+         weights = out
+ 
+-        def fuse(prefix, names, fused, axis=0):
++        def fuse(prefix, names, fused):
+             # Concatenate the (possibly quantized) tensors of ``names`` into
+-            # ``fused``; row-concatenation keeps every output row's own
+-            # quantization groups so it is exact.
++            # ``fused`` along the first axis; every row keeps its own
++            # quantization groups so this is exact.
+             leaves = ("weight", "scales", "biases")
+             present = [
+                 leaf
+@@ -576,7 +607,7 @@ class Model(nn.Module):
+                     raise ValueError(
+                         f"Cannot fuse {prefix}{fused}.{leaf}: quantization differs"
+                     )
+-                weights[f"{prefix}{fused}.{leaf}"] = mx.concatenate(parts, axis=axis)
++                weights[f"{prefix}{fused}.{leaf}"] = mx.concatenate(parts, axis=0)
+ 
+         for i in range(args.num_hidden_layers):
+             prefix = f"model.llm.layers.{i}."
+diff --git a/tests/test_inkling.py b/tests/test_inkling.py
+index ff88734..689adb1 100644
+--- a/tests/test_inkling.py
++++ b/tests/test_inkling.py
+@@ -1,7 +1,5 @@
+ # Copyright © 2026 Apple Inc.
+ 
+-import os
+-import tempfile
+ import unittest
+ 
+ import mlx.core as mx
+@@ -10,12 +8,9 @@ from mlx.utils import tree_flatten, tree_unflatten
+ 
+ from mlx_lm.models import inkling_mm_model as inkling
+ from mlx_lm.models.cache import (
+-    BatchShiftingWindowCache,
+-    CacheList,
+-    ShiftingWindowCache,
+-    load_prompt_cache,
++    BatchRotatingKVCache,
++    RotatingKVCache,
+     make_prompt_cache,
+-    save_prompt_cache,
+ )
+ 
+ 
+@@ -65,23 +60,16 @@ def random_model(seed=0, dtype=mx.float32, **overrides):
+             v = mx.random.normal(v.shape) * (0.3 / v.shape[-1] ** 0.5)
+         else:
+             v = 0.3 * mx.random.normal(v.shape)
+-        params.append((k, v.astype(dtype if v.dtype != mx.float32 else v.dtype)))
++        if ".mlp.gate." not in k:  # the router stays fp32
++            v = v.astype(dtype)
++        params.append((k, v))
+     model.update(tree_unflatten(params))
+-    if dtype != mx.float32:
+-        model.update(
+-            tree_flatten(model.parameters())
+-            and tree_unflatten(
+-                [
+-                    (k, v.astype(dtype) if ".mlp.gate." not in k else v)
+-                    for k, v in tree_flatten(model.parameters())
+-                ]
+-            )
+-        )
+     mx.eval(model.parameters())
+     return model, args
+ 
+ 
+ def banded_mask_numpy(rel_logits, n_keys, window, extent):
++    # rel_logits[..., d] is the bias against the key d positions back
+     B, H, L, E = rel_logits.shape
+     assert E == extent
+     dist = (np.arange(L) + n_keys - L)[:, None] - np.arange(n_keys)[None]
+@@ -136,7 +124,8 @@ class TestInkling(unittest.TestCase):
+         for B, H, L, S, window, extent in cases:
+             rel = mx.random.normal((B, H, L, extent)).astype(mx.float16)
+             ref = banded_mask_numpy(np.array(rel.astype(mx.float32)), S, window, extent)
+-            out = inkling.banded_mask(rel, S, window, extent)
++            # The model passes the bias in reversed distance order
++            out = inkling.banded_mask(rel[..., ::-1], S, window, extent)
+             self.assertEqual(out.shape, (B, H, L, S))
+             self.assertEqual(out.dtype, mx.float16)
+             out = np.array(out.astype(mx.float32))
+@@ -149,7 +138,9 @@ class TestInkling(unittest.TestCase):
+                 inkling._banded_mask_kernel = None
+                 try:
+                     fallback = np.array(
+-                        inkling.banded_mask(rel, S, window, extent).astype(mx.float32)
++                        inkling.banded_mask(rel[..., ::-1], S, window, extent).astype(
++                            mx.float32
++                        )
+                     )
+                 finally:
+                     inkling._banded_mask_kernel = kernel
+@@ -267,6 +258,9 @@ class TestInkling(unittest.TestCase):
+             mx.bfloat16
+         )
+         mlx_layout[f"{prefix}mlp.gate.weight"] = hf[f"{prefix}mlp.gate.weight"]
++        proj = mx.random.normal((cfg.d_rel, cfg.rel_extent))
++        hf[f"{prefix}attn.rel_logits_proj.proj"] = proj
++        mlx_layout[f"{prefix}attn.rel_logits_proj.proj"] = proj
+         hf["model.visual.x"] = mx.zeros(1)
+         hf["model.audio.x"] = mx.zeros(1)
+         hf["model.mtp.x"] = mx.zeros(1)
+@@ -286,6 +280,11 @@ class TestInkling(unittest.TestCase):
+             mx.array_equal(a[f"{prefix}mlp.experts.down_proj.weight"], down)
+         )
+         self.assertEqual(a[f"{prefix}mlp.gate.weight"].dtype, mx.float32)
++        self.assertTrue(
++            mx.array_equal(
++                a[f"{prefix}attn.rel_logits_proj.proj_reversed"], proj[:, ::-1]
++            )
++        )
+ 
+     def test_sanitize_quantized_fold(self):
+         # Appending quantized shared experts to quantized routed experts is exact
+@@ -312,72 +311,22 @@ class TestInkling(unittest.TestCase):
+         with self.assertRaises(ValueError):
+             model.sanitize(bad)
+ 
+-    def test_shifting_window_cache(self):
++    def test_key_distances(self):
+         b, h, d, W = 1, 2, 8, 6
+-        cache = ShiftingWindowCache(max_size=W)
+-        xs = mx.random.normal((b, h, 23, d))
+-        pos = 0
+-        for n in [3, 1, 1, 4, 1, 1, 1, 7, 1, 1, 1, 1]:
+-            k, _ = cache.update_and_fetch(
+-                xs[..., pos : pos + n, :], xs[..., pos : pos + n, :]
+-            )
+-            start = max(0, pos - (W - 1))
+-            self.assertTrue(mx.array_equal(k, xs[..., start : pos + n, :]), (pos, n))
+-            pos += n
+-        self.assertEqual(cache.offset, 23)
+-        self.assertEqual(cache.size(), W)
+-        self.assertIsNone(cache.make_mask(1))
+-        # Trim round trip while the cache is still trimmable
+-        cache = ShiftingWindowCache(max_size=W)
+-        cache.update_and_fetch(xs[..., :3, :], xs[..., :3, :])
+-        self.assertTrue(cache.is_trimmable())
+-        self.assertEqual(cache.trim(2), 2)
+-        k, _ = cache.update_and_fetch(xs[..., 1:2, :], xs[..., 1:2, :])
+-        self.assertTrue(mx.array_equal(k, xs[..., :2, :]))
+-        k, _ = cache.update_and_fetch(xs[..., 2:9, :], xs[..., 2:9, :])
+-        self.assertTrue(mx.array_equal(k, xs[..., :9, :]))
+-        self.assertFalse(cache.is_trimmable())
+-        # Save and load through a CacheList
+-        with tempfile.TemporaryDirectory() as d_:
+-            path = os.path.join(d_, "cache.safetensors")
+-            save_prompt_cache(path, [CacheList(cache)])
+-            loaded = load_prompt_cache(path)[0][0]
+-            self.assertEqual(loaded.offset, cache.offset)
+-            k1, _ = cache.update_and_fetch(xs[..., 9:10, :], xs[..., 9:10, :])
+-            k2, _ = loaded.update_and_fetch(xs[..., 9:10, :], xs[..., 9:10, :])
+-            self.assertTrue(mx.array_equal(k1, k2))
+-            self.assertTrue(mx.array_equal(k1, xs[..., 4:10, :]))
+-
+-    def test_batch_shifting_window_cache(self):
+-        h, d, W = 2, 8, 6
+-        xa = mx.random.normal((1, h, 9, d))
+-        xb = mx.random.normal((1, h, 2, d))
+-        ca, cb = ShiftingWindowCache(W), ShiftingWindowCache(W)
+-        ca.update_and_fetch(xa, xa)
+-        cb.update_and_fetch(xb, xb)
+-        batch = ShiftingWindowCache.merge([ca, cb])
+-        self.assertIsInstance(batch, BatchShiftingWindowCache)
+-        self.assertEqual(batch.left_padding.tolist(), [0, 3])
+-        new = mx.random.normal((2, h, 1, d))
+-        k, _ = batch.update_and_fetch(new, new)
+-        self.assertEqual(k.shape, (2, h, W, d))
+-        self.assertTrue(mx.array_equal(k[0], mx.concatenate([xa[0, :, 4:], new[0]], 1)))
+-        self.assertTrue(mx.array_equal(k[1, :, 3:], mx.concatenate([xb[0], new[1]], 1)))
+-        self.assertEqual(batch.left_padding.tolist(), [0, 2])
+-        self.assertEqual(batch.offset.tolist(), [10, 3])
+-        # Extract gives back single caches with the padding removed
+-        single = batch.extract(1)
+-        self.assertEqual(single.offset, 3)
+-        k, _ = single.update_and_fetch(new[1:], new[1:])
+-        self.assertTrue(
+-            mx.array_equal(k, mx.concatenate([xb[0], new[1], new[1]], 1)[None])
+-        )
+-        # Filter and extend
+-        batch.filter([1])
+-        self.assertEqual(batch.left_padding.tolist(), [0])
+-        other = ShiftingWindowCache.merge([ShiftingWindowCache(W)])
+-        batch.extend(other)
+-        self.assertEqual(batch.left_padding.tolist(), [0, 3])
++        for cls in (RotatingKVCache, BatchRotatingKVCache):
++            cache = cls(W) if cls is RotatingKVCache else cls(W, [0])
++            xs = mx.random.normal((b, h, 23, d))
++            pos = 0
++            for n in [3, 1, 1, 4, 1, 1, 1, 7, 1, 1, 1, 1]:
++                k, _ = cache.update_and_fetch(
++                    xs[..., pos : pos + n, :], xs[..., pos : pos + n, :]
++                )
++                pos += n
++                dist = cache.key_distances()
++                self.assertEqual(dist.shape[0], k.shape[2])
++                # slot s holds the key dist[s] positions behind the newest one
++                expected = xs[..., pos - 1 - dist, :]
++                self.assertTrue(mx.array_equal(k, expected), (pos, n))
+ 
+     def test_batched_prompts(self):
+         # A right-padded batch through merged caches equals the single-sequence runs

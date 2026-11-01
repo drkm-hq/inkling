@@ -1,0 +1,15 @@
+built; mem 10.976928284
+--- ctx 0
+embed                  0.7706249998591375
+layer0 (model call)    2.0876670023426414
+layer1                 3.1054579994815867
+layer2                 2.391999998508254
+model.model skip norm  9.318707998318132
+LanguageModel skip_log 0.36366699714562856
+LanguageModel logits   27.800416999525623
+logits + argmax        29.237083999760216
+norm+lm_head only      18.886624999140622
+lm_head(pre) only      32.43008299978101
+lm_head[..., :uv]      30.387832997803343
+lm_head slice argmax   31.930708999425406
+lm_head argmax nosl    60.25620800210163

@@ -1,0 +1,46 @@
+K2 exact decode-kernel candidates — 2026-10-31
+
+Base: corrected K2 checkout at work/k2-review/checkout. Both patches apply cleanly to it.
+Choose one patch; the combined patch includes gate/up fusion and must not be stacked on the gate/up-only patch.
+
+1. k2-expert-gate-up.patch
+   Runtime: work/perf/k2/checkout/mlx_lm/models/inkling_mm_model.py
+   Combines two affine q2 expert GEMVs and their bf16 SwiGLU in one Metal kernel.
+   Reads the existing up/gate weight, scale, and bias tensors separately. No repacking,
+   persistent weight copies, checkpoint name changes, or quantization metadata changes.
+   Inference only; single token; bf16; group64/q2 affine; input width multiple512;
+   intermediate width multiple4; at most8 active experts. Other cases use original SwitchGLU.
+   Training always uses differentiable original path.
+   Benchmark toggle: save module._expert_gate_up_kernel; set None for baseline, restore for candidate.
+
+2. k2-expert-combined.patch
+   Runtime: work/perf/k2/combined-checkout/mlx_lm/models/inkling_mm_model.py
+   SHA256: ab46d00c494c20642014246be0d29fbafbec1dfa61bfc7749e699ec548a7df46
+   Includes1, plus expert weighted reduction, post-MLP short convolution, state update,
+   and residual addition in one Metal kernel. Matches native bf16 expert accumulation,
+   fp32 short-convolution accumulation, and intermediate rounding boundaries.
+   Only unpadded single-token bf16 inference with a convolution cache, kernel size4,
+   and at most8 experts uses this second fast path. Existing path handles other cases.
+   Benchmark baseline must disable BOTH _expert_gate_up_kernel and _expert_combine_sconv_kernel.
+
+Correctness and compatibility
+-18 tests passed for each integrated candidate: the15 prior K2/model tests plus3 new kernel tests.
+-Exact fused activation with multiple expert index patterns, including repeated indices.
+-Exact tiny quantized-model decoded logits, checkpoint serialization roundtrip, parameter names unchanged.
+-The combined candidate also checks exact equality of every cache tensor and cache type after decode.
+-Quantization mode/bits/group, dtype, batching, and training fallback checks.
+-Ruff0.16.8, Black and git diff --check passed. git apply --check passed for both patches.
+
+Microbench evidence (not end-to-end promises)
+-chain-results.json / bench_chain.py: actual decode widths4096→2048→4096, bf16/q2/group64,
+ 8 selected experts among32 synthetic stored experts,32 dependent blocks,10 alternating pairs.
+ rows2/simdgroups2: median150.28→142.95us per expert block (~5.1% faster); exact32-block output.
+-combine-results.json / bench_combine.py:8 expert outputs×4096 channels,4-tap convolution,
+ 32 dependent steps,16 alternating pairs.59.45→36.65us per reduction/convolution step;
+ exact output and convolution state. Absolute times differ substantially across machine holds.
+-First prototype used different sigmoid rounding and was rejected. The retained kernel copies
+ MLX's typed stable-sigmoid expression exactly; raw GEMV and activation tests are bit-identical.
+
+All GPU tests and benchmarks used work/perf/with_gpu_lock.py. Full-model paired measurements
+are managed by the root reviewer under work/perf/full-model; those determine retention.
+No upstream or original snapshot files were edited by this subtask. No commits were created.

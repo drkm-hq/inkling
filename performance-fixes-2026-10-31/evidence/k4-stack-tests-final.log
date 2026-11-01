@@ -1,0 +1,6 @@
+Waiting for GPU benchmark lock: pid=45698
+Acquired GPU benchmark lock: pid=45698 time=1793471964.709609
+........................................................................ [ 62%]
+............................................                             [100%]
+116 passed in 9.73s
+Released GPU benchmark lock: pid=45698

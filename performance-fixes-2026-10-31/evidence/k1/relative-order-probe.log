@@ -1,0 +1,2 @@
+START {"cmd": ["<workdir>", "-m", "~/.cache/huggingface/hub/models--unsloth--Inkling-Small-GGUF/snapshots/1a19ef82883cb7b9c581b93c30ea252dabbf658d/UD-IQ3_XXS/Inkling-Small-UD-IQ3_XXS-00001-of-00003.gguf", "-fa", "on", "-c", "1024", "-np", "1", "--port", "19873", "--host", "127.0.0.1", "--offline", "--verbose"], "load": [4.84326171875, 6.72412109375, 7.1865234375]}
+RESULT {"pipeline_seen": true, "content_equal": true, "tokens_equal": true, "token_count": 32, "load_after": [4.5166015625, 6.52978515625, 7.10546875]}

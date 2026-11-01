@@ -1,0 +1,49 @@
+From f98688c1cc1339d596430293483466910ceed2f9 Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Thu, 29 Oct 2026 03:26:06 -0400
+Subject: [PATCH 4/4] Warn when kv_bits cannot apply to any of the model's
+ caches
+
+maybe_quantize_kv_cache stayed silent for models whose per-layer cache has no
+to_quantized (CacheList models); the single-stream path now warns once.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ ACKNOWLEDGMENTS.md | 1 +
+ mlx_lm/generate.py | 7 +++++++
+ 2 files changed, 8 insertions(+)
+
+diff --git a/ACKNOWLEDGMENTS.md b/ACKNOWLEDGMENTS.md
+index 87d1578..b9f191e 100644
+--- a/ACKNOWLEDGMENTS.md
++++ b/ACKNOWLEDGMENTS.md
+@@ -32,3 +32,4 @@ MoonshotAI's `Kimi K2.5`, Upstage's `Solar Open`, LG AI Research's `K-Exaone MoE
+ Meituan's `LongCat Flash Lite` Helped add support for the following model architectures: 
+ Z.ai & THUKEG's `GLM5 (GLM MoE DSA)`
+ - Ethan Elasky: Added support for talkie-lm's `Talkie`.
++- the submitter Alonso: Added support for Thinking Machines' `Inkling` (`inkling_mm_model`).
+diff --git a/mlx_lm/generate.py b/mlx_lm/generate.py
+index 96ee5b0..8fc60f6 100644
+--- a/mlx_lm/generate.py
++++ b/mlx_lm/generate.py
+@@ -7,6 +7,7 @@ import functools
+ import json
+ import sys
+ import time
++import warnings
+ from collections import deque
+ from dataclasses import asdict, dataclass
+ from typing import (
+@@ -316,6 +317,12 @@ class GenerationResponse:
+ def maybe_quantize_kv_cache(prompt_cache, quantized_kv_start, kv_group_size, kv_bits):
+     if kv_bits is None:
+         return
++    if not any(hasattr(c, "to_quantized") for c in prompt_cache):
++        warnings.warn(
++            "kv_bits is set but none of the model's caches support quantization; "
++            "the KV cache stays unquantized."
++        )
++        return
+     for e, c in enumerate(prompt_cache):
+         if hasattr(c, "to_quantized") and c.offset >= quantized_kv_start:
+             prompt_cache[e] = c.to_quantized(group_size=kv_group_size, bits=kv_bits)

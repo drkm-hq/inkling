@@ -1,0 +1,97 @@
+diff --git a/mlx_vlm/apc.py b/mlx_vlm/apc.py
+--- a/mlx_vlm/apc.py
++++ b/mlx_vlm/apc.py
+@@ -2733,7 +2733,9 @@
+             arrays[f"{prefix}_v"] = c.values[..., :off, :]
+             return True
+ 
+-        if isinstance(c, lm_cache.RotatingKVCache):
++        # Subclasses may keep a temporal buffer instead of a ring. Preserve
++        # their native checkpoint state rather than restoring a base ring.
++        if type(c) is lm_cache.RotatingKVCache:
+             metadata[f"{prefix}_kind"] = "rotating_kv"
+             metadata[f"{prefix}_keep"] = str(int(getattr(c, "keep", 0) or 0))
+             metadata[f"{prefix}_max_size"] = str(int(getattr(c, "max_size")))
+diff --git a/mlx_vlm/models/cache.py b/mlx_vlm/models/cache.py
+--- a/mlx_vlm/models/cache.py
++++ b/mlx_vlm/models/cache.py
+@@ -2476,6 +2476,18 @@
+             self.start_position += drop
+             self._idx = keep
+         return super().update_and_fetch(keys, values)
++
++    @property
++    def state(self):
++        return (*super().state, self._right_padding)
++
++    @state.setter
++    def state(self, v):
++        self.keys, self.values, self.offset, self.left_padding = v[:4]
++        self._idx = 0 if self.keys is None else self.keys.shape[2]
++        # from_state() restores a bare instance. Retain any pending prompt
++        # padding so compaction still waits until finalize() after a restore.
++        self._right_padding = v[4] if len(v) > 4 else None
+ 
+     @property
+     def meta_state(self):
+diff --git a/mlx_vlm/tests/test_cache.py b/mlx_vlm/tests/test_cache.py
+--- a/mlx_vlm/tests/test_cache.py
++++ b/mlx_vlm/tests/test_cache.py
+@@ -3529,3 +3529,24 @@
+     manager.reset_stats()
+     assert manager.stats_snapshot()["restored_tokens"] == 0
+     assert manager.stats_snapshot()["stored_tokens"] == 0
++
++
++@parametrize("length", [4, 20])
++def test_sliding_window_disk_restore_preserves_temporal_layout(managers, length):
++    cache = C.SlidingWindowKVCache(8, buffer_size=4)
++    for token in range(length):
++        keys = mx.full((1, 1, 1, 4), token, dtype=mx.float32)
++        cache.update_and_fetch(keys, keys + 1)
++    restored, _ = disk_roundtrip(
++        managers, list(range(length)), [cache], block=4, exact_cache_min_tokens=1
++    )
++    restored = restored[0]
++    assert type(restored) is type(cache)
++    assert restored.meta_state == cache.meta_state
++    for token in range(length, length + 16):
++        keys = mx.full((1, 1, 1, 4), token, dtype=mx.float32)
++        same_arrays(
++            restored.update_and_fetch(keys, keys + 1),
++            cache.update_and_fetch(keys, keys + 1),
++        )
++        assert restored.meta_state == cache.meta_state
+diff --git a/mlx_vlm/tests/test_sliding_window_cache.py b/mlx_vlm/tests/test_sliding_window_cache.py
+--- a/mlx_vlm/tests/test_sliding_window_cache.py
++++ b/mlx_vlm/tests/test_sliding_window_cache.py
+@@ -279,3 +279,29 @@
+     assert isinstance(clone.caches[0], SlidingWindowKVCache)
+     assert clone.caches[0].offset == 20
+     assert isinstance(clone.caches[1], KVCache)
++
++
++@pytest.mark.parametrize("pending_padding", [False, True])
++def test_batch_state_round_trip_continues_after_compaction(pending_padding):
++    cache = BatchSlidingWindowKVCache(8, [0, 0], buffer_size=0)
++    cache.update_and_fetch(*kv(range(20), batch=2))
++    cache.update_and_fetch(*kv([20], batch=2))
++    assert cache.start_position > 0
++    if pending_padding:
++        cache.prepare(lengths=[2, 1], right_padding=[0, 1])
++        cache.update_and_fetch(*kv([21, 22], batch=2))
++
++    restored = BatchSlidingWindowKVCache.from_state(cache.state, cache.meta_state)
++    # The original four-element state format remains readable after finalize.
++    if not pending_padding:
++        legacy = BatchSlidingWindowKVCache.from_state(cache.state[:4], cache.meta_state)
++        assert legacy._right_padding is None
++    restored.finalize()
++    cache.finalize()
++    assert restored.offset.tolist() == cache.offset.tolist()
++    assert restored.left_padding.tolist() == cache.left_padding.tolist()
++    for pos in range(23, 40):
++        actual = restored.update_and_fetch(*kv([pos], batch=2))
++        expected = cache.update_and_fetch(*kv([pos], batch=2))
++        assert all(mx.array_equal(a, b).item() for a, b in zip(actual, expected))
++        assert restored.meta_state == cache.meta_state

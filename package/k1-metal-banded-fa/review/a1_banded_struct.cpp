@@ -1,0 +1,122 @@
+// GGML_OP_FLASH_ATTN_EXT_BANDED
+// A1 review version of the helper: explicit q_offset (default = n_kv - n_q), a sliding window independent of
+// rel_extent, a batch dimension (ne3 with rel ne3 in {1, ne3}) and the n_kv_max hint (Metal sparse vec path)
+struct test_flash_attn_ext_banded : public test_case {
+    const int64_t d;
+    const int64_t n_head;
+    const int64_t n_head_kv;
+    const int64_t n_q;
+    const int64_t n_kv;
+    const int64_t rel_extent;
+    const int mask_kind; // 0: none, 1: causal, 2: causal sliding window with dist < window (window = rel_extent when 0)
+    const ggml_type kv_type;
+    const ggml_type rel_type;
+    const bool strided;
+    const int64_t kv_pad; // masked rows past n_kv at the end of k, v and mask; the band stays anchored by q_offset
+    const int64_t q_offset; // kv index of the first query (INT64_MIN: n_kv - n_q, the tail)
+    const int64_t window;   // sliding window for mask_kind 2 (0: rel_extent)
+    const int64_t ne3;      // batch
+    const int64_t rel_ne3;  // 1 or ne3
+    const int64_t n_kv_max; // > 0: set the n_kv_max hint (op_params[4]) so Metal takes its sparse vec path
+
+    int64_t q_off() const { return q_offset == INT64_MIN ? n_kv - n_q : q_offset; }
+    int64_t win()   const { return window == 0 ? rel_extent : window; }
+
+    std::string vars() override {
+        const int64_t qo = q_off();
+        const int64_t w  = win();
+        return VARS_TO_STR16(d, n_head, n_head_kv, n_q, n_kv, rel_extent, mask_kind, kv_type, rel_type, strided, kv_pad, qo, w, ne3, rel_ne3, n_kv_max);
+    }
+
+    double max_nmse_err() override {
+        if (kv_type == GGML_TYPE_F32 && rel_type == GGML_TYPE_F32) {
+            return 2e-6;
+        }
+        // fp16 VKQ accumulation error grows with the KV length (plus periodic accumulator
+        // rescales guarding against fp16 overflow)
+        return n_kv > 8192 ? 1e-3 : 5e-4;
+    }
+
+    uint64_t op_flops(ggml_tensor * t) override {
+        GGML_UNUSED(t);
+        return 4*n_head*n_q*n_kv*d*ne3;
+    }
+
+    test_flash_attn_ext_banded(
+            int64_t d, int64_t n_head, int64_t n_head_kv,
+            int64_t n_q, int64_t n_kv, int64_t rel_extent,
+            int mask_kind, ggml_type kv_type, ggml_type rel_type, bool strided = false, int64_t kv_pad = 0,
+            int64_t q_offset = INT64_MIN, int64_t window = 0, int64_t ne3 = 1, int64_t rel_ne3 = 1, int64_t n_kv_max = 0)
+        : d(d), n_head(n_head), n_head_kv(n_head_kv), n_q(n_q), n_kv(n_kv),
+          rel_extent(rel_extent), mask_kind(mask_kind), kv_type(kv_type), rel_type(rel_type), strided(strided), kv_pad(kv_pad),
+          q_offset(q_offset), window(window), ne3(ne3), rel_ne3(rel_ne3), n_kv_max(n_kv_max) {
+        GGML_ASSERT(kv_pad == 0 || mask_kind != 0); // the padding rows are hidden by the mask
+        GGML_ASSERT(rel_ne3 == 1 || rel_ne3 == ne3);
+    }
+
+    ggml_tensor * build_graph(ggml_context * ctx) override {
+        const int64_t n_kv_total = n_kv + kv_pad;
+
+        ggml_tensor * q = ggml_new_tensor_4d(ctx, GGML_TYPE_F32, d, n_q, n_head, ne3);
+        ggml_tensor * k;
+        ggml_tensor * v;
+        ggml_tensor * r;
+        if (strided) {
+            // gaps between rows/heads force the kernels to use the 64-bit byte strides
+            ggml_tensor * kb = ggml_new_tensor_4d(ctx, kv_type, 2*d, n_kv_total, n_head_kv, ne3);
+            ggml_tensor * vb = ggml_new_tensor_4d(ctx, kv_type, 2*d, n_kv_total, n_head_kv, ne3);
+            ggml_tensor * rb = ggml_new_tensor_4d(ctx, rel_type, 2*rel_extent, n_head, n_q, rel_ne3);
+            k = ggml_view_4d(ctx, kb, d, n_kv_total, n_head_kv, ne3, kb->nb[1], kb->nb[2], kb->nb[3], 0);
+            v = ggml_view_4d(ctx, vb, d, n_kv_total, n_head_kv, ne3, vb->nb[1], vb->nb[2], vb->nb[3], 0);
+            r = ggml_view_4d(ctx, rb, rel_extent, n_head, n_q, rel_ne3, rb->nb[1], rb->nb[2], rb->nb[3], 0);
+        } else {
+            k = ggml_new_tensor_4d(ctx, kv_type, d, n_kv_total, n_head_kv, ne3);
+            v = ggml_new_tensor_4d(ctx, kv_type, d, n_kv_total, n_head_kv, ne3);
+            r = ggml_new_tensor_4d(ctx, rel_type, rel_extent, n_head, n_q, rel_ne3);
+        }
+        ggml_set_name(q, "q");
+        ggml_set_name(k, "k");
+        ggml_set_name(v, "v");
+        ggml_set_name(r, "rel_logits");
+
+        ggml_tensor * m = nullptr;
+        if (mask_kind != 0) {
+            m = ggml_new_tensor_4d(ctx, GGML_TYPE_F16, n_kv_total, n_q, 1, 1);
+            ggml_set_name(m, "m");
+        }
+
+        ggml_tensor * out = ggml_flash_attn_ext_banded(ctx, q, k, v, m, r, 1.0f/float(d), rel_extent, (int32_t) q_off());
+        ggml_prec_set_acc(out, GGML_PREC_F32);
+        if (n_kv_max > 0) {
+            // ggml_flash_attn_ext_set_n_kv_max() asserts the plain op; write the hint the Metal backend reads
+            ggml_set_op_params_i32(out, 4, (int32_t) n_kv_max);
+        }
+        ggml_set_name(out, "out");
+        return out;
+    }
+
+    void initialize_tensors(ggml_context * ctx) override {
+        for (ggml_tensor * t = ggml_get_first_tensor(ctx); t != nullptr; t = ggml_get_next_tensor(ctx, t)) {
+            if (strcmp(t->name, "m") == 0) {
+                const int64_t n_kv_total = n_kv + kv_pad;
+                const int64_t qo = q_off();
+                const int64_t w  = win();
+                std::vector<ggml_fp16_t> data(n_q*n_kv_total);
+                for (int64_t iq = 0; iq < n_q; ++iq) {
+                    for (int64_t ik = 0; ik < n_kv_total; ++ik) {
+                        const int64_t rel_dist = iq + qo - ik;
+                        const bool visible = ik < n_kv && rel_dist >= 0 && (mask_kind == 1 || rel_dist < w);
+                        data[iq*n_kv_total + ik] = ggml_fp32_to_fp16(visible ? 0.0f : -INFINITY);
+                    }
+                }
+                ggml_backend_tensor_set(t, data.data(), 0, data.size()*sizeof(data[0]));
+            } else if (strcmp(t->name, "rel_logits") == 0) {
+                // A larger range makes rel_dist = E versus E-1 mistakes immediately visible.
+                init_tensor_uniform(t, -1.0f, 1.0f);
+            } else {
+                init_tensor_uniform(t, -0.25f, 0.25f);
+            }
+        }
+    }
+};
+

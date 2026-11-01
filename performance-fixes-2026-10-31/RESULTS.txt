@@ -1,0 +1,136 @@
+Inkling performance review — 2026-10-31
+
+Five main patches implement additional Metal/MLX optimizations. APPLY.txt lists
+the exact contribution bases, included correctness prerequisites, and sequence.
+These are implementation and measurement notes, not PR submission text.
+
+MEASURED WHOLE-MODEL DECODE
+
+Apple M5 Max, 128 GiB unified memory; MLX 0.32.4. Both MLX engines used the
+same local mlx-community/Inkling-Small-mlx-2bit checkpoint, revision
+f8a0af554e168077bdaf48e1fb6682fb395c807c (82.32 GiB of parameters).
+
+For each engine the model was loaded once. Each context used five alternating
+AB/BA pairs, after warming both variants. Each run decoded exactly 256 tokens
+greedily, including continuation past stopping tokens. Throughput excludes the
+first token. Both variants started from independent copies of the same prefilled
+cache. This measures warm-cache decode, not fresh-prompt time to first token.
+Baselines include the earlier correctness fixes; only new performance paths
+are toggled. Our GPU jobs and builds were serialized with a process lock.
+
+The table reports the median of paired throughput ratios, not a ratio of
+separately aggregated medians. The range includes every measured pair.
+
+Engine       Prompt tokens  Median change  Paired range          Saved ms/token
+mlx-lm             2085        -0.03%   -17.13% to  +45.51%         -0.023
+mlx-lm             8231        +5.78%    +3.26% to  +10.68%         +2.038
+mlx-vlm            8231        +1.54%    -4.13% to   +4.20%         +0.520
+mlx-vlm           32807        +1.58%    -0.09% to   +3.13%         +0.573
+
+All measured baseline/candidate token sequences matched exactly at each context.
+mlx-lm at 8k is the strongest whole-model result: all five pairs improved.
+mlx-lm at 2k is inconclusive because of severe timing drift. mlx-vlm's roughly
+1.5–1.6% medians are small: one pair at each context did not improve. Treat those
+as preliminary, not a robust promised speedup. The desktop remained active;
+no system thermal warning was reported. Machine activity was observed, but the
+exact source of all timing drift was not isolated.
+
+llama.cpp: three paired full-model runs with the local Inkling-Small UD-IQ3_XXS
+GGUF (-fa 1 -p 0 -n 128 -d 2048) changed by -2.10%, +32.09%, and -14.13%.
+Those results are inconclusive; no whole-model speedup is established. A separate
+natural-prompt comparison produced the same 32 token IDs and completion text.
+
+KERNEL AND COMPONENT MEASUREMENTS
+
+These timings are specific probes, not additive savings or model speed promises.
+Each line uses its own baseline, shape and measurement hold.
+
+1. llama.cpp short-convolution decode dispatch (main patch 01)
+   Packs 128 channels into each threadgroup instead of dispatching one active
+   thread per group, with a tail guard. Prefill dispatch remains as before.
+   Representative 168-op graph: 431.70 -> 234.64 microseconds, median paired
+   speedup 1.83x. This excludes round 0, which overlapped a build; all seven
+   rounds remain in the raw log (all-seven median paired speedup 1.826x).
+   Outputs matched bit-for-bit; scalar-reference max error was 6.46e-8.
+   The synthetic graph has 126 ops of width 1024 and 42 of width 4096. Actual
+   Inkling has 1024,1024,4096,4096 per layer, so this is not an exact model graph.
+
+2. mlx-lm expert decode (main patch 02)
+   One kernel combines affine q2/group64 gate/up GEMVs and bf16 SwiGLU while
+   reading the existing weight tensors. Another combines expert weighting,
+   reduction, short convolution, cache update, and residual addition.
+   Whole dependent expert block, changing gate/up only: 150.28 -> 142.95 us.
+   Reduction/convolution component: 59.45 -> 36.65 us.
+   No checkpoint renaming, persistent expert-weight duplication, or changes to
+   quantization bits. Shape/dtype/quantization/training guards retain the old
+   path when ineligible. Rounding matches the tested native MLX operations.
+
+3. mlx-vlm paired K/V convolution (main patch 03)
+   One launch updates the two independent states and computes both outputs.
+   B=L=1, C=1024, bf16 strided slices: 13.014 -> 8.761 us (1.49x).
+
+4. mlx-vlm K normalization inside convolution (main patch 04)
+   Folds K RMSNorm into the paired convolution for supported 128-wide heads.
+   Q normalization remains native. Matches native reduction order and rounding.
+   Long ABBA holdout: paired convolution + native K norm 14.306 us -> fused
+   11.710 us (1.22x). Every ABBA round's median favored this incremental fusion.
+
+5. mlx-vlm mask dispatch geometry (main patch 05)
+   Uses 128x1 threads for one-token queries and 64x4 for prefill. The old 8x8
+   group wasted seven of eight query rows during decode. Arithmetic is unchanged.
+   Decode S=32768: 99.506 -> 14.425 us (6.90x).
+   Decode S=512: 7.822 -> 7.301 us.
+   Prefill L=2048,S=8192: 8.136 -> 7.164 ms (about 12% lower time).
+
+VALIDATION AND REVIEW
+
+- Metal operator suite: 317/317 passed (300 convolution and 17 relative-projection
+  cases), including odd/tail channels, multiple sequences, prefill and fused SiLU.
+- mlx-lm integrated suite: 21/21 passed, including exact activation/output/cache
+  comparisons, checkpoint roundtrip, tiny quantized model decode, C=1/3/31/257,
+  1/3/8 experts, small intermediate widths, strided inputs/weights, and fallbacks.
+- mlx-vlm final stack: 116/116 targeted tests passed, covering fp32/bf16/fp16,
+  strided inputs/states/weights, repeated state updates, tiny-model decode,
+  cache compaction, padding/batching guards, and old/new mask equivalence.
+- Independent source reviews checked both MLX candidates' indexing, strides,
+  accumulation order, state updates, and fallback eligibility.
+- Patch sequences were applied to clean archives of their recorded bases and
+  compared with the tested source. Formatting/whitespace checks passed.
+
+The mlx-vlm training tests establish that the NEW kernels are skipped. They do
+not establish general training/gradient support: an existing cached convolution
+path still uses an older custom kernel. No new training regression was found.
+Testing was on this Apple GPU and MLX release; other hardware/releases and CUDA
+were not validated in this performance pass.
+
+REJECTED AND EXPERIMENTAL WORK
+
+- Rejected paired Q/K normalization: native 3.56 us beat the custom 6.22 us.
+- Rejected an early gate/up kernel with different sigmoid rounding. The supplied
+  version preserves the native typed activation expression and passes exact tests.
+- Relative-projection fusion is packaged separately under experimental/. Its
+  synthetic graph improved from 451.43 to 356.79 us, but the initial real-model
+  graph did not activate it: traversal inserted another projection between CONT
+  and MUL_MAT. A separate graph-order patch expands that input earlier. See the
+  optional experiment's final validation addendum for activation/output results.
+  No whole-model throughput gain is claimed for that optional combination.
+
+NEXT PERFORMANCE WORK
+
+Prioritize a quiet-machine repeat of the paired model measurements and profiling
+of host graph construction versus GPU time. The small dispatch changes are the
+simplest review units. The quantized expert fusion has the strongest model result
+here, but its larger implementation needs broader shape/version coverage before
+generalizing beyond its guards. Fusing relative bias into attention or reusing
+decode graphs could remove more work, but requires separate cache/offset and
+numerical validation; neither is represented as completed in this bundle.
+
+EVIDENCE
+
+evidence/full-model/ holds all MLX logs, including earlier noisy exploratory runs.
+The final comparisons are k2-combined-ab.jsonl and k4-stack-ab.jsonl. Earlier
+k2-gate and k4-conv runs are not the basis for the table above; some overlapped
+compilation. evidence/k1/full-model/ holds GGUF runs and token equality records.
+Other evidence folders hold component data, scripts, and test logs. Scripts are
+measurement records with local paths, not an installed benchmark package; adapt
+paths and preserve the recorded model, prompt and measurement settings to rerun.

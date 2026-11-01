@@ -1,0 +1,3 @@
+inkling head: cc6a6fe 2026-10-29 02:54:57 -0400 Warn when kv_bits cannot apply, CPU exactness test, acknowledgment
+reviewed tree (<workdir>/upstream/mlx-lm-a2): 963f755 2026-10-29 02:50:41 -0400 A2 review: exercise filter/extract/extend in the BatchGenerator test
+worktree status: 

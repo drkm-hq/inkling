@@ -1,0 +1,76 @@
+From ad0825f1ce08042c669a777b441f9bfd8f3f5c2f Mon Sep 17 00:00:00 2001
+From: A1 review <a1@review.local>
+Date: Thu, 29 Oct 2026 00:59:48 -0400
+Subject: [PATCH 7/7] tests : A1 group Q, realistic input magnitudes for the
+ banded cases
+
+---
+ tests/test-backend-ops.cpp | 24 +++++++++++++++++++-----
+ 1 file changed, 19 insertions(+), 5 deletions(-)
+
+diff --git a/tests/test-backend-ops.cpp b/tests/test-backend-ops.cpp
+index 333d08115..8baa540b8 100644
+--- a/tests/test-backend-ops.cpp
++++ b/tests/test-backend-ops.cpp
+@@ -8779,6 +8779,8 @@ struct test_flash_attn_ext_banded : public test_case {
+     const int64_t ne3;      // batch
+     const int64_t rel_ne3;  // 1 or ne3
+     const int64_t n_kv_max; // > 0: set the n_kv_max hint (op_params[4]) so Metal takes its sparse vec path
++    const float qk_range;   // q, k, v ~ U(-qk_range, qk_range) (0.25 in the original helper; ~1.7 gives unit-RMS q/k like the model)
++    const float rel_range;  // table ~ U(-rel_range, rel_range)
+ 
+     int64_t q_off() const { return q_offset == INT64_MIN ? n_kv - n_q : q_offset; }
+     int64_t win()   const { return window == 0 ? rel_extent : window; }
+@@ -8786,7 +8788,7 @@ struct test_flash_attn_ext_banded : public test_case {
+     std::string vars() override {
+         const int64_t qo = q_off();
+         const int64_t w  = win();
+-        return VARS_TO_STR16(d, n_head, n_head_kv, n_q, n_kv, rel_extent, mask_kind, kv_type, rel_type, strided, kv_pad, qo, w, ne3, rel_ne3, n_kv_max);
++        return VARS_TO_STR16(d, n_head, n_head_kv, n_q, n_kv, rel_extent, mask_kind, kv_type, rel_type, strided, kv_pad, qo, w, ne3, rel_ne3, n_kv_max) + "," + VAR_TO_STR(qk_range) + "," + VAR_TO_STR(rel_range);
+     }
+ 
+     double max_nmse_err() override {
+@@ -8807,10 +8809,11 @@ struct test_flash_attn_ext_banded : public test_case {
+             int64_t d, int64_t n_head, int64_t n_head_kv,
+             int64_t n_q, int64_t n_kv, int64_t rel_extent,
+             int mask_kind, ggml_type kv_type, ggml_type rel_type, bool strided = false, int64_t kv_pad = 0,
+-            int64_t q_offset = INT64_MIN, int64_t window = 0, int64_t ne3 = 1, int64_t rel_ne3 = 1, int64_t n_kv_max = 0)
++            int64_t q_offset = INT64_MIN, int64_t window = 0, int64_t ne3 = 1, int64_t rel_ne3 = 1, int64_t n_kv_max = 0,
++            float qk_range = 0.25f, float rel_range = 1.0f)
+         : d(d), n_head(n_head), n_head_kv(n_head_kv), n_q(n_q), n_kv(n_kv),
+           rel_extent(rel_extent), mask_kind(mask_kind), kv_type(kv_type), rel_type(rel_type), strided(strided), kv_pad(kv_pad),
+-          q_offset(q_offset), window(window), ne3(ne3), rel_ne3(rel_ne3), n_kv_max(n_kv_max) {
++          q_offset(q_offset), window(window), ne3(ne3), rel_ne3(rel_ne3), n_kv_max(n_kv_max), qk_range(qk_range), rel_range(rel_range) {
+         GGML_ASSERT(kv_pad == 0 || mask_kind != 0); // the padding rows are hidden by the mask
+         GGML_ASSERT(rel_ne3 == 1 || rel_ne3 == ne3);
+     }
+@@ -8874,9 +8877,9 @@ struct test_flash_attn_ext_banded : public test_case {
+                 ggml_backend_tensor_set(t, data.data(), 0, data.size()*sizeof(data[0]));
+             } else if (strcmp(t->name, "rel_logits") == 0) {
+                 // A larger range makes rel_dist = E versus E-1 mistakes immediately visible.
+-                init_tensor_uniform(t, -1.0f, 1.0f);
++                init_tensor_uniform(t, -rel_range, rel_range);
+             } else {
+-                init_tensor_uniform(t, -0.25f, 0.25f);
++                init_tensor_uniform(t, -qk_range, qk_range);
+             }
+         }
+     }
+@@ -12564,6 +12567,17 @@ static std::vector<std::unique_ptr<test_case>> make_test_cases_eval() {
+         test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8, 2048, 8192, 1024, 1, F16, F32, false, 0));
+         test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8, 226,  226,  1024, 1, F16, F32, false,  30));
+         test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8, 226,  226,   512, 2, F16, F32, false,  30));
++        // Q: realistic magnitudes: unit-RMS q/k (U(-1.7, 1.7)), table up to +-4 (peaked softmax inside the band), and a
++        //    stronger variant with q/k U(-3, 3) and table +-8 to stress the f16 P rounding and the lazy rescale
++        for (float qr : { 1.7f, 3.0f }) {
++            const float rr = qr < 2.0f ? 4.0f : 8.0f;
++            test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8, 512, 8192, 1024, 1, F16, F32, false, 0, INT64_MIN, 0, 1, 1, 0, qr, rr));
++            test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8, 512, 8209, 1024, 1, F16, F32, false, 0, INT64_MIN, 0, 1, 1, 0, qr, rr));
++            test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8,   1, 8192, 1024, 1, F16, F32, false, 0, INT64_MIN, 0, 1, 1, 0, qr, rr));
++            test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8,   7, 4100, 1024, 1, F16, F32, false, 0, INT64_MIN, 0, 1, 1, 0, qr, rr));
++            test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8, 512, 1024,  512, 2, F16, F32, false, 0, INT64_MIN, 0, 1, 1, 0, qr, rr));
++            test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8, 512,  512, 1024, 1, F16, F32, false, 0, INT64_MIN, 0, 1, 1, 0, qr, rr));
++        }
+         // O: large KV (offset arithmetic)
+         test_cases.emplace_back(new test_flash_attn_ext_banded(128,  8, 2,   1, 1048576, 1024, 1, F16, F32));
+         test_cases.emplace_back(new test_flash_attn_ext_banded(128,  8, 2,  32, 1048576, 1024, 1, F16, F32));

@@ -1,0 +1,243 @@
+From 6ee2e73b7a34ba35e0df8267ebe81c4b1f37c980 Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Wed, 28 Oct 2026 22:50:46 -0400
+Subject: [PATCH 03/10] Add BatchShiftingWindowCache for batched generation
+ with sliding-window layers
+
+Left-padded batches in temporal order with at most max_size - 1 entries;
+right-padded prompts roll their padding to the front so it is evicted first.
+Supports merge, extend, filter, extract, prepare and finalize like
+BatchRotatingKVCache.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ mlx_lm/models/cache.py | 216 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 216 insertions(+)
+
+diff --git a/mlx_lm/models/cache.py b/mlx_lm/models/cache.py
+index 4066fa7..1e73ab9 100644
+--- a/mlx_lm/models/cache.py
++++ b/mlx_lm/models/cache.py
+@@ -1576,6 +1576,222 @@ class BatchRotatingKVCache(_BaseCache):
+         return self.keys.nbytes + self.values.nbytes
+ 
+ 
++class BatchShiftingWindowCache(_BaseCache):
++    """The batched ``ShiftingWindowCache``: left-padded sequences, entries in
++    temporal order, at most ``max_size - 1`` of them retained (see
++    ``BatchKVCache`` for the padding convention)."""
++
++    def __init__(self, max_size, left_padding: List[int]):
++        self.keys = None
++        self.values = None
++        self.max_size = max_size
++        self.left_padding = mx.array(left_padding)
++        self.offset = mx.array([-l for l in left_padding])
++        self._offset = 0
++        self._lengths = None
++
++    def update_and_fetch(self, keys, values):
++        L = keys.shape[2]
++        if self.keys is None:
++            k_all, v_all = keys, values
++        else:
++            k_all = mx.concatenate([self.keys, keys], axis=2)
++            v_all = mx.concatenate([self.values, values], axis=2)
++        self.offset = self.offset + L
++        self._offset += L
++
++        k_store, v_store = k_all, v_all
++        if self._lengths is not None:
++            # Right padded prompts: roll the padding to the front so that it
++            # is evicted first and the valid entries stay in the window
++            roll = mx.maximum(0, self.offset - self._lengths)
++            k_store = dynamic_roll(k_store, roll[:, None], axis=2)
++            v_store = dynamic_roll(v_store, roll[:, None], axis=2)
++            self.left_padding = self.left_padding + roll
++            self.offset = self.offset - roll
++        trim_size = k_store.shape[2] - (self.max_size - 1)
++        if trim_size > 0:
++            k_store = k_store[..., trim_size:, :]
++            v_store = v_store[..., trim_size:, :]
++            self.left_padding = mx.maximum(self.left_padding - trim_size, 0)
++        # Make sure left_padding and offset are evaluated with the keys
++        self.keys = mx.depends(k_store, (self.left_padding, self.offset))
++        self.values = v_store
++        return k_all, v_all
++
++    def keys_and_values(self):
++        return self.keys, self.values
++
++    def prepare(self, *, left_padding=None, lengths=None, right_padding=None):
++        if left_padding is not None:
++            if self.keys is not None:
++                raise ValueError(
++                    "Left padding can only be added to an empty BatchShiftingWindowCache"
++                )
++            left_padding = mx.array(left_padding)
++            self.left_padding += left_padding
++            self.offset = self.offset - left_padding
++        if right_padding is not None and max(right_padding) > 0:
++            self._lengths = mx.array(lengths) + self.offset
++
++    def finalize(self):
++        self._lengths = None
++
++    @property
++    def state(self):
++        return (
++            self.keys,
++            self.values,
++            self.offset,
++            self.left_padding,
++            self.max_size,
++            self._offset,
++        )
++
++    @state.setter
++    def state(self, v):
++        (
++            self.keys,
++            self.values,
++            self.offset,
++            self.left_padding,
++            self.max_size,
++            self._offset,
++        ) = v
++        self._lengths = None
++
++    def is_trimmable(self):
++        return self._offset < self.max_size
++
++    def trim(self, n):
++        n = min(self._offset, n)
++        if n > 0:
++            self.keys = self.keys[..., :-n, :]
++            self.values = self.values[..., :-n, :]
++        self._offset -= n
++        self.offset = self.offset - n
++        return n
++
++    def to_quantized(self, group_size: int = 64, bits: int = 4) -> QuantizedKVCache:
++        raise NotImplementedError("BatchShiftingWindowCache Quantization NYI")
++
++    def make_mask(self, N: int, window_size: Optional[int] = None, **kwargs):
++        n_retained = 0 if self.keys is None else self.keys.shape[2]
++        return create_causal_mask(
++            N,
++            offset=n_retained,
++            window_size=window_size or self.max_size,
++            left_padding=self.left_padding,
++        )
++
++    def filter(self, batch_indices):
++        """
++        In-place filter to keep just the given indices in the cache.
++        """
++        if self.keys is not None:
++            self.keys = self.keys[batch_indices]
++            self.values = self.values[batch_indices]
++        self.offset = self.offset[batch_indices]
++        self.left_padding = self.left_padding[batch_indices]
++
++        # Drop entries that are padding for every remaining sequence
++        min_left_pad = min(self.left_padding.tolist())
++        if min_left_pad > 0:
++            self.keys = self.keys[..., min_left_pad:, :]
++            self.values = self.values[..., min_left_pad:, :]
++            self.left_padding -= min_left_pad
++
++    def extend(self, other):
++        """
++        In-place extend this cache with the other cache.
++        """
++        if self.keys is None and other.keys is None:
++            self.left_padding = mx.concatenate([self.left_padding, other.left_padding])
++            self.offset = mx.concatenate([self.offset, other.offset])
++            return
++
++        L1 = 0 if self.keys is None else self.keys.shape[2]
++        L2 = 0 if other.keys is None else other.keys.shape[2]
++        ref = self.keys if self.keys is not None else other.keys
++        B, H, _, D = ref.shape
++        M = (self.values if self.values is not None else other.values).shape[3]
++        n = max(L1, L2)
++
++        def pad(c, Lc):
++            k, v = c.keys, c.values
++            if k is None:
++                Bc = c.offset.shape[0]
++                k = mx.zeros((Bc, H, 0, D), dtype=ref.dtype)
++                v = mx.zeros((Bc, H, 0, M), dtype=ref.dtype)
++            left = n - Lc
++            if left > 0:
++                k = mx.pad(k, [(0, 0), (0, 0), (left, 0), (0, 0)])
++                v = mx.pad(v, [(0, 0), (0, 0), (left, 0), (0, 0)])
++            return k, v, c.offset, c.left_padding + left
++
++        self.keys, self.values, self.offset, self.left_padding = map(
++            mx.concatenate, zip(*(pad(self, L1), pad(other, L2)))
++        )
++        self._offset = max(self._offset, other._offset)
++
++    def extract(self, idx):
++        mx.eval(self.left_padding, self.offset)
++        cache = ShiftingWindowCache(self.max_size)
++        padding = max(0, self.left_padding.tolist()[idx])
++        cache.keys = mx.contiguous(self.keys[idx : idx + 1, :, padding:])
++        cache.values = mx.contiguous(self.values[idx : idx + 1, :, padding:])
++        cache.offset = self.offset.tolist()[idx]
++        cache._idx = cache.keys.shape[2]
++        return cache
++
++    @classmethod
++    def merge(cls, caches):
++        if not all(c.max_size == caches[0].max_size for c in caches):
++            raise ValueError(
++                "BatchShiftingWindowCache can only merge caches with the same maximum size"
++            )
++        lengths = [c._n_retained for c in caches]
++        max_length = max(lengths)
++
++        # No cache has content so make an empty one
++        if max_length == 0:
++            return cls(caches[0].max_size, [0] * len(caches))
++
++        padding = [max_length - l for l in lengths]
++        B = len(caches)
++        H = max(c.keys.shape[1] for c in caches if c.keys is not None)
++        Dk = max(c.keys.shape[3] for c in caches if c.keys is not None)
++        Dv = max(c.values.shape[3] for c in caches if c.values is not None)
++        dt = next(iter(c.keys.dtype for c in caches if c.keys is not None))
++
++        keys = mx.zeros((B, H, max_length, Dk), dtype=dt)
++        values = mx.zeros((B, H, max_length, Dv), dtype=dt)
++        for i, (p, l, c) in enumerate(zip(padding, lengths, caches)):
++            if l == 0:
++                continue
++            keys[i : i + 1, :, p:] = c.keys[..., c._idx - l : c._idx, :]
++            values[i : i + 1, :, p:] = c.values[..., c._idx - l : c._idx, :]
++
++        cache = cls(caches[0].max_size, padding)
++        cache.keys = keys
++        cache.values = values
++        cache.offset = mx.array([c.offset for c in caches])
++        cache._offset = max_length
++        return cache
++
++    def size(self):
++        return min(self._offset, self.max_size)
++
++    def empty(self):
++        return self.keys is None
++
++    @property
++    def nbytes(self):
++        if self.keys is None:
++            return 0
++        return self.keys.nbytes + self.values.nbytes
++
++
+ class TokenBuffer:
+     """A simple token buffer that can be efficiently appended to in a similar
+     fashion to the KVCache.

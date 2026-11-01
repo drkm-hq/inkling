@@ -1,0 +1,56 @@
+Waiting for GPU benchmark lock: pid=39516
+Acquired GPU benchmark lock: pid=39516 time=1793471474.155465
+ROUND 0 candidate=0 median_us=560.95167 CHECK layers=168 channels=0 taps=4 tokens=1 seq=1 hash=4395bc3b3e83d8a3 max_abs=6.45496145e-08
+ROUND 0 candidate=1 median_us=386.435 CHECK layers=168 channels=0 taps=4 tokens=1 seq=1 hash=4395bc3b3e83d8a3 max_abs=6.45496145e-08
+ROUND 1 candidate=1 median_us=235.26833 CHECK layers=168 channels=0 taps=4 tokens=1 seq=1 hash=4395bc3b3e83d8a3 max_abs=6.45496145e-08
+ROUND 1 candidate=0 median_us=426.18458 CHECK layers=168 channels=0 taps=4 tokens=1 seq=1 hash=4395bc3b3e83d8a3 max_abs=6.45496145e-08
+ROUND 2 candidate=0 median_us=431.57041 CHECK layers=168 channels=0 taps=4 tokens=1 seq=1 hash=4395bc3b3e83d8a3 max_abs=6.45496145e-08
+ROUND 2 candidate=1 median_us=237.86916 CHECK layers=168 channels=0 taps=4 tokens=1 seq=1 hash=4395bc3b3e83d8a3 max_abs=6.45496145e-08
+ROUND 3 candidate=1 median_us=232.81458 CHECK layers=168 channels=0 taps=4 tokens=1 seq=1 hash=4395bc3b3e83d8a3 max_abs=6.45496145e-08
+ROUND 3 candidate=0 median_us=428.72625 CHECK layers=168 channels=0 taps=4 tokens=1 seq=1 hash=4395bc3b3e83d8a3 max_abs=6.45496145e-08
+ROUND 4 candidate=0 median_us=431.83 CHECK layers=168 channels=0 taps=4 tokens=1 seq=1 hash=4395bc3b3e83d8a3 max_abs=6.45496145e-08
+ROUND 4 candidate=1 median_us=234.00292 CHECK layers=168 channels=0 taps=4 tokens=1 seq=1 hash=4395bc3b3e83d8a3 max_abs=6.45496145e-08
+ROUND 5 candidate=1 median_us=233.92625 CHECK layers=168 channels=0 taps=4 tokens=1 seq=1 hash=4395bc3b3e83d8a3 max_abs=6.45496145e-08
+ROUND 5 candidate=0 median_us=571.88375 CHECK layers=168 channels=0 taps=4 tokens=1 seq=1 hash=4395bc3b3e83d8a3 max_abs=6.45496145e-08
+ROUND 6 candidate=0 median_us=504.08167 CHECK layers=168 channels=0 taps=4 tokens=1 seq=1 hash=4395bc3b3e83d8a3 max_abs=6.45496145e-08
+ROUND 6 candidate=1 median_us=276.0675 CHECK layers=168 channels=0 taps=4 tokens=1 seq=1 hash=4395bc3b3e83d8a3 max_abs=6.45496145e-08
+{
+  "args": [
+    "168",
+    "0",
+    "4",
+    "1",
+    "1",
+    "100"
+  ],
+  "baseline_us": [
+    560.95167,
+    426.18458,
+    431.57041,
+    428.72625,
+    431.83,
+    571.88375,
+    504.08167
+  ],
+  "candidate_us": [
+    386.435,
+    235.26833,
+    237.86916,
+    232.81458,
+    234.00292,
+    233.92625,
+    276.0675
+  ],
+  "paired_speedup": [
+    1.4516067902752081,
+    1.8114829990079837,
+    1.8143184681864601,
+    1.8414922725200458,
+    1.8454043223050378,
+    2.444718153691601,
+    1.8259363018102457
+  ],
+  "median_speedup": 1.8259363018102457,
+  "median_saving_us": 195.91167
+}
+Released GPU benchmark lock: pid=39516

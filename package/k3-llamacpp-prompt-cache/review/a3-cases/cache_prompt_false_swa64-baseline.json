@@ -1,0 +1,28 @@
+{
+ "obs": [
+  [
+   0,
+   300
+  ],
+  [
+   0,
+   330
+  ],
+  [
+   0,
+   350
+  ],
+  [
+   0,
+   350
+  ],
+  [
+   0,
+   350
+  ]
+ ],
+ "extra": {},
+ "deviations": {
+  "extension after an uncached request": 0.0
+ }
+}

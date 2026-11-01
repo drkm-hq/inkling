@@ -1,0 +1,17 @@
+[03:23:41] mlx_lm 0.1.dev8+gcce083427 (<workdir>/upstream/mlx-lm-a2/mlx_lm/__init__.py, head 963f755 A2 review: exercise filter/extract/extend in the BatchGenerator test): lazy load 2.1s, chunked eval 6.7s, 82.4 GiB, active 82.4 GiB
+[03:23:41] run p_short_raw: 226 prompt tokens, teacher forced on the mlx-vlm 0.7.11 tokens of hold 2
+[03:23:50]   vs reference logprobs (K2-logprobs-mlx_vlm): KL mean 0.0446 median 0.0036 max 1.2949 (step 111); |dlogprob| top-1 mean 0.0972 max 3.0435; top-1 agreement 94.5%
+[03:23:50]   argmax agrees with the fed tokens at 121/128 steps; prefill 0.6s, decode 8.0s (15.9 tok/s), min margin 0.125
+[03:23:50] run p_2k_raw: 2072 prompt tokens, teacher forced on the mlx-vlm 0.7.11 tokens of hold 2
+[03:23:57]   dumped step 45 (fed token 25 at position 2117) -> mlx_lm_p_2k_raw_step045.npz
+[03:23:57]   dumped step 46 (fed token 623 at position 2118) -> mlx_lm_p_2k_raw_step046.npz
+[03:23:57]   dumped step 47 (fed token 101829 at position 2119) -> mlx_lm_p_2k_raw_step047.npz
+[03:23:58]   dumped step 48 (fed token 382 at position 2120) -> mlx_lm_p_2k_raw_step048.npz
+[03:24:01]   vs reference logprobs (K2-logprobs-mlx_vlm): KL mean 0.0552 median 0.0085 max 1.3895 (step 16); |dlogprob| top-1 mean 0.0879 max 1.3789; top-1 agreement 95.3%
+[03:24:01]   argmax agrees with the fed tokens at 122/128 steps; prefill 5.3s, decode 5.9s (21.5 tok/s), min margin 0.000
+[03:24:01] run p_8k_raw: 8218 prompt tokens, teacher forced on the mlx-vlm 0.7.11 tokens of hold 2
+[03:24:24]   vs reference logprobs (K2-logprobs-mlx_vlm): KL mean 0.0188 median 0.0000 max 0.5119 (step 8); |dlogprob| top-1 mean 0.0542 max 0.9258; top-1 agreement 98.4%
+[03:24:24]   argmax agrees with the fed tokens at 126/128 steps; prefill 15.4s, decode 7.0s (18.2 tok/s), min margin 0.000
+[03:25:38] p_32k chat (effort none): 32807 tokens, TTFT 73.4s (447 tok/s), 17 tokens at 29.2 tok/s, peak 90.1 GiB, answer_ok=True, finish=stop
+[03:25:38]   text: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>'
+[03:25:38] wrote <workdir>/package/k2-mlx-lm-inkling/review/a2-forced-mlx_lm.json

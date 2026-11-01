@@ -1,0 +1,80 @@
+From fc5504f0f9de6dcf2c9dd529453f413f34ccf7d3 Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Wed, 28 Oct 2026 22:55:17 -0400
+Subject: [PATCH 9/9] Inkling: keep the dense MLP output scale in the
+ activation dtype
+
+InklingDenseMLP multiplied its output by global_scale as stored. The
+reference checkpoint keeps that scalar in float32, and MLX type promotion
+then lifts the layer output, the residual stream, and every later layer to
+float32: each bf16 weight (attention, lm_head) is upcast per call and the
+step runs about five times slower (measured 4.4 -> 23.7 ms per token on a
+three-layer model). The mlx-community conversions happen to store the
+scalar in bf16, which is why this was latent. The scale is now cast to the
+activation dtype when the two differ, which is free when they match. The
+MTP drafter's dense blocks reuse this class. The test checks the output
+dtype with an fp32 scale in bf16 and fp16, equality with a native-dtype
+scale, and that the whole model keeps its dtype end to end.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ mlx_vlm/models/inkling/language.py      |  7 ++++++-
+ mlx_vlm/tests/test_inkling_fast_path.py | 27 +++++++++++++++++++++++++
+ 2 files changed, 33 insertions(+), 1 deletion(-)
+
+diff --git a/mlx_vlm/models/inkling/language.py b/mlx_vlm/models/inkling/language.py
+index 82beafd..d248556 100644
+--- a/mlx_vlm/models/inkling/language.py
++++ b/mlx_vlm/models/inkling/language.py
+@@ -506,7 +506,12 @@ class InklingDenseMLP(SwiGLUMLP):
+         self.global_scale = mx.ones((1,))
+ 
+     def __call__(self, x):
+-        return super().__call__(x) * self.global_scale
++        scale = self.global_scale
++        if scale.dtype != x.dtype:
++            # An fp32 scalar (the reference checkpoint stores one) would
++            # promote the residual stream, and every later layer, to fp32.
++            scale = scale.astype(x.dtype)
++        return super().__call__(x) * scale
+ 
+ 
+ class InklingSwitchGLU(SwitchGLU):
+diff --git a/mlx_vlm/tests/test_inkling_fast_path.py b/mlx_vlm/tests/test_inkling_fast_path.py
+index 826c92a..d31bae8 100644
+--- a/mlx_vlm/tests/test_inkling_fast_path.py
++++ b/mlx_vlm/tests/test_inkling_fast_path.py
+@@ -422,3 +422,30 @@ def test_logits_to_keep_limits_the_head_only():
+         model(ids, cache=model.make_cache(), skip_logits=True, logits_to_keep=1).logits
+         is None
+     )
++
++
++# ------------------------------------------------- dense MLP scale dtype (H1)
++
++
++@pytest.mark.parametrize("dtype", [mx.bfloat16, mx.float16])
++def test_dense_mlp_scale_keeps_the_activation_dtype(dtype):
++    config = tiny_config()
++    mx.random.seed(3)
++    mlp = lang.InklingDenseMLP(config)
++    mlp.set_dtype(dtype)
++    mlp.global_scale = mx.array([1.5], dtype=mx.float32)
++    x = mx.random.normal((1, 3, 32)).astype(dtype)
++    out = mlp(x)
++    assert out.dtype == dtype
++    native = lang.InklingDenseMLP(config)
++    native.update(mlp.parameters())
++    native.global_scale = mx.array([1.5], dtype=dtype)
++    assert mx.array_equal(out, native(x)).item()
++
++    # End to end: an fp32 scale in a dense layer must not promote the stream.
++    model = tiny_model()
++    model.set_dtype(dtype)
++    model.model.layers[0].mlp.global_scale = mx.array([1.0], dtype=mx.float32)
++    out = model(tokens(6), cache=model.make_cache(), return_hidden=True)
++    assert out.hidden_states[-1].dtype == dtype
++    assert out.logits.dtype == dtype
+-- 
+2.55.0
+

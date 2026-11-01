@@ -1,0 +1,113 @@
+bringing up nodes...
+bringing up nodes...
+
+.......................uuuuuu........................................... [  1%]
+..................................ss.................................... [  2%]
+........................................................................ [  4%]
+........................................................................ [  5%]
+........................................................................ [  6%]
+........................................................................ [  8%]
+........................................................................ [  9%]
+........................................................................ [ 11%]
+........................................................................ [ 12%]
+........................................................................ [ 13%]
+........................................................................ [ 15%]
+........................................................................ [ 16%]
+...............................uu.uuuuuuuuu.uuu......................... [ 17%]
+........................................................................ [ 19%]
+........................................................................ [ 20%]
+........................................................................ [ 21%]
+........................................................................ [ 23%]
+...........................................................uuu...uuuuuu. [ 24%]
+.uuuuuu.uuuuuu.uuu...uu..uuuuuuuuuuuuuuuu.uuuu..uuuu..uuu.....uuuuu.uuu. [ 24%]
+.uuuuu....uuuu..uuu.uuuuuuuuu.uu.uuuuuu.uuuuuuuu.uuuuu.uuuu............. [ 25%]
+..uuuuuuuu.uuuuuuuu...........u....uu..uuuuuuuuu.....uu................. [ 26%]
+..................................F..................................... [ 27%]
+........................................................................ [ 28%]
+.......................................................F................ [ 30%]
+........................................................................ [ 31%]
+........................................................................ [ 33%]
+..................................ssuu..uuuuuuu.....................s... [ 34%]
+........................................................................ [ 35%]
+........................................................................ [ 37%]
+........................................................................ [ 38%]
+........................................................uuuuuu.uuu.uuuu. [ 39%]
+...........................................................uu........... [ 41%]
+............uuu.uuu.uuuu...uuuuuuuuuuuu...uuuuu.uu.uuuuuuuuu..uuu.uu.uu. [ 41%]
+uuuuuu.uuuu............................................................. [ 42%]
+................s.........................
+=================================== FAILURES ===================================
+_____ test_model_cache_contract[ArraysCache+KVCache+SlidingWindowKVCache] ______
+[gw0] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+names = ('ArraysCache', 'KVCache', 'SlidingWindowKVCache')
+managers = <function managers.<locals>.make at 0x138e28180>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x152ad6840>
+
+    @parametrize("names", discover_contracts(), ids=lambda names: "+".join(names))
+    def test_model_cache_contract(names, managers, monkeypatch):
+        monkeypatch.setenv("APC_CHECKPOINT_ENTRIES", "2")
+        for name in names:
+>           cache = sample(name)
+                    ^^^^^^^^^^^^
+
+mlx_vlm/tests/test_cache.py:1892: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'SlidingWindowKVCache', length = 0
+
+    def sample(name, length=0):
+        constructors = {
+            "ArraysCache": lambda: C.ArraysCache(2),
+            "CacheList": lambda: C.CacheList(
+                sample("KVCache", length), sample("ArraysCache", length)
+            ),
+            "ChunkedKVCache": lambda: C.ChunkedKVCache(8),
+            "DeepseekV41Cache": lambda: DeepseekV41Cache(1),
+            "PoolingCache": lambda: C.PoolingCache(2),
+            "RingSlidingKVCache": lambda: RingSlidingKVCache(max(16, length)),
+            "RotatingKVCache": lambda: C.RotatingKVCache(max(16, length * 2)),
+            "StaticPrefixKVCache": lambda: C.StaticPrefixKVCache(max(16, length)),
+        }
+>       cache = constructors.get(name, getattr(C, name, globals().get(name)))()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: SlidingWindowKVCache.__init__() missing 1 required positional argument: 'max_size'
+
+mlx_vlm/tests/test_cache.py:1815: TypeError
+_______ test_precomputed_semantic_hash_reuses_actual_growing_apc_prefix ________
+[gw2] darwin -- Python 3.12.14 ~/.venvs/inkling/bin/python
+
+    def test_precomputed_semantic_hash_reuses_actual_growing_apc_prefix():
+        manager = apc_module.APCManager(num_blocks=4, block_size=4)
+        manager.exact_cache_guard_tokens = 1
+        semantic_hash = 7088136067003016882
+        short_tokens = list(range(8))
+        extended_tokens = [*short_tokens, 8, 9]
+        layer_keys = [mx.ones((1, 1, len(short_tokens), 2))]
+        layer_values = [mx.ones((1, 1, len(short_tokens), 2)) * 2]
+    
+        stored = manager.store_kv_blocks(
+            short_tokens, layer_keys, layer_values, extra_hash=semantic_hash
+        )
+        manager.release(stored)
+    
+        batch_generator = object.__new__(BatchGenerator)
+        batch_generator.apc_manager = manager
+        batch_generator.apc_mode = "block"
+        batch_generator.model = SimpleNamespace(config=SimpleNamespace())
+        batch_generator._wire_stack = None
+    
+        pick = batch_generator._apc_pick_for(
+            (1, extended_tokens, 1, {"_apc_semantic_hash": semantic_hash}, [], None)
+        )
+    
+>       assert pick is not None
+E       assert None is not None
+
+mlx_vlm/tests/test_generate.py:1521: AssertionError
+=========================== short test summary info ============================
+FAILED mlx_vlm/tests/test_cache.py::test_model_cache_contract[ArraysCache+KVCache+SlidingWindowKVCache]
+FAILED mlx_vlm/tests/test_generate.py::test_precomputed_semantic_hash_reuses_actual_growing_apc_prefix
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 2 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!! xdist.dsession.Interrupted: stopping after 1 failures !!!!!!!!!!!!!
+2 failed, 2246 passed, 6 skipped, 236 subtests passed in 545.41s (0:09:05)

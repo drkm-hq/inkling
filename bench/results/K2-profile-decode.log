@@ -1,0 +1,32 @@
+[03:23:03] context 525 tokens, load1 6.6
+[03:23:03] whole decode step (model forward, 1 token, cache full):
+[03:23:04]   model(y, cache)                                              50.662 ms  (best 49.255)
+[03:23:04] head and layer kinds (chained x10):
+[03:23:06]   final norm + /16 + unembed + slice                            7.260 ms  (best 4.741)
+[03:23:06]   sliding MoE layer (x10, cache grows)                          1.993 ms  (best 1.674)
+[03:23:07]   global MoE layer (x10)                                        1.242 ms  (best 1.126)
+[03:23:07]   dense sliding layer 0 (x10)                                   1.091 ms  (best 0.935)
+[03:23:07]   => 33 sliding MoE + 7 global MoE + 2 dense = 76.6 ms of 50.7 ms per step
+[03:23:07] inside one sliding MoE layer (chained x10):
+[03:23:07]   attn_norm                                                     0.037 ms  (best 0.027)
+[03:23:07]   qkvr_proj GEMV [4096 -> 6656] bf16                            0.118 ms  (best 0.109)
+[03:23:07]   kv short conv kernel (2048 ch)                                0.045 ms  (best 0.039)
+[03:23:07]   q_norm + k_norm                                               0.042 ms  (best 0.025)
+[03:23:07]   RotatingKVCache.update_and_fetch (k and v)                    0.040 ms  (best 0.026)
+[03:23:07]   rel matmul [32,16]@[16,512] + gather                          0.057 ms  (best 0.047)
+[03:23:07]   SDPA (32q/8kv heads, 512 keys, additive mask)                 0.053 ms  (best 0.033)
+[03:23:07]   wo_ud GEMV [4096 -> 4096] bf16                                0.070 ms  (best 0.068)
+[03:23:07]   attn_sconv kernel with residual (4096 ch)                     0.044 ms  (best 0.038)
+[03:23:07]   mlp_norm                                                      0.039 ms  (best 0.025)
+[03:23:07]   router GEMV fp32 [4096 -> 258]                                0.044 ms  (best 0.037)
+[03:23:07]   route kernel (top-6 + softmax)                                0.048 ms  (best 0.039)
+[03:23:07]   experts SwitchGLU (8 experts: 3 gather_qmm 2-bit + swiglu)    0.316 ms  (best 0.272)
+[03:23:07]   weighted sum of the 6 routed expert outputs                   0.051 ms  (best 0.042)
+[03:23:07]   shared experts dense (3 quantized GEMV + swiglu)              0.134 ms  (best 0.124)
+[03:23:07]   MoE block total (mlp(x))                                      0.562 ms  (best 0.424)
+[03:23:07]   mlp_sconv kernel with residual (4096 ch)                      0.043 ms  (best 0.035)
+[03:23:07] decode loops over 64 tokens after the p_short prefill:
+[03:23:12]   generate_step (async_eval pipelined)                          20.94 tok/s
+[03:23:16]   synchronous mx.eval per token                                 20.32 tok/s
+[03:23:22]   generate_step (async_eval pipelined)                          15.78 tok/s
+[03:23:22] done

@@ -1,0 +1,63 @@
+commit 2dee8b49591fd63dc6d91f6b7a268c050bed4997
+Author: Nick Alonso <nick@drkm.com>
+Date:   Thu Oct 29 02:15:20 2026 -0400
+
+tests : banded flash attention tolerance for the CUDA MMA kernel
+
+0002 set the banded cases to NMSE 1e-6 from the Metal kernels (f32
+accumulators, ~1e-8). The CUDA MMA kernel accumulates VKQ in f16: on an
+H100, 25 of the 85 cases (every f16 prefill case with n_q >= 512 and
+n_kv > 1024) measure 1.1e-6 .. 4.2e-5, all decode and small-batch cases
+stay under 1e-6. Bound: 1e-4 up to 8192 keys, 5e-4 above, bf16 1e-4.
+
+Assisted-by: Claude Fable 5.1
+
+
+ tests/test-backend-ops.cpp | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+commit c8664aef455010f23655bec96669952d338d46c7
+Author: Nick Alonso <nick@drkm.com>
+Date:   Thu Oct 29 01:13:12 2026 -0400
+
+ggml : q_offset for the banded flash attention (proposal for #25731)
+
+ggml_flash_attn_ext_banded takes the kv index of the first query
+(op_params[5]) instead of deriving it from n_kv - n_q. CPU reads it, the
+CUDA scalar kernel takes it as an argument, the CUDA MMA path carries it in
+its unused m0 slot, Metal reads it. The model passes the cache's 256-padded
+views and the raw KQ mask with q_offset = pos_max + 1 - n_tokens. Tests:
+padded KV and non-tail offsets. CUDA part not compiled here.
+
+Assisted-by: Claude Fable 5.1
+
+
+ ggml/include/ggml.h                    |  7 ++--
+ ggml/src/ggml-cpu/ops.cpp              |  7 ++--
+ ggml/src/ggml-cuda/fattn-banded.cu     |  8 +++--
+ ggml/src/ggml-cuda/fattn-common.cuh    | 12 ++++---
+ ggml/src/ggml-cuda/fattn-mma-f16.cuh   | 25 +++++++-------
+ ggml/src/ggml-metal/ggml-metal-ops.cpp |  8 +++--
+ ggml/src/ggml.c                        |  6 +++-
+ src/models/inkling.cpp                 | 26 ++++-----------
+ tests/test-backend-ops.cpp             | 60 ++++++++++++++++++++++++----------
+ tests/test-flash-attn-bias.cpp         |  4 +--
+ 10 files changed, 100 insertions(+), 63 deletions(-)
+commit 88732272f050de11a15391edb4bc8ad5b0d1eece
+Author: Nick Alonso <nick@drkm.com>
+Date:   Thu Oct 29 01:10:11 2026 -0400
+
+tests : banded flash attention cases
+
+The helper gains a sliding window independent of the band, a batch
+dimension with a shared or per-batch table, the n_kv_max hint and input
+magnitudes. Cases at the Inkling-Small geometry (32/8 heads x 128, E 1024
+and 512) for every kernel family: block boundaries, band edges, no mask,
+window, heads, KV and table types, batch, strided rows, 1M keys; perf cases
+next to the plain op. The tolerance follows the measured f32-accumulated
+error (1e-6 for f16/f32/quantized KV, 1e-4 for bf16 KV and 1M keys).
+
+Assisted-by: Claude Fable 5.1
+
+
+ tests/test-backend-ops.cpp | 152 ++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 128 insertions(+), 24 deletions(-)

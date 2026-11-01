@@ -1,0 +1,34 @@
+{
+ "obs": [
+  [
+   0,
+   300
+  ],
+  [
+   300,
+   30
+  ],
+  [
+   329,
+   1
+  ],
+  [
+   320,
+   10
+  ],
+  [
+   249,
+   1
+  ]
+ ],
+ "extra": {
+  "log_forcing_full": 0,
+  "log_checkpoint_lines": 0
+ },
+ "deviations": {
+  "dense extension": 0.014182806015014648,
+  "dense identical": 0.014654397964477539,
+  "dense rewind": 0.0059125423431396484,
+  "dense shrink": 0.0013068914413452148
+ }
+}

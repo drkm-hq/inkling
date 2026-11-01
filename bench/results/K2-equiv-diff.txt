@@ -1,0 +1,37 @@
+A = mlx_vlm 0.7.11 | B = mlx_lm 0.1.dev1+g1f7057ca5 | mlx 0.32.4
+p_short_raw          prompt    226 tok: DIVERGE at step 0 (A 30985 vs B 730); agree on 0 tokens before
+   A top-8: [(30985, 22.125), (730, 21.125), (623, 20.375), (17045, 18.25), (23963, 17.375), (357, 16.875), (1328, 16.625), (1202, 16.375)]
+   A: chosen 30985 logit 22.1250, the other's token 730 logit 21.1250, gap 1.0000
+   B top-8: [(730, 21.25), (30985, 21.25), (623, 21.0), (17045, 17.875), (23963, 17.625), (357, 16.875), (1328, 16.75), (637, 16.25)]
+   B: chosen 730 logit 21.2500, the other's token 30985 logit 21.2500, gap 0.0000
+   text A: " Answer\n\nWe need answer: The narrator is Ishmael; the ship is the Pequod. But let's craft: The narrator is Ishmael, and the ship is the Pequod (though 'the ship"
+   text B: " In\n\nAnswer: In one sentence, who is Ishmael? What is the name of the ship? Answer: In\n\nWe need to parse the user's request. They provide a list of chapter titl"
+p_2k_raw             prompt   2072 tok: DIVERGE at step 13 (A 364 vs B 13); agree on 13 tokens before
+   A top-8: [(364, 23.625), (13, 23.25), (11, 21.125), (26, 20.875), (350, 20.875), (73676, 19.5), (30, 19.375), (6635, 19.0)]
+   A: chosen 364 logit 23.6250, the other's token 13 logit 23.2500, gap 0.3750
+   B top-8: [(13, 23.375), (364, 23.375), (350, 21.5), (11, 20.625), (26, 20.5), (73676, 19.125), (6635, 18.25), (8582, 18.125)]
+   B: chosen 13 logit 23.3750, the other's token 364 logit 23.3750, gap 0.0000
+   text A: ' The narrator is Ishmael, and the ship is the Pequod.\n\nAnswer: The narrator is Ishmael, and the ship is Pequod.\n\nAnswer: The narrator is Ishmael; the ship is th'
+   text B: ' The narrator is Ishmael, and the ship is the Pequod. \n\nQuestion: Based on the table of contents above, Based on the table of contents aboveBased on the table o'
+p_8k_raw             prompt   8218 tok: DIVERGE at step 11 (A 290 vs B 13808); agree on 11 tokens before
+   A top-8: [(290, 26.875), (13808, 26.75), (261, 23.25), (1008, 21.25), (1232, 21.25), (1001, 20.75), (11484, 20.375), (11575, 19.75)]
+   A: chosen 290 logit 26.8750, the other's token 13808 logit 26.7500, gap 0.1250
+   B top-8: [(13808, 26.875), (290, 26.75), (261, 23.0), (1008, 21.25), (1232, 20.875), (1001, 20.625), (11484, 20.5), (2161, 20.125)]
+   B: chosen 13808 logit 26.8750, the other's token 290 logit 26.7500, gap 0.1250
+   text A: ' The narrator is Ishmael, and the Pequod is the ship mentioned (from Moby Dick).<|end_message|><|message_model|><|content_thinking|>The user asks: "Question: In'
+   text B: ' The narrator is Ishmael, and the Pequod is mentioned later; but for this chapter, the ship is not named yet—actually the first chapter just introduces Ishmael '
+p_short_chat_none    prompt    239 tok: DIVERGE at step 17 (A 200004 vs B 976); agree on 17 tokens before
+   A top-8: [(200004, 21.875), (976, 21.125), (1385, 19.75), (28326, 18.125), (16, 17.375), (19048, 17.25), (2167, 17.125), (40, 17.0)]
+   A: chosen 200004 logit 21.8750, the other's token 976 logit 21.1250, gap 0.7500
+   B top-8: [(976, 21.25), (200004, 21.0), (28326, 18.125), (1385, 18.0), (2167, 17.625), (40, 17.5), (637, 17.25), (19048, 17.125)]
+   B: chosen 976 logit 21.2500, the other's token 200004 logit 21.0000, gap 0.2500
+   text A: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narr'
+   text B: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>The user asks: "In one sentence, who is the nar'
+p_short_chat_low     prompt    241 tok: DIVERGE at step 5 (A 623 vs B 6960); agree on 5 tokens before
+   A top-8: [(623, 28.625), (6960, 28.125), (11410, 25.375), (88495, 24.875), (7744, 23.125), (730, 23.0), (52762, 22.875), (1225, 22.125)]
+   A: chosen 623 logit 28.6250, the other's token 6960 logit 28.1250, gap 0.5000
+   B top-8: [(6960, 28.25), (623, 27.875), (11410, 25.375), (88495, 24.5), (7744, 22.625), (52762, 22.125), (1225, 22.0), (730, 21.875)]
+   B: chosen 6960 logit 28.2500, the other's token 623 logit 27.8750, gap 0.3750
+   text A: '<|content_thinking|>We need answer: The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" The text i'
+   text B: "<|content_thinking|>We need answer: likely Moby Dick? The chapters listed are from Moby Dick by Herman Melville. Narrator is Ishmael? The ship is Pequod? Let's "
+RESULT: divergence found

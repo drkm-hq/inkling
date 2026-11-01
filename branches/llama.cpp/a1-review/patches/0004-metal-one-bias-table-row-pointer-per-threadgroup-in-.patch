@@ -1,0 +1,94 @@
+From 90290efad5f558ecaef4fcfbf8f38fed89749203 Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Wed, 28 Oct 2026 23:21:46 -0400
+Subject: [PATCH 4/7] metal : one bias-table row pointer per threadgroup in the
+ banded kernels
+
+The half8x8 and tensor kernels kept one bias row pointer per query row
+(NQ pointers live across the whole KV loop); keep the head/batch base
+pointer only and add the query row where the bias is read, as the vec
+kernel does. Fewer live registers, 6 lines shorter per kernel.
+
+Measured back to back in the same window (test-backend-ops perf, Inkling
+geometry, GPU shared with other jobs): 512 x 2K/8K prefill 1.80 -> 1.69 ms
+and 15.4 -> 11.8 ms, decode 1 x 2K/8K 63 -> 53 us and 200 -> 175 us, 32K
+within noise. test-backend-ops: 26/26 banded cases OK against the CPU
+reference.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ ggml/src/ggml-metal/kernels/fa_common.metal | 16 +++++++---------
+ ggml/src/ggml-metal/kernels/fa_tensor.metal | 12 ++++--------
+ 2 files changed, 11 insertions(+), 17 deletions(-)
+
+diff --git a/ggml/src/ggml-metal/kernels/fa_common.metal b/ggml/src/ggml-metal/kernels/fa_common.metal
+index 188e2beb5..f57c03fb3 100644
+--- a/ggml/src/ggml-metal/kernels/fa_common.metal
++++ b/ggml/src/ggml-metal/kernels/fa_common.metal
+@@ -122,15 +122,11 @@ void kernel_flash_attn_ext_impl(
+         pm2[jj] = (device const half2 *) ((device const char *) mask + (iq1 + j)*args.nb31 + (iq2%args.ne32)*args.nb32 + (iq3%args.ne33)*args.nb33);
+     }
+ 
+-    // per-query rows of the relative-position bias table (banded flash attention)
+-    device const char * prel[NQ];
++    // rows of the relative-position bias table for this head (banded flash attention); the query row is added per use
++    device const char * prel = rel;
+ 
+     if (FC_flash_attn_ext_has_rel) {
+-        FOR_UNROLL (short jj = 0; jj < NQ; ++jj) {
+-            const short j = jj*NSG + sgitg;
+-
+-            prel[jj] = rel + (iq1 + j)*args.nb_rel2 + iq2*args.nb_rel1 + (iq3%args.ne_rel3)*args.nb_rel3;
+-        }
++        prel += iq2*args.nb_rel1 + (iq3%args.ne_rel3)*args.nb_rel3;
+     }
+ 
+     {
+@@ -448,11 +444,13 @@ void kernel_flash_attn_ext_impl(
+                 if (has_rel_blk && iq1 + j < args.ne01) {
+                     const int d0 = iq1 + j + args.q_off - (ick + 2*tiisg);
+ 
++                    device const char * prelj = prel + (iq1 + j)*args.nb_rel2;
++
+                     if (d0 >= 0 && d0 < args.ne_rel0) {
+-                        s2[0] += fa_rel_load(prel[jj], d0, FC_flash_attn_ext_rel_type);
++                        s2[0] += fa_rel_load(prelj, d0, FC_flash_attn_ext_rel_type);
+                     }
+                     if (d0 - 1 >= 0 && d0 - 1 < args.ne_rel0) {
+-                        s2[1] += fa_rel_load(prel[jj], d0 - 1, FC_flash_attn_ext_rel_type);
++                        s2[1] += fa_rel_load(prelj, d0 - 1, FC_flash_attn_ext_rel_type);
+                     }
+                 }
+ 
+diff --git a/ggml/src/ggml-metal/kernels/fa_tensor.metal b/ggml/src/ggml-metal/kernels/fa_tensor.metal
+index a43fc32ab..bafbb967a 100644
+--- a/ggml/src/ggml-metal/kernels/fa_tensor.metal
++++ b/ggml/src/ggml-metal/kernels/fa_tensor.metal
+@@ -87,15 +87,11 @@ kernel void kernel_flash_attn_ext_tensor(
+         pm[jj] = (device const half *) (mask + (iq1 + j)*args.nb31 + (iq2%args.ne32)*args.nb32 + (iq3%args.ne33)*args.nb33);
+     }
+ 
+-    // per-query rows of the relative-position bias table (banded flash attention)
+-    device const char * prel[NQ];
++    // rows of the relative-position bias table for this head (banded flash attention); the query row is added per use
++    device const char * prel = rel;
+ 
+     if (FC_flash_attn_ext_tensor_has_rel) {
+-        FOR_UNROLL (short jj = 0; jj < NQ; ++jj) {
+-            const short j = jj*NSG + sgitg;
+-
+-            prel[jj] = rel + (iq1 + j)*args.nb_rel2 + iq2*args.nb_rel1 + (iq3%args.ne_rel3)*args.nb_rel3;
+-        }
++        prel += iq2*args.nb_rel1 + (iq3%args.ne_rel3)*args.nb_rel3;
+     }
+ 
+     {
+@@ -204,7 +200,7 @@ kernel void kernel_flash_attn_ext_tensor(
+                     const int d = iq1 + j + args.q_off - (ic + ii*NW + tiisg);
+ 
+                     if (d >= 0 && d < args.ne_rel0) {
+-                        s[ii] += fa_rel_load(prel[jj], d, FC_flash_attn_ext_tensor_rel_type);
++                        s[ii] += fa_rel_load(prel + (iq1 + j)*args.nb_rel2, d, FC_flash_attn_ext_tensor_rel_type);
+                     }
+                 }
+             }

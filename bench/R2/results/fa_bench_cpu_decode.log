@@ -1,0 +1,13 @@
+# started 2026-10-29T01:54:36Z
+RESULT backend=CPU variant=banded n_q=1 n_kv=8192 swa=0 extent=1024 threads=6 pool=0 nodes=7 compute_MiB=0.0 us_mean=27285.1 us_min=20147.7 gflops=6.7
+RESULT backend=CPU variant=banded n_q=1 n_kv=8192 swa=0 extent=1024 threads=6 pool=1 nodes=7 compute_MiB=0.0 us_mean=100349.9 us_min=26045.5 gflops=5.2
+RESULT backend=CPU variant=banded n_q=1 n_kv=8192 swa=0 extent=1024 threads=12 pool=0 nodes=7 compute_MiB=0.0 us_mean=75820.1 us_min=20104.7 gflops=6.7
+RESULT backend=CPU variant=banded n_q=1 n_kv=8192 swa=0 extent=1024 threads=12 pool=1 nodes=7 compute_MiB=0.0 us_mean=60836.6 us_min=14307.2 gflops=9.4
+RESULT backend=CPU variant=banded n_q=1 n_kv=8192 swa=0 extent=1024 threads=18 pool=0 nodes=7 compute_MiB=0.0 us_mean=46019.9 us_min=15648.6 gflops=8.6
+RESULT backend=CPU variant=banded n_q=1 n_kv=8192 swa=0 extent=1024 threads=18 pool=1 nodes=7 compute_MiB=0.0 us_mean=102293.3 us_min=43681.9 gflops=3.1
+RESULT backend=CPU variant=banded n_q=1 n_kv=2048 swa=0 extent=1024 threads=12 pool=1 nodes=7 compute_MiB=0.0 us_mean=29293.8 us_min=8618.0 gflops=3.9
+RESULT backend=CPU variant=banded n_q=1 n_kv=32768 swa=0 extent=1024 threads=12 pool=1 nodes=7 compute_MiB=0.0 us_mean=151349.8 us_min=90382.8 gflops=5.9
+RESULT backend=CPU variant=banded n_q=1 n_kv=768 swa=512 extent=1024 threads=12 pool=1 nodes=7 compute_MiB=0.0 us_mean=11956.1 us_min=1819.8 gflops=6.9
+RESULT backend=CPU variant=banded n_q=1 n_kv=768 swa=512 extent=1024 threads=12 pool=0 nodes=7 compute_MiB=0.0 us_mean=10664.6 us_min=4452.0 gflops=2.8
+RESULT backend=CPU variant=banded n_q=512 n_kv=8192 swa=0 extent=1024 threads=18 pool=1 nodes=7 compute_MiB=8.0 us_mean=8098476.9 us_min=6100761.0 gflops=11.3
+# finished 2026-10-29T01:55:32Z

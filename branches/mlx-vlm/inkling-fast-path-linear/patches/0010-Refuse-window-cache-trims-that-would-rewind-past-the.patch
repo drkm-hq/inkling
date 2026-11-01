@@ -1,0 +1,154 @@
+From 67182ab753b5496d2779dd783347640e0fb51c25 Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Thu, 29 Oct 2026 03:19:44 -0400
+Subject: [PATCH 10/11] Refuse window-cache trims that would rewind past the
+ compaction slack
+
+SlidingWindowKVCache.trim rolled the offset back by any amount while
+is_trimmable() stayed True, so a trim deeper than the keys compaction had
+already dropped would leave the next query fewer than max_size - 1 old keys
+and silently narrow the window (today only dispatch._cache_fully_retained
+keeps callers away from that case). trim now raises ValueError when the
+cache has evicted and n exceeds the retained slack (_idx - (max_size - 1)),
+and the batch form does the same on its shared column timeline; a cache that
+never evicted can still be trimmed to any depth. The batch class docstring
+also states that during a right-padded prompt the whole prompt is kept and
+the window bound applies from the first update after finalize(). Tests assert
+window coverage after an in-slack trim, the refusal past the slack for both
+forms, and the unevicted case.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ mlx_vlm/models/cache.py                    | 30 ++++++++++++-
+ mlx_vlm/tests/test_sliding_window_cache.py | 51 +++++++++++++++++++---
+ 2 files changed, 73 insertions(+), 8 deletions(-)
+
+diff --git a/mlx_vlm/models/cache.py b/mlx_vlm/models/cache.py
+index 1b611df..56309ef 100644
+--- a/mlx_vlm/models/cache.py
++++ b/mlx_vlm/models/cache.py
+@@ -2392,6 +2392,20 @@ class SlidingWindowKVCache(BufferedRotatingKVCache):
+         self.offset += incoming
+         return self.keys[..., : self._idx, :], self.values[..., : self._idx, :]
+ 
++    def trim(self, n):
++        # Rolling back past the keys that compaction already dropped would
++        # leave the next query fewer than max_size - 1 old keys while
++        # is_trimmable() still reports True; refuse instead of narrowing the
++        # window silently. A cache that never evicted can trim to any depth.
++        n = min(int(n), self._idx, self.offset)
++        if self.start_position > 0 and n > self._idx - (self.max_size - 1):
++            raise ValueError(
++                f"SlidingWindowKVCache.trim({n}) would rewind past the window: "
++                f"only {max(0, self._idx - (self.max_size - 1))} of the retained "
++                f"{self._idx} keys are slack, the rest were kept for the next query"
++            )
++        return super().trim(n)
++
+     def to_batch(self, left_padding: List[int]):
+         return BatchSlidingWindowKVCache(
+             self.max_size, left_padding, buffer_size=self.buffer_size
+@@ -2421,7 +2435,9 @@ class BatchSlidingWindowKVCache(BatchKVCache):
+     compacted by dropping the leading columns no row can see any more, which
+     shifts ``left_padding`` with them (a negative value means the padding was
+     evicted). Compaction waits while right padding is pending, so
+-    ``finalize`` can roll the padded rows into place first.
++    ``finalize`` can roll the padded rows into place first: during a
++    right-padded prompt the whole prompt is kept (as with ``BatchKVCache``)
++    and the window bound applies from the first update after ``finalize``.
+     """
+ 
+     memory_profile = _windowed_memory_profile
+@@ -2469,6 +2485,18 @@ class BatchSlidingWindowKVCache(BatchKVCache):
+     def meta_state(self, v):
+         self.max_size, self.buffer_size, self.start_position = map(int, v)
+ 
++    def trim(self, n):
++        # Same guard as SlidingWindowKVCache.trim: never rewind past the
++        # columns compaction already dropped.
++        n = min(int(n), self._idx)
++        if self.start_position > 0 and n > self._idx - (self.max_size - 1):
++            raise ValueError(
++                f"BatchSlidingWindowKVCache.trim({n}) would rewind past the window: "
++                f"only {max(0, self._idx - (self.max_size - 1))} of the retained "
++                f"{self._idx} columns are slack"
++            )
++        return super().trim(n)
++
+     def extend(self, other):
+         if other.max_size != self.max_size:
+             raise ValueError(
+diff --git a/mlx_vlm/tests/test_sliding_window_cache.py b/mlx_vlm/tests/test_sliding_window_cache.py
+index c05dcb5..1f5f26d 100644
+--- a/mlx_vlm/tests/test_sliding_window_cache.py
++++ b/mlx_vlm/tests/test_sliding_window_cache.py
+@@ -82,13 +82,47 @@ def test_trim_rolls_back_like_the_reference():
+         cache.update_and_fetch(*kv([pos]))
+         reference.update_and_fetch(*kv([pos]))
+     assert cache.is_trimmable()
+-    assert cache.trim(4) == reference.trim(4) == 4
+-    assert cache.offset == reference.offset == 22
+-    for pos in range(22, 30):
++    # 20 tokens then 6 decodes: the compaction at 25 kept positions 18..,
++    # so one key of slack exists; trimming 1 keeps full coverage.
++    assert cache.start_position == 18 and cache._idx == 8
++    assert cache.trim(1) == reference.trim(1) == 1
++    assert cache.offset == reference.offset == 25
++    for pos in range(25, 33):
+         out_k, _ = cache.update_and_fetch(*kv([pos + 100]))
+         ref_k, _ = reference.update_and_fetch(*kv([pos + 100]))
+         n = out_k.shape[2]
+         assert positions_of(out_k) == positions_of(ref_k)[-n:]
++        assert n - 1 >= 7  # the query always sees its full window
++
++
++def test_trim_past_the_compaction_slack_is_refused():
++    cache = SlidingWindowKVCache(8, buffer_size=4)
++    cache.update_and_fetch(*kv(range(20)))
++    for pos in range(20, 26):
++        cache.update_and_fetch(*kv([pos]))
++    assert cache.start_position == 18 and cache._idx == 8
++    with pytest.raises(ValueError, match="rewind past the window"):
++        cache.trim(2)  # would leave the query at 24 with 6 old keys, not 7
++    assert cache.offset == 26 and cache._idx == 8  # untouched
++    out_k, _ = cache.update_and_fetch(*kv([26]))
++    assert positions_of(out_k) == [float(p) for p in range(18, 27)]
++
++    # A cache that never evicted can be trimmed to any depth (it is then a
++    # short context, like a prompt shorter than the window).
++    fresh = SlidingWindowKVCache(8, buffer_size=4)
++    fresh.update_and_fetch(*kv(range(6)))
++    assert fresh.trim(5) == 5 and fresh.offset == 1
++    out_k, _ = fresh.update_and_fetch(*kv([1]))
++    assert positions_of(out_k) == [0.0, 1.0]
++
++    batch = BatchSlidingWindowKVCache(8, [0, 0], buffer_size=4)
++    batch.update_and_fetch(*kv(range(20), batch=2))
++    for pos in range(20, 26):
++        batch.update_and_fetch(*kv([pos], batch=2))
++    assert batch.start_position == 18 and batch._idx == 8
++    assert batch.trim(1) == 1 and batch.offset.tolist() == [25, 25]
++    with pytest.raises(ValueError, match="rewind past the window"):
++        batch.trim(1)  # no slack left after the previous trim
+ 
+ 
+ def test_snapshot_round_trips_through_state_and_meta_state():
+@@ -204,11 +238,14 @@ def test_merge_extend_filter_and_trim():
+     merged.filter(mx.array([0, 3]))
+     assert merged.offset.tolist() == [14, 5]
+     assert _visible(merged, 0) == [float(p) for p in range(6, 14)]
+-    assert merged.trim(2) == 2
+-    assert merged.offset.tolist() == [12, 3]
++    # Row 0 compacted to positions 6..13 (one key of slack): trim 1 only.
++    with pytest.raises(ValueError, match="rewind past the window"):
++        merged.trim(2)
++    assert merged.trim(1) == 1
++    assert merged.offset.tolist() == [13, 4]
+     k, _ = merged.update_and_fetch(*kv([99], batch=2))
+-    assert _visible(merged, 0) == [float(p) for p in range(6, 12)] + [99.0]
+-    assert _visible(merged, 1) == [0.0, 1.0, 2.0, 1099.0]
++    assert _visible(merged, 0) == [float(p) for p in range(6, 13)] + [99.0]
++    assert _visible(merged, 1) == [0.0, 1.0, 2.0, 3.0, 1099.0]
+ 
+     with pytest.raises(ValueError):
+         merged.extend(BatchSlidingWindowKVCache(4, [0]))

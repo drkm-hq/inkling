@@ -1,0 +1,62 @@
+commit f98688c1cc1339d596430293483466910ceed2f9
+Author: Nick Alonso <nick@drkm.com>
+Date:   Thu Oct 29 03:26:06 2026 -0400
+
+Warn when kv_bits cannot apply to any of the model's caches
+
+maybe_quantize_kv_cache stayed silent for models whose per-layer cache has no
+to_quantized (CacheList models); the single-stream path now warns once.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ ACKNOWLEDGMENTS.md | 1 +
+ mlx_lm/generate.py | 7 +++++++
+ 2 files changed, 8 insertions(+)
+commit 848f954cbdac38f90c610436fa5fdb774a43dfe6
+Author: Nick Alonso <nick@drkm.com>
+Date:   Thu Oct 29 03:26:06 2026 -0400
+
+Test Inkling: tiny-config runner, banded mask vs numpy, sconv state, router, sanitize layouts, key_distances, batched prompts, CPU exactness
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ tests/test_inkling.py | 439 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ tests/test_models.py  |  33 ++++
+ 2 files changed, 472 insertions(+)
+commit 3f952a89a53da491110c8385ed4c03403d3583b6
+Author: Nick Alonso <nick@drkm.com>
+Date:   Thu Oct 29 03:26:06 2026 -0400
+
+Add Inkling (inkling_mm_model): hybrid sliding/global attention with a relative bias, short convs and a sigmoid-routed MoE
+
+Loads the mlx-community Inkling-Small checkpoints directly (model.llm.* paths)
+and the HF source layout (interleaved w13 de-interleave, conv axis swap, MTP /
+vision / audio weights dropped). q/k/v/r are one projection fused at load, k|v
+share one short convolution with a single cached state, the relative bias bank
+is stored reversed so a token's bias is a slice (global layers) or one shared
+gather over the rotating cache (sliding layers), prefill builds the banded
+additive mask with a small Metal kernel, and the shared experts are appended to
+the routed ones so one SwitchGLU call serves both. The router runs in fp32.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_lm/models/inkling_mm_model.py | 813 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 813 insertions(+)
+commit b7c2df88f5b39f8ef9dd19af04c4d11682c2e5ff
+Author: Nick Alonso <nick@drkm.com>
+Date:   Thu Oct 29 03:26:06 2026 -0400
+
+Add RotatingKVCache.key_distances() (and the batched variant)
+
+The distance of every cached key from the most recent one, in the order
+update_and_fetch returns them, so a model can gather a position-dependent
+additive mask (a relative position bias) over a rotated cache.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_lm/models/cache.py | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)

@@ -1,0 +1,12 @@
+nmse=4.538e-08 max_abs=3.295e-05 at n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,q/k +-1.70000 table +-4.00000
+nmse=1.533e-09 max_abs=6.173e-06 at n_q=512,n_kv=8209,rel_extent=1024,mask_kind=1,kv_type=f16,q/k +-1.70000 table +-4.00000
+nmse=1.470e-09 max_abs=5.029e-06 at n_q=1,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,q/k +-1.70000 table +-4.00000
+nmse=1.572e-09 max_abs=8.053e-06 at n_q=7,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=f16,q/k +-1.70000 table +-4.00000
+nmse=4.264e-08 max_abs=9.356e-05 at n_q=512,n_kv=1024,rel_extent=512,mask_kind=2,kv_type=f16,q/k +-1.70000 table +-4.00000
+nmse=2.192e-08 max_abs=3.370e-04 at n_q=512,n_kv=512,rel_extent=1024,mask_kind=1,kv_type=f16,q/k +-1.70000 table +-4.00000
+nmse=5.648e-08 max_abs=2.294e-04 at n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,q/k +-3.00000 table +-8.00000
+nmse=1.469e-08 max_abs=1.080e-04 at n_q=512,n_kv=8209,rel_extent=1024,mask_kind=1,kv_type=f16,q/k +-3.00000 table +-8.00000
+nmse=1.438e-08 max_abs=6.524e-05 at n_q=1,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,q/k +-3.00000 table +-8.00000
+nmse=1.515e-08 max_abs=9.564e-05 at n_q=7,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=f16,q/k +-3.00000 table +-8.00000
+nmse=5.473e-08 max_abs=2.958e-04 at n_q=512,n_kv=1024,rel_extent=512,mask_kind=2,kv_type=f16,q/k +-3.00000 table +-8.00000
+nmse=2.767e-08 max_abs=8.451e-04 at n_q=512,n_kv=512,rel_extent=1024,mask_kind=1,kv_type=f16,q/k +-3.00000 table +-8.00000

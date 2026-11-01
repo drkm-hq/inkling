@@ -1,0 +1,6 @@
+[04:49:31Z] extension lock acquired (pid 83341)
+[04:51:51Z] reference log-probs written: exit=0 1645245940 bytes, Final estimate: PPL = 9.9712 +/- 0.53618, 2 min
+[04:52:31Z] kld -fa on exit=0 at 3 min
+[04:53:09Z] kld -fa off exit=0 at 3 min
+[04:53:09Z] extension done at 3 min
+[04:53:09Z] lock released, queue line removed

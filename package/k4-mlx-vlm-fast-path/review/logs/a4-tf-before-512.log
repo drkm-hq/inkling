@@ -1,0 +1,10 @@
+W1029 02:53:28.652000 55256 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+[02:53:29] {"kind": "meta", "tag": "a4-tf-before-512", "model": "~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit/snapshots/f8a0af554e168077bdaf48e1fb6682fb395c807c/", "mlx": "0.32.4", "mlx_vlm": "0.7.11", "mlx_vlm_file": "~/.venvs/inkling-base/lib/python3.12/site-packages/mlx_vlm/__init__.py", "git": null, "python": "~/.venvs/inkling-base/bin/python", "device": "Apple M5 Max", "argv": ["<workdir>/package/k4-mlx-vlm-fast-path/review/a4_equiv_bench.py", "--no-lock", "--tag", "a4-tf-before-512", "--out-dir", "<workdir>/package/k4-mlx-vlm-fast-path/review/results", "--teacher-forced", "<workdir>/package/k4-mlx-vlm-fast-path/review/results/a4-before-gen.jsonl", "--max-tokens", "64", "--prompts", "p_short,p_8k", "--prefill-step-size", "512", "--tf-reference", "a4-tf-before-2048"], "pid": 55256, "load1": 4.546875, "env_tf32": null}
+[02:53:40] load: lazy 0.6s, chunked eval 10.5s, 82.3 GiB of parameters, active 82.4 GiB, peak 82.4 GiB
+[02:53:40] parameter dtypes: {'mlx.core.bfloat16': 1014, 'mlx.core.uint32': 250, 'mlx.core.float32': 160}
+[02:53:40] make_cache kv kinds: ['KVCache']
+[02:53:40] prompt p_short: 833 chars, 239 tokens
+[02:53:40] prompt p_8k: 30131 chars, 8231 tokens
+[02:53:40] gen kwargs: {'max_tokens': 64, 'temperature': 0.0, 'top_p': 1.0, 'top_k': 0, 'verbose': False, 'prefill_step_size': 512}
+[02:53:55] tf p_short: chunk 512, 239 prompt tokens + 64 teacher tokens in 14.3s, teacher top-1 63/64, md5 b1903252c46d, vs a4-tf-before-2048: identical=True KL mean 0.00e+00 max 0.00e+00 at 0, |dlogprob| mean 0.00e+00 max 0.00e+00, top-1 agree 64/64
+[02:54:39] tf p_8k: chunk 512, 8231 prompt tokens + 64 teacher tokens in 44.1s, teacher top-1 61/64, md5 170c6898057d, vs a4-tf-before-2048: identical=False KL mean 2.50e-02 max 7.28e-01 at 18, |dlogprob| mean 7.75e-02 max 1.47e+00, top-1 agree 62/64

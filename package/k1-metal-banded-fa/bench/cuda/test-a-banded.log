@@ -1,0 +1,30 @@
+$ ./build/bin/test-backend-ops test -b CUDA0 -o FLASH_ATTN_EXT_BANDED
+ggml_cuda_init: found 1 CUDA devices (Total VRAM: 81071 MiB):
+  Device 0: NVIDIA H100 80GB HBM3, compute capability 9.0, VMM: yes, VRAM: 81071 MiB
+Testing 2 devices
+
+Backend 1/2: CUDA0
+  Device description: NVIDIA H100 80GB HBM3
+  Device memory: 81071 MB (80544 MB free)
+
+  FLASH_ATTN_EXT_BANDED(d=64,n_head=2,n_head_kv=1,n_q=8,n_kv=8,rel_extent=8,mask_kind=1,kv_type=f32,rel_type=f32,strided=0): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=2,n_q=16,n_kv=16,rel_extent=8,mask_kind=1,kv_type=f16,rel_type=f16,strided=0): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=64,n_head=8,n_head_kv=2,n_q=1,n_kv=64,rel_extent=8,mask_kind=1,kv_type=f32,rel_type=f32,strided=0): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=2,n_q=64,n_kv=64,rel_extent=8,mask_kind=2,kv_type=bf16,rel_type=bf16,strided=0): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=64,n_head=8,n_head_kv=1,n_q=64,n_kv=64,rel_extent=512,mask_kind=1,kv_type=f16,rel_type=f32,strided=0): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=2,n_q=17,n_kv=33,rel_extent=8,mask_kind=1,kv_type=f16,rel_type=f16,strided=1): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16384,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16403,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16896,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=17024,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=1,n_kv=17024,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=32768,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0): [1;32mOK[0m
+  13/13 tests passed
+  Backend CUDA0: [1;32mOK[0m
+Backend 2/2: CPU
+  Skipping
+2/2 backends passed
+[1;32mOK[0m
+
+[rc=0]

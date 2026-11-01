@@ -1,0 +1,477 @@
+Waiting for GPU benchmark lock: pid=40267
+Acquired GPU benchmark lock: pid=40267 time=1793471504.888242
+ggml_metal_device_init: testing tensor API for f16 support
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'dummy_kernel', name = 'dummy_kernel'
+ggml_metal_library_compile_pipeline: loaded dummy_kernel                                  0x103109610 | th_max = 1024 | th_width =   32
+ggml_metal_device_init: testing tensor API for bfloat support
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'dummy_kernel', name = 'dummy_kernel'
+ggml_metal_library_compile_pipeline: loaded dummy_kernel                                  0x103109590 | th_max = 1024 | th_width =   32
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_compile_all: compiled 'fa_aux' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'fa_f16' library in 0.028 sec
+ggml_metal_library_compile_all: compiled 'fa_f32' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_0' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_1' library in 0.025 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_0' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_1' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'fa_q8_0' library in 0.024 sec
+ggml_metal_library_compile_all: compiled 'fa_tensor' library in 0.026 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f16' library in 0.023 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f32' library in 0.023 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_0' library in 0.019 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_1' library in 0.035 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_0' library in 0.032 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_1' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q8_0' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'mul_mv' library in 0.014 sec
+ggml_metal_library_compile_all: compiled 'mul_mv_mma' library in 0.044 sec
+ggml_metal_library_compile_all: compiled 'mul_mm' library in 0.039 sec
+ggml_metal_library_compile_all: compiled 'quantize' library in 0.046 sec
+ggml_metal_library_compile_all: compiled 'softmax' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'norm' library in 0.046 sec
+ggml_metal_library_compile_all: compiled 'unary' library in 0.044 sec
+ggml_metal_library_compile_all: compiled 'binbcast' library in 0.044 sec
+ggml_metal_library_compile_all: compiled 'reduce' library in 0.028 sec
+ggml_metal_library_compile_all: compiled 'tri' library in 0.028 sec
+ggml_metal_library_compile_all: compiled 'ssm' library in 0.114 sec
+ggml_metal_library_compile_all: compiled 'wkv' library in 0.039 sec
+ggml_metal_library_compile_all: compiled 'gated_delta_net' library in 0.023 sec
+ggml_metal_library_compile_all: compiled 'solve_tri' library in 0.023 sec
+ggml_metal_library_compile_all: compiled 'rope' library in 0.044 sec
+ggml_metal_library_compile_all: compiled 'conv' library in 0.039 sec
+ggml_metal_library_compile_all: compiled 'upscale' library in 0.039 sec
+ggml_metal_library_compile_all: compiled 'argsort' library in 0.023 sec
+ggml_metal_library_compile_all: compiled 'pool' library in 0.014 sec
+ggml_metal_library_compile_all: compiled 'misc' library in 0.015 sec
+ggml_metal_library_compile_all: loaded 36 libraries from embedded data in 0.115 sec (max single = 0.114 sec)
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0 (Apple M5 Max)
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple10  (1010)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal4  (5002)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = true
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  = 115448.73 MB
+ggml_metal_init: allocating
+ggml_metal_init: found device: Apple M5 Max
+ggml_metal_init: picking default device: Apple M5 Max
+ggml_metal_init: use fusion         = true
+ggml_metal_init: use concurrency    = true
+ggml_metal_init: use graph optimize = true
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_cont_mul_mat_f32_k16', name = 'kernel_cont_mul_mat_f32_k16'
+ggml_metal_library_compile_pipeline: loaded kernel_cont_mul_mat_f32_k16                   0x103114b50 | th_max = 1024 | th_width =   32
+Testing 3 devices
+
+Backend 1/3: MTL0
+  Device description: Apple M5 Max
+  Device memory: 110100 MB (110099 MB free)
+
+  CONT_MUL_MAT(k=16,rows=32,cols=32,strided=0,tail=0,type=f32): [1;32mOK[0m
+  CONT_MUL_MAT(k=16,rows=33,cols=32,strided=0,tail=0,type=f32): [1;32mOK[0m
+  CONT_MUL_MAT(k=16,rows=512,cols=32,strided=0,tail=0,type=f32): [1;32mOK[0m
+  CONT_MUL_MAT(k=16,rows=513,cols=32,strided=0,tail=0,type=f32): [1;32mOK[0m
+  CONT_MUL_MAT(k=16,rows=1024,cols=32,strided=0,tail=0,type=f32): [1;32mOK[0m
+  CONT_MUL_MAT(k=16,rows=2048,cols=32,strided=0,tail=0,type=f32): [1;32mOK[0m
+  CONT_MUL_MAT(k=16,rows=512,cols=1,strided=0,tail=0,type=f32): [1;32mOK[0m
+  CONT_MUL_MAT(k=16,rows=512,cols=7,strided=0,tail=0,type=f32): [1;32mOK[0m
+  CONT_MUL_MAT(k=16,rows=512,cols=64,strided=0,tail=0,type=f32): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_cpy_f32_f32', name = 'kernel_cpy_f32_f32'
+ggml_metal_library_compile_pipeline: loaded kernel_cpy_f32_f32                            0xaa7a14000 | th_max = 1024 | th_width =   32
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_mul_mv_f32_f32_short', name = 'kernel_mul_mv_f32_f32_short_nsg=1_ne12=1_r2=1_r3=1_split=0'
+ggml_metal_library_compile_pipeline: loaded kernel_mul_mv_f32_f32_short_nsg=1_ne12=1_r2=1_r3=1_split=0      0xaa7a14a80 | th_max = 1024 | th_width =   32
+  CONT_MUL_MAT(k=16,rows=512,cols=65,strided=0,tail=0,type=f32): [1;32mOK[0m
+  CONT_MUL_MAT(k=16,rows=512,cols=32,strided=1,tail=0,type=f32): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_op_sum_f32', name = 'kernel_op_sum_f32'
+ggml_metal_library_compile_pipeline: loaded kernel_op_sum_f32                             0xaa7a14380 | th_max = 1024 | th_width =   32
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_bin_fuse_f32_f32_f32', name = 'kernel_bin_fuse_f32_f32_f32_op=0_nf=1_rb=1_cb=1'
+ggml_metal_library_compile_pipeline: loaded kernel_bin_fuse_f32_f32_f32_op=0_nf=1_rb=1_cb=1      0xaa7a15180 | th_max = 1024 | th_width =   32
+  CONT_MUL_MAT(k=16,rows=512,cols=32,strided=0,tail=1,type=f32): [1;32mOK[0m
+  CONT_MUL_MAT(k=16,rows=512,cols=32,strided=0,tail=2,type=f32): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_mul_mv_f32_f32_4', name = 'kernel_mul_mv_f32_f32_4_nsg=1_ne12=1_r2=1_r3=1_split=0'
+ggml_metal_library_compile_pipeline: loaded kernel_mul_mv_f32_f32_4_nsg=1_ne12=1_r2=1_r3=1_split=0      0xaa7a14700 | th_max = 1024 | th_width =   32
+  CONT_MUL_MAT(k=16,rows=512,cols=32,strided=0,tail=3,type=f32): [1;32mOK[0m
+  CONT_MUL_MAT(k=8,rows=512,cols=32,strided=0,tail=0,type=f32): [1;32mOK[0m
+  CONT_MUL_MAT(k=32,rows=512,cols=32,strided=0,tail=0,type=f32): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_cpy_f16_f16', name = 'kernel_cpy_f16_f16'
+ggml_metal_library_compile_pipeline: loaded kernel_cpy_f16_f16                            0xaa7a15880 | th_max = 1024 | th_width =   32
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_mul_mv_f16_f32_short', name = 'kernel_mul_mv_f16_f32_short_nsg=1_ne12=1_r2=1_r3=1_split=0'
+ggml_metal_library_compile_pipeline: loaded kernel_mul_mv_f16_f32_short_nsg=1_ne12=1_r2=1_r3=1_split=0      0xaa7a15c00 | th_max = 1024 | th_width =   32
+  CONT_MUL_MAT(k=16,rows=512,cols=32,strided=0,tail=0,type=f16): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32', name = 'kernel_ssm_conv_f32_f32_nc=1_silu=0'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_nc=1_silu=0           0xaa7a15500 | th_max = 1024 | th_width =   32
+  SSM_CONV(type=f32,ne_a=[1,1,1,1],ne_b=[1,1,1,1]): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32', name = 'kernel_ssm_conv_f32_f32_nc=1_silu=1'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_nc=1_silu=1           0xaa7a15f80 | th_max = 1024 | th_width =   32
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[1,1,1,1],ne_b=[1,1,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[1,1,3,1],ne_b=[1,1,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[1,1,3,1],ne_b=[1,1,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[1,31,1,1],ne_b=[1,31,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[1,31,1,1],ne_b=[1,31,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[1,31,3,1],ne_b=[1,31,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[1,31,3,1],ne_b=[1,31,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[1,127,1,1],ne_b=[1,127,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[1,127,1,1],ne_b=[1,127,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[1,127,3,1],ne_b=[1,127,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[1,127,3,1],ne_b=[1,127,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[1,129,1,1],ne_b=[1,129,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[1,129,1,1],ne_b=[1,129,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[1,129,3,1],ne_b=[1,129,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[1,129,3,1],ne_b=[1,129,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[1,513,1,1],ne_b=[1,513,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[1,513,1,1],ne_b=[1,513,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[1,513,3,1],ne_b=[1,513,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[1,513,3,1],ne_b=[1,513,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[1,4096,1,1],ne_b=[1,4096,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[1,4096,1,1],ne_b=[1,4096,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[1,4096,3,1],ne_b=[1,4096,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[1,4096,3,1],ne_b=[1,4096,1,1],fuse_bias=0): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32', name = 'kernel_ssm_conv_f32_f32_nc=3_silu=0'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_nc=3_silu=0           0xaa7a16300 | th_max = 1024 | th_width =   32
+  SSM_CONV(type=f32,ne_a=[3,1,1,1],ne_b=[3,1,1,1]): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32', name = 'kernel_ssm_conv_f32_f32_nc=3_silu=1'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_nc=3_silu=1           0xaa7a16680 | th_max = 1024 | th_width =   32
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,1,1,1],ne_b=[3,1,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[3,1,3,1],ne_b=[3,1,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,1,3,1],ne_b=[3,1,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[3,31,1,1],ne_b=[3,31,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,31,1,1],ne_b=[3,31,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[3,31,3,1],ne_b=[3,31,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,31,3,1],ne_b=[3,31,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[3,127,1,1],ne_b=[3,127,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,127,1,1],ne_b=[3,127,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[3,127,3,1],ne_b=[3,127,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,127,3,1],ne_b=[3,127,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[3,129,1,1],ne_b=[3,129,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,129,1,1],ne_b=[3,129,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[3,129,3,1],ne_b=[3,129,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,129,3,1],ne_b=[3,129,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[3,513,1,1],ne_b=[3,513,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,513,1,1],ne_b=[3,513,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[3,513,3,1],ne_b=[3,513,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,513,3,1],ne_b=[3,513,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[3,4096,1,1],ne_b=[3,4096,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,4096,1,1],ne_b=[3,4096,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[3,4096,3,1],ne_b=[3,4096,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,4096,3,1],ne_b=[3,4096,1,1],fuse_bias=0): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32_4', name = 'kernel_ssm_conv_f32_f32_4_nc=4_silu=0'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_4_nc=4_silu=0         0xaa7a16a00 | th_max = 1024 | th_width =   32
+  SSM_CONV(type=f32,ne_a=[4,1,1,1],ne_b=[4,1,1,1]): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32_4', name = 'kernel_ssm_conv_f32_f32_4_nc=4_silu=1'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_4_nc=4_silu=1         0xaa7a16d80 | th_max = 1024 | th_width =   32
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,1,1,1],ne_b=[4,1,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[4,1,3,1],ne_b=[4,1,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,1,3,1],ne_b=[4,1,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[4,31,1,1],ne_b=[4,31,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,31,1,1],ne_b=[4,31,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[4,31,3,1],ne_b=[4,31,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,31,3,1],ne_b=[4,31,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[4,127,1,1],ne_b=[4,127,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,127,1,1],ne_b=[4,127,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[4,127,3,1],ne_b=[4,127,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,127,3,1],ne_b=[4,127,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[4,129,1,1],ne_b=[4,129,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,129,1,1],ne_b=[4,129,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[4,129,3,1],ne_b=[4,129,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,129,3,1],ne_b=[4,129,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[4,513,1,1],ne_b=[4,513,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,513,1,1],ne_b=[4,513,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[4,513,3,1],ne_b=[4,513,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,513,3,1],ne_b=[4,513,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[4,4096,1,1],ne_b=[4,4096,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,4096,1,1],ne_b=[4,4096,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[4,4096,3,1],ne_b=[4,4096,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,4096,3,1],ne_b=[4,4096,1,1],fuse_bias=0): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32_4', name = 'kernel_ssm_conv_f32_f32_4_nc=8_silu=0'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_4_nc=8_silu=0         0xaa7a17100 | th_max = 1024 | th_width =   32
+  SSM_CONV(type=f32,ne_a=[8,1,1,1],ne_b=[8,1,1,1]): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32_4', name = 'kernel_ssm_conv_f32_f32_4_nc=8_silu=1'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_4_nc=8_silu=1         0xaa7a17480 | th_max = 1024 | th_width =   32
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[8,1,1,1],ne_b=[8,1,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[8,1,3,1],ne_b=[8,1,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[8,1,3,1],ne_b=[8,1,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[8,31,1,1],ne_b=[8,31,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[8,31,1,1],ne_b=[8,31,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[8,31,3,1],ne_b=[8,31,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[8,31,3,1],ne_b=[8,31,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[8,127,1,1],ne_b=[8,127,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[8,127,1,1],ne_b=[8,127,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[8,127,3,1],ne_b=[8,127,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[8,127,3,1],ne_b=[8,127,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[8,129,1,1],ne_b=[8,129,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[8,129,1,1],ne_b=[8,129,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[8,129,3,1],ne_b=[8,129,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[8,129,3,1],ne_b=[8,129,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[8,513,1,1],ne_b=[8,513,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[8,513,1,1],ne_b=[8,513,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[8,513,3,1],ne_b=[8,513,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[8,513,3,1],ne_b=[8,513,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[8,4096,1,1],ne_b=[8,4096,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[8,4096,1,1],ne_b=[8,4096,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[8,4096,3,1],ne_b=[8,4096,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[8,4096,3,1],ne_b=[8,4096,1,1],fuse_bias=0): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32', name = 'kernel_ssm_conv_f32_f32_nc=9_silu=0'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_nc=9_silu=0           0xaa7a17800 | th_max = 1024 | th_width =   32
+  SSM_CONV(type=f32,ne_a=[9,1,1,1],ne_b=[9,1,1,1]): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32', name = 'kernel_ssm_conv_f32_f32_nc=9_silu=1'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_nc=9_silu=1           0xaa7aa8380 | th_max = 1024 | th_width =   32
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,1,1,1],ne_b=[9,1,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[9,1,3,1],ne_b=[9,1,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,1,3,1],ne_b=[9,1,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[9,31,1,1],ne_b=[9,31,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,31,1,1],ne_b=[9,31,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[9,31,3,1],ne_b=[9,31,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,31,3,1],ne_b=[9,31,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[9,127,1,1],ne_b=[9,127,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,127,1,1],ne_b=[9,127,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[9,127,3,1],ne_b=[9,127,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,127,3,1],ne_b=[9,127,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[9,129,1,1],ne_b=[9,129,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,129,1,1],ne_b=[9,129,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[9,129,3,1],ne_b=[9,129,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,129,3,1],ne_b=[9,129,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[9,513,1,1],ne_b=[9,513,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,513,1,1],ne_b=[9,513,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[9,513,3,1],ne_b=[9,513,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,513,3,1],ne_b=[9,513,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[9,4096,1,1],ne_b=[9,4096,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,4096,1,1],ne_b=[9,4096,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[9,4096,3,1],ne_b=[9,4096,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,4096,3,1],ne_b=[9,4096,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[3,1024,1,1],ne_b=[3,1024,1,1]): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32_batched', name = 'kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=2_nc=3_silu=0'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=2_nc=3_silu=0      0xaa7aa8a80 | th_max = 1024 | th_width =   32
+  SSM_CONV(type=f32,ne_a=[6,1024,1,1],ne_b=[3,1024,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[3,1024,4,1],ne_b=[3,1024,1,1]): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32_batched', name = 'kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=64_nc=3_silu=0'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=64_nc=3_silu=0      0xaa7aa8000 | th_max = 1024 | th_width =   32
+  SSM_CONV(type=f32,ne_a=[66,1024,1,1],ne_b=[3,1024,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[66,1024,4,1],ne_b=[3,1024,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[3,1536,1,1],ne_b=[3,1536,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[6,1536,1,1],ne_b=[3,1536,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[3,1536,4,1],ne_b=[3,1536,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[66,1536,1,1],ne_b=[3,1536,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[66,1536,4,1],ne_b=[3,1536,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[3,2048,1,1],ne_b=[3,2048,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[6,2048,1,1],ne_b=[3,2048,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[3,2048,4,1],ne_b=[3,2048,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[66,2048,1,1],ne_b=[3,2048,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[66,2048,4,1],ne_b=[3,2048,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[4,1024,1,1],ne_b=[4,1024,1,1]): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32_batched_4', name = 'kernel_ssm_conv_f32_f32_batched_4_ssm_conv_bs=8_nc=4_silu=0'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_batched_4_ssm_conv_bs=8_nc=4_silu=0      0xaa7aa8e00 | th_max = 1024 | th_width =   32
+  SSM_CONV(type=f32,ne_a=[8,1024,1,1],ne_b=[4,1024,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[4,1024,4,1],ne_b=[4,1024,1,1]): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32_batched_4', name = 'kernel_ssm_conv_f32_f32_batched_4_ssm_conv_bs=64_nc=4_silu=0'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_batched_4_ssm_conv_bs=64_nc=4_silu=0      0xaa7aa9180 | th_max = 1024 | th_width =   32
+  SSM_CONV(type=f32,ne_a=[67,1024,1,1],ne_b=[4,1024,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[67,1024,4,1],ne_b=[4,1024,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[4,1536,1,1],ne_b=[4,1536,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[8,1536,1,1],ne_b=[4,1536,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[4,1536,4,1],ne_b=[4,1536,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[67,1536,1,1],ne_b=[4,1536,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[67,1536,4,1],ne_b=[4,1536,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[4,2048,1,1],ne_b=[4,2048,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[8,2048,1,1],ne_b=[4,2048,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[4,2048,4,1],ne_b=[4,2048,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[67,2048,1,1],ne_b=[4,2048,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[67,2048,4,1],ne_b=[4,2048,1,1]): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32', name = 'kernel_ssm_conv_f32_f32_nc=7_silu=0'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_nc=7_silu=0           0xaa7aa9880 | th_max = 1024 | th_width =   32
+  SSM_CONV(type=f32,ne_a=[7,1024,1,1],ne_b=[7,1024,1,1]): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32_batched', name = 'kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=8_nc=7_silu=0'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=8_nc=7_silu=0      0xaa7aa9500 | th_max = 1024 | th_width =   32
+  SSM_CONV(type=f32,ne_a=[14,1024,1,1],ne_b=[7,1024,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[7,1024,4,1],ne_b=[7,1024,1,1]): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32_batched', name = 'kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=64_nc=7_silu=0'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=64_nc=7_silu=0      0xaa7aa9c00 | th_max = 1024 | th_width =   32
+  SSM_CONV(type=f32,ne_a=[70,1024,1,1],ne_b=[7,1024,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[70,1024,4,1],ne_b=[7,1024,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[7,1536,1,1],ne_b=[7,1536,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[14,1536,1,1],ne_b=[7,1536,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[7,1536,4,1],ne_b=[7,1536,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[70,1536,1,1],ne_b=[7,1536,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[70,1536,4,1],ne_b=[7,1536,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[7,2048,1,1],ne_b=[7,2048,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[14,2048,1,1],ne_b=[7,2048,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[7,2048,4,1],ne_b=[7,2048,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[70,2048,1,1],ne_b=[7,2048,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[70,2048,4,1],ne_b=[7,2048,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[9,1024,1,1],ne_b=[9,1024,1,1]): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32_batched', name = 'kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=16_nc=9_silu=0'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=16_nc=9_silu=0      0xaa7aa9f80 | th_max = 1024 | th_width =   32
+  SSM_CONV(type=f32,ne_a=[18,1024,1,1],ne_b=[9,1024,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[9,1024,4,1],ne_b=[9,1024,1,1]): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32_batched', name = 'kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=64_nc=9_silu=0'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=64_nc=9_silu=0      0xaa7aaa300 | th_max = 1024 | th_width =   32
+  SSM_CONV(type=f32,ne_a=[72,1024,1,1],ne_b=[9,1024,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[72,1024,4,1],ne_b=[9,1024,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[9,1536,1,1],ne_b=[9,1536,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[18,1536,1,1],ne_b=[9,1536,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[9,1536,4,1],ne_b=[9,1536,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[72,1536,1,1],ne_b=[9,1536,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[72,1536,4,1],ne_b=[9,1536,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[9,2048,1,1],ne_b=[9,2048,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[18,2048,1,1],ne_b=[9,2048,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[9,2048,4,1],ne_b=[9,2048,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[72,2048,1,1],ne_b=[9,2048,1,1]): [1;32mOK[0m
+  SSM_CONV(type=f32,ne_a=[72,2048,4,1],ne_b=[9,2048,1,1]): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,1024,1,1],ne_b=[3,1024,1,1],fuse_bias=0): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32_batched', name = 'kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=2_nc=3_silu=1'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=2_nc=3_silu=1      0xaa7aa8700 | th_max = 1024 | th_width =   32
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[6,1024,1,1],ne_b=[3,1024,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,1024,4,1],ne_b=[3,1024,1,1],fuse_bias=0): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32_batched', name = 'kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=64_nc=3_silu=1'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=64_nc=3_silu=1      0xaa7aaaa00 | th_max = 1024 | th_width =   32
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[66,1024,1,1],ne_b=[3,1024,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[66,1024,4,1],ne_b=[3,1024,1,1],fuse_bias=0): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_bin_fuse_f32_f32_f32_4', name = 'kernel_bin_fuse_f32_f32_f32_4_op=0_nf=1_rb=1_cb=0'
+ggml_metal_library_compile_pipeline: loaded kernel_bin_fuse_f32_f32_f32_4_op=0_nf=1_rb=1_cb=0      0xaa7aaa680 | th_max = 1024 | th_width =   32
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_unary_f32_f32_4', name = 'kernel_unary_f32_f32_4_op=106_cnt=1'
+ggml_metal_library_compile_pipeline: loaded kernel_unary_f32_f32_4_op=106_cnt=1           0xaa7aab480 | th_max = 1024 | th_width =   32
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,1024,1,1],ne_b=[3,1024,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[6,1024,1,1],ne_b=[3,1024,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,1024,4,1],ne_b=[3,1024,1,1],fuse_bias=1): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_bin_fuse_f32_f32_f32_4', name = 'kernel_bin_fuse_f32_f32_f32_4_op=0_nf=1_rb=0_cb=0'
+ggml_metal_library_compile_pipeline: loaded kernel_bin_fuse_f32_f32_f32_4_op=0_nf=1_rb=0_cb=0      0xaa7aab800 | th_max = 1024 | th_width =   32
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_unary_f32_f32_4', name = 'kernel_unary_f32_f32_4_op=106_cnt=0'
+ggml_metal_library_compile_pipeline: loaded kernel_unary_f32_f32_4_op=106_cnt=0           0xaa7aabb80 | th_max = 1024 | th_width =   32
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[66,1024,1,1],ne_b=[3,1024,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[66,1024,4,1],ne_b=[3,1024,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,1536,1,1],ne_b=[3,1536,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[6,1536,1,1],ne_b=[3,1536,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,1536,4,1],ne_b=[3,1536,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[66,1536,1,1],ne_b=[3,1536,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[66,1536,4,1],ne_b=[3,1536,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,1536,1,1],ne_b=[3,1536,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[6,1536,1,1],ne_b=[3,1536,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,1536,4,1],ne_b=[3,1536,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[66,1536,1,1],ne_b=[3,1536,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[66,1536,4,1],ne_b=[3,1536,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,2048,1,1],ne_b=[3,2048,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[6,2048,1,1],ne_b=[3,2048,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,2048,4,1],ne_b=[3,2048,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[66,2048,1,1],ne_b=[3,2048,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[66,2048,4,1],ne_b=[3,2048,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,2048,1,1],ne_b=[3,2048,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[6,2048,1,1],ne_b=[3,2048,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[3,2048,4,1],ne_b=[3,2048,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[66,2048,1,1],ne_b=[3,2048,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[66,2048,4,1],ne_b=[3,2048,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,1024,1,1],ne_b=[4,1024,1,1],fuse_bias=0): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32_batched_4', name = 'kernel_ssm_conv_f32_f32_batched_4_ssm_conv_bs=8_nc=4_silu=1'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_batched_4_ssm_conv_bs=8_nc=4_silu=1      0xaa7aaad80 | th_max = 1024 | th_width =   32
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[8,1024,1,1],ne_b=[4,1024,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,1024,4,1],ne_b=[4,1024,1,1],fuse_bias=0): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32_batched_4', name = 'kernel_ssm_conv_f32_f32_batched_4_ssm_conv_bs=64_nc=4_silu=1'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_batched_4_ssm_conv_bs=64_nc=4_silu=1      0xaa7a17b80 | th_max = 1024 | th_width =   32
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[67,1024,1,1],ne_b=[4,1024,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[67,1024,4,1],ne_b=[4,1024,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,1024,1,1],ne_b=[4,1024,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[8,1024,1,1],ne_b=[4,1024,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,1024,4,1],ne_b=[4,1024,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[67,1024,1,1],ne_b=[4,1024,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[67,1024,4,1],ne_b=[4,1024,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,1536,1,1],ne_b=[4,1536,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[8,1536,1,1],ne_b=[4,1536,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,1536,4,1],ne_b=[4,1536,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[67,1536,1,1],ne_b=[4,1536,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[67,1536,4,1],ne_b=[4,1536,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,1536,1,1],ne_b=[4,1536,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[8,1536,1,1],ne_b=[4,1536,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,1536,4,1],ne_b=[4,1536,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[67,1536,1,1],ne_b=[4,1536,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[67,1536,4,1],ne_b=[4,1536,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,2048,1,1],ne_b=[4,2048,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[8,2048,1,1],ne_b=[4,2048,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,2048,4,1],ne_b=[4,2048,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[67,2048,1,1],ne_b=[4,2048,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[67,2048,4,1],ne_b=[4,2048,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,2048,1,1],ne_b=[4,2048,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[8,2048,1,1],ne_b=[4,2048,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[4,2048,4,1],ne_b=[4,2048,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[67,2048,1,1],ne_b=[4,2048,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[67,2048,4,1],ne_b=[4,2048,1,1],fuse_bias=1): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32', name = 'kernel_ssm_conv_f32_f32_nc=7_silu=1'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_nc=7_silu=1           0xaa7acc000 | th_max = 1024 | th_width =   32
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[7,1024,1,1],ne_b=[7,1024,1,1],fuse_bias=0): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32_batched', name = 'kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=8_nc=7_silu=1'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=8_nc=7_silu=1      0xaa7acc700 | th_max = 1024 | th_width =   32
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[14,1024,1,1],ne_b=[7,1024,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[7,1024,4,1],ne_b=[7,1024,1,1],fuse_bias=0): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32_batched', name = 'kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=64_nc=7_silu=1'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=64_nc=7_silu=1      0xaa7acca80 | th_max = 1024 | th_width =   32
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[70,1024,1,1],ne_b=[7,1024,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[70,1024,4,1],ne_b=[7,1024,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[7,1024,1,1],ne_b=[7,1024,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[14,1024,1,1],ne_b=[7,1024,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[7,1024,4,1],ne_b=[7,1024,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[70,1024,1,1],ne_b=[7,1024,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[70,1024,4,1],ne_b=[7,1024,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[7,1536,1,1],ne_b=[7,1536,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[14,1536,1,1],ne_b=[7,1536,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[7,1536,4,1],ne_b=[7,1536,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[70,1536,1,1],ne_b=[7,1536,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[70,1536,4,1],ne_b=[7,1536,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[7,1536,1,1],ne_b=[7,1536,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[14,1536,1,1],ne_b=[7,1536,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[7,1536,4,1],ne_b=[7,1536,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[70,1536,1,1],ne_b=[7,1536,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[70,1536,4,1],ne_b=[7,1536,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[7,2048,1,1],ne_b=[7,2048,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[14,2048,1,1],ne_b=[7,2048,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[7,2048,4,1],ne_b=[7,2048,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[70,2048,1,1],ne_b=[7,2048,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[70,2048,4,1],ne_b=[7,2048,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[7,2048,1,1],ne_b=[7,2048,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[14,2048,1,1],ne_b=[7,2048,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[7,2048,4,1],ne_b=[7,2048,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[70,2048,1,1],ne_b=[7,2048,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[70,2048,4,1],ne_b=[7,2048,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,1024,1,1],ne_b=[9,1024,1,1],fuse_bias=0): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32_batched', name = 'kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=16_nc=9_silu=1'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=16_nc=9_silu=1      0xaa7acce00 | th_max = 1024 | th_width =   32
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[18,1024,1,1],ne_b=[9,1024,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,1024,4,1],ne_b=[9,1024,1,1],fuse_bias=0): [1;32mOK[0m
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'kernel_ssm_conv_f32_f32_batched', name = 'kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=64_nc=9_silu=1'
+ggml_metal_library_compile_pipeline: loaded kernel_ssm_conv_f32_f32_batched_ssm_conv_bs=64_nc=9_silu=1      0xaa7acd180 | th_max = 1024 | th_width =   32
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[72,1024,1,1],ne_b=[9,1024,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[72,1024,4,1],ne_b=[9,1024,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,1024,1,1],ne_b=[9,1024,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[18,1024,1,1],ne_b=[9,1024,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,1024,4,1],ne_b=[9,1024,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[72,1024,1,1],ne_b=[9,1024,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[72,1024,4,1],ne_b=[9,1024,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,1536,1,1],ne_b=[9,1536,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[18,1536,1,1],ne_b=[9,1536,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,1536,4,1],ne_b=[9,1536,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[72,1536,1,1],ne_b=[9,1536,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[72,1536,4,1],ne_b=[9,1536,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,1536,1,1],ne_b=[9,1536,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[18,1536,1,1],ne_b=[9,1536,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,1536,4,1],ne_b=[9,1536,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[72,1536,1,1],ne_b=[9,1536,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[72,1536,4,1],ne_b=[9,1536,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,2048,1,1],ne_b=[9,2048,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[18,2048,1,1],ne_b=[9,2048,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,2048,4,1],ne_b=[9,2048,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[72,2048,1,1],ne_b=[9,2048,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[72,2048,4,1],ne_b=[9,2048,1,1],fuse_bias=0): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,2048,1,1],ne_b=[9,2048,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[18,2048,1,1],ne_b=[9,2048,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[9,2048,4,1],ne_b=[9,2048,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[72,2048,1,1],ne_b=[9,2048,1,1],fuse_bias=1): [1;32mOK[0m
+  SSM_CONV_BIAS_SILU(type=f32,ne_a=[72,2048,4,1],ne_b=[9,2048,1,1],fuse_bias=1): [1;32mOK[0m
+ggml_metal_free: deallocating
+  317/317 tests passed
+  Backend MTL0: [1;32mOK[0m
+Backend 2/3: BLAS
+  Skipping
+Backend 3/3: CPU
+  Skipping
+3/3 backends passed
+[1;32mOK[0m
+Released GPU benchmark lock: pid=40267

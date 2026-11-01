@@ -1,0 +1,32 @@
+K2 review validation — 2026-10-31
+Isolated checkout: <workdir>
+Base tree: inkling-pr f98688c (same tree as inkling dc0a8b1)
+Environment: PYTHONDONTWRITEBYTECODE=1 MLX_ENABLE_TF32=0
+Small random models only. MLX runtime access required elevated execution. No full weights, network, or benchmark runs.
+
+$ ~/.venvs/inkling/bin/python -m unittest tests.test_inkling tests.test_models.TestModels.test_inkling_mm_model
+...............
+----------------------------------------------------------------------
+Ran 15 tests in 0.243s
+
+OK
+Exit: 0
+
+$ ~/.cache/uv/archive-v0/Bo3HaJtueQZU0dTB/ruff-0.16.8.data/scripts/ruff check mlx_lm/models/cache.py mlx_lm/models/inkling_mm_model.py mlx_lm/utils.py tests/test_inkling.py
+All checks passed!
+Exit: 0
+
+$ ~/.venvs/inkling/bin/black --check --target-version py311 mlx_lm/models/cache.py mlx_lm/models/inkling_mm_model.py mlx_lm/utils.py tests/test_inkling.py
+All done! ✨ 🍰 ✨
+4 files would be left unchanged.
+Exit: 0
+
+$ git diff --check
+Exit: 0
+
+Original-tree reproductions previously observed:
+1. _get_classes({'model_type': 'inkling_text'}): ValueError Model type inkling_text not supported.
+2. random_model(); model.train(); nn.value_and_grad(model, lambda m: m(mx.array([[1,2,3,4]])).sum())(model): ValueError [Primitive::vjp] Not implemented for CustomKernel.
+3. RotatingKVCache(6, keep=2), update token positions 0..7 then 8..9: returned keys [0,1,5,6,7,8,9], distances [6,5,4,3,2,1,0], expected [9,8,4,3,2,1,0].
+
+The installed isort is 5.13.2, while the repo pins 9.0.1. Its check also reports pre-existing multiline imports in unchanged utils.py/test_inkling.py; no unrelated import reformatting was applied.

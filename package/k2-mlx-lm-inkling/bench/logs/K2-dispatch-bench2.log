@@ -1,0 +1,5 @@
+decode step, tiny widths, 42 layers, context 600 (sliding window full), bf16
+  mlx-vlm LanguageModel        9.05 ms/token (best 8.28)
+  mlx-lm inkling_mm_model      9.37 ms/token (best 8.36)
+  mlx-vlm LanguageModel        8.60 ms/token (best 7.68)
+  mlx-lm inkling_mm_model      8.67 ms/token (best 7.83)

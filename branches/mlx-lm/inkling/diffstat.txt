@@ -1,0 +1,7 @@
+ ACKNOWLEDGMENTS.md                |   1 +
+ mlx_lm/generate.py                |   7 +
+ mlx_lm/models/cache.py            |  21 +
+ mlx_lm/models/inkling_mm_model.py | 813 ++++++++++++++++++++++++++++++++++++++
+ tests/test_inkling.py             | 439 ++++++++++++++++++++
+ tests/test_models.py              |  33 ++
+ 6 files changed, 1314 insertions(+)

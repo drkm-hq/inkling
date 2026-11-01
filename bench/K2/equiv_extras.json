@@ -1,0 +1,18 @@
+{
+ "mlx_vlm:greedy": {
+  "save_logprobs": "../results/K2-logprobs-mlx_vlm",
+  "noise_floor": true,
+  "hidden": "../results/K2-hidden"
+ },
+ "mlx_lm:greedy": {
+  "hidden": "../results/K2-hidden",
+  "save_logprobs": "../results/K2-logprobs-mlx_lm-dense"
+ },
+ "mlx_lm:forced": {
+  "ref_logprobs": "../results/K2-logprobs-mlx_vlm"
+ },
+ "mlx_lm@mlx-2bit-attn8:forced": {
+  "ref_logprobs": "../results/K2-logprobs-mlx_lm-dense"
+ },
+ "mlx_lm@mlx-2bit-attn8:greedy": {}
+}

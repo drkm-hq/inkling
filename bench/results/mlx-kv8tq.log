@@ -1,0 +1,7 @@
+[23:14:03] GPU busy, waiting: ['pid 91126 rss 93.7 GiB: <workdir>/upstream/llama.cpp-inkling/build/bin/llama-server -m ~/.cache/hug']
+[23:14:33] GPU busy, waiting: ['pid 91126 rss 93.7 GiB: <workdir>/upstream/llama.cpp-inkling/build/bin/llama-server -m ~/.cache/hug']
+[23:15:03] GPU busy, waiting: ['GPU_LOCK held by pid 91117', 'pid 91126 rss 93.7 GiB: <workdir>/upstream/llama.cpp-inkling/build/bin/llama-server -m ~/.cache/hug']
+[23:15:33] GPU busy, waiting: ['GPU_LOCK held by pid 91117', 'pid 91126 rss 93.7 GiB: <workdir>/upstream/llama.cpp-inkling/build/bin/llama-server -m ~/.cache/hug']
+[23:16:03] GPU busy, waiting: ['GPU_LOCK held by pid 91117', 'pid 98640 rss 93.0 GiB: <workdir>/upstream/llama.cpp-inkling/build/bin/llama-server -m ~/.cache/hug']
+[23:16:34] GPU busy, waiting: ['GPU_LOCK held by pid 91117', 'pid 98640 rss 93.4 GiB: <workdir>/upstream/llama.cpp-inkling/build/bin/llama-server -m ~/.cache/hug']
+[23:17:04] GPU busy, waiting: ['GPU_LOCK held by pid 91117', 'pid 98640 rss 93.4 GiB: <workdir>/upstream/llama.cpp-inkling/build/bin/llama-server -m ~/.cache/hug']

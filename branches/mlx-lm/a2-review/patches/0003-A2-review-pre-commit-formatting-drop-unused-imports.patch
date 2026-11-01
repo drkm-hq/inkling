@@ -1,0 +1,648 @@
+From 1966960b669913e6b409a624380b147e1c8825a5 Mon Sep 17 00:00:00 2001
+From: A2 review <nick@drkm.com>
+Date: Thu, 29 Oct 2026 03:37:07 -0400
+Subject: [PATCH 3/3] A2 review: pre-commit formatting, drop unused imports
+
+---
+ tests/test_inkling_a2.py | 396 ++++++++++++++++++++++++++++++++-------
+ 1 file changed, 324 insertions(+), 72 deletions(-)
+
+diff --git a/tests/test_inkling_a2.py b/tests/test_inkling_a2.py
+index e5b0d3a..6bd9f16 100644
+--- a/tests/test_inkling_a2.py
++++ b/tests/test_inkling_a2.py
+@@ -22,9 +22,8 @@ import tempfile  # noqa: E402
+ import unittest  # noqa: E402
+ 
+ import mlx.core as mx  # noqa: E402
+-import mlx.nn as nn  # noqa: E402
+ import numpy as np  # noqa: E402
+-from mlx.utils import tree_flatten, tree_map_with_path  # noqa: E402
++from mlx.utils import tree_map_with_path  # noqa: E402
+ 
+ from mlx_lm.generate import BatchGenerator, generate_step  # noqa: E402
+ from mlx_lm.models import inkling_mm_model as M  # noqa: E402
+@@ -91,7 +90,9 @@ def text_config():
+ 
+ def interleave_rows(g, u):
+     """transformers gate/up [..., I, H] -> checkpoint w13 [..., 2I, H] rows [g0,u0,g1,u1,...]."""
+-    return np.stack([g, u], axis=-2).reshape(*g.shape[:-2], 2 * g.shape[-2], g.shape[-1])
++    return np.stack([g, u], axis=-2).reshape(
++        *g.shape[:-2], 2 * g.shape[-2], g.shape[-1]
++    )
+ 
+ 
+ def source_weights(layout="hf"):
+@@ -155,7 +156,9 @@ def source_weights(layout="hf"):
+             if layout == "hf":
+                 w[f"{d}mlp.experts.w13_weight"] = f(interleave_rows(g, u))
+                 w[f"{d}mlp.experts.w2_weight"] = f(dn)
+-                w[f"{d}mlp.shared_experts.shared_w13_weight"] = f(interleave_rows(sg, su))
++                w[f"{d}mlp.shared_experts.shared_w13_weight"] = f(
++                    interleave_rows(sg, su)
++                )
+                 w[f"{d}mlp.shared_experts.shared_w2_weight"] = f(sd)
+             else:
+                 for part, (gg, uu, dd) in [
+@@ -183,7 +186,9 @@ def source_weights(layout="hf"):
+ 
+ 
+ def build_model(layout="hf", dtype=mx.float32):
+-    model = M.Model(M.ModelArgs(model_type="inkling_mm_model", text_config=text_config()))
++    model = M.Model(
++        M.ModelArgs(model_type="inkling_mm_model", text_config=text_config())
++    )
+     weights = model.sanitize(source_weights(layout))
+     model.load_weights(list(weights.items()), strict=True)
+     if dtype != mx.float32:
+@@ -218,7 +223,11 @@ def oracle_forward(ids, chunks=None):
+     caches, outs, pos = None, [], 0
+     for n in chunks:
+         r = R.model_forward_ref(
+-            PARAMS, OCFG, ids[:, pos : pos + n], positions=np.arange(pos, pos + n), caches=caches
++            PARAMS,
++            OCFG,
++            ids[:, pos : pos + n],
++            positions=np.arange(pos, pos + n),
++            caches=caches,
+         )
+         caches, pos = r["caches"], pos + n
+         outs.append(r["logits"])
+@@ -296,20 +305,26 @@ class TestInklingA2(unittest.TestCase):
+         for name, dev in DEVICES:
+             mx.set_default_device(dev)
+             if dev == mx.gpu and not gpu_fp32_exact():
+-                self.skipTest("GPU fp32 GEMMs run at TF32 precision; set MLX_ENABLE_TF32=0")
++                self.skipTest(
++                    "GPU fp32 GEMMs run at TF32 precision; set MLX_ENABLE_TF32=0"
++                )
+             yield name
+ 
+     # -- weights -------------------------------------------------------------
+ 
+     def test_sanitize_layouts_agree_and_idempotent(self):
+-        model = M.Model(M.ModelArgs(model_type="inkling_mm_model", text_config=text_config()))
++        model = M.Model(
++            M.ModelArgs(model_type="inkling_mm_model", text_config=text_config())
++        )
+         a = model.sanitize(source_weights("hf"))
+         b = model.sanitize(source_weights("mlx"))
+         self.assertEqual(set(a), set(b))
+         for k in a:
+             self.assertEqual(a[k].dtype, b[k].dtype, k)
+             self.assertTrue(mx.array_equal(a[k], b[k]), k)
+-        self.assertFalse(any(k.startswith(("model.visual", "model.audio", "model.mtp")) for k in a))
++        self.assertFalse(
++            any(k.startswith(("model.visual", "model.audio", "model.mtp")) for k in a)
++        )
+         # A converted (already fused / reversed) checkpoint must load unchanged
+         c = model.sanitize(dict(a))
+         self.assertEqual(set(c), set(a))
+@@ -331,23 +346,46 @@ class TestInklingA2(unittest.TestCase):
+         for dev in self.devices():
+             for layout in ("hf", "mlx"):
+                 model = build_model(layout)
+-                self.check(f"{dev}/{layout}: full forward logits B=2 L=12", model_forward(model, IDS), ref)
++                self.check(
++                    f"{dev}/{layout}: full forward logits B=2 L=12",
++                    model_forward(model, IDS),
++                    ref,
++                )
+                 h = model.model.llm.embed_tokens(mx.array(IDS))
+                 for i, layer in enumerate(model.model.llm.layers):
+                     h = layer(h, None)
+                     self.check(f"{dev}/{layout}: layer {i} output", h, layers[i])
+             model = build_model()
+-            self.check(f"{dev}: full forward L=40 (many windows, tau active)", model_forward(model, IDS40), oracle_forward(IDS40))
++            self.check(
++                f"{dev}: full forward L=40 (many windows, tau active)",
++                model_forward(model, IDS40),
++                oracle_forward(IDS40),
++            )
+             # L = 1 without a cache
+-            self.check(f"{dev}: single token, no cache", model_forward(model, IDS40[:, :1]), oracle_forward(IDS40[:, :1]))
++            self.check(
++                f"{dev}: single token, no cache",
++                model_forward(model, IDS40[:, :1]),
++                oracle_forward(IDS40[:, :1]),
++            )
+             # rows of a batch equal single-sequence runs
+             o2 = model_forward(model, IDS40)
+-            self.check(f"{dev}: batch rows == single rows", np.concatenate([model_forward(model, IDS40[:1]), model_forward(model, IDS40[1:])]), o2)
++            self.check(
++                f"{dev}: batch rows == single rows",
++                np.concatenate(
++                    [model_forward(model, IDS40[:1]), model_forward(model, IDS40[1:])]
++                ),
++                o2,
++            )
+ 
+     def test_cached_decode_and_chunked_prefill(self):
+         ref = oracle_forward(IDS40)
+         # the oracle is self-consistent under chunking (sanity of the reference itself)
+-        self.check("oracle: chunked (7, 1 x 33) == full", oracle_forward(IDS40, [7] + [1] * 33), ref, 1e-12)
++        self.check(
++            "oracle: chunked (7, 1 x 33) == full",
++            oracle_forward(IDS40, [7] + [1] * 33),
++            ref,
++            1e-12,
++        )
+         plans = {
+             "decode 7 + 1 x 33": [7] + [1] * 33,
+             "chunks of 1": [1] * 40,
+@@ -355,7 +393,20 @@ class TestInklingA2(unittest.TestCase):
+             "chunks of 5": [5] * 8,
+             "chunks of 7": [7] * 5 + [5],
+             "mixed (5,3,1,1,1,1,...)": [5, 3, 1, 1, 1, 1, 9, 2, 1, 4, 1, 1, 6, 1, 3],
+-            "multi-token after rotation (9,1,3,1,2,1,5,1,...)": [9, 1, 3, 1, 2, 1, 5, 1, 8, 1, 7, 1],
++            "multi-token after rotation (9,1,3,1,2,1,5,1,...)": [
++                9,
++                1,
++                3,
++                1,
++                2,
++                1,
++                5,
++                1,
++                8,
++                1,
++                7,
++                1,
++            ],
+         }
+         for dev in self.devices():
+             model = build_model()
+@@ -378,9 +429,21 @@ class TestInklingA2(unittest.TestCase):
+                 kv, conv = c[0], c[1]
+                 ks, vs = kv.keys_and_values()
+                 keep = ks.shape[2]
+-                self.check(f"{dev}: layer {i} cached K (last {keep}) ", ks[:, :, -oc["k"].shape[2] :], oc["k"][:, :, -keep:])
+-                self.check(f"{dev}: layer {i} cached V", vs[:, :, -oc["v"].shape[2] :], oc["v"][:, :, -keep:])
+-                self.check(f"{dev}: layer {i} k|v conv state", conv[0], np.concatenate([oc["conv"][0], oc["conv"][1]], -1))
++                self.check(
++                    f"{dev}: layer {i} cached K (last {keep}) ",
++                    ks[:, :, -oc["k"].shape[2] :],
++                    oc["k"][:, :, -keep:],
++                )
++                self.check(
++                    f"{dev}: layer {i} cached V",
++                    vs[:, :, -oc["v"].shape[2] :],
++                    oc["v"][:, :, -keep:],
++                )
++                self.check(
++                    f"{dev}: layer {i} k|v conv state",
++                    conv[0],
++                    np.concatenate([oc["conv"][0], oc["conv"][1]], -1),
++                )
+                 self.check(f"{dev}: layer {i} attn conv state", conv[1], oc["conv"][2])
+                 self.check(f"{dev}: layer {i} mlp conv state", conv[2], oc["conv"][3])
+                 if TINY["layer_types"][i] == "hybrid_sliding":
+@@ -400,13 +463,17 @@ class TestInklingA2(unittest.TestCase):
+         for dev in self.devices():
+             model = build_model()
+             cache = make_prompt_cache(model)
+-            model_forward(model, IDS40[:, :12], [9, 1, 1, 1], cache)  # rotated sliding caches
++            model_forward(
++                model, IDS40[:, :12], [9, 1, 1, 1], cache
++            )  # rotated sliding caches
+             with tempfile.TemporaryDirectory() as d:
+                 path = os.path.join(d, "cache.safetensors")
+                 save_prompt_cache(path, cache, {"note": "a2"})
+                 loaded, meta = load_prompt_cache(path, return_metadata=True)
+             self.assertEqual(meta["note"], "a2")
+-            self.assertEqual([type(c).__name__ for c in loaded], [type(c).__name__ for c in cache])
++            self.assertEqual(
++                [type(c).__name__ for c in loaded], [type(c).__name__ for c in cache]
++            )
+             a = model_forward(model, IDS40[:, 12:], [1] * 28, cache)
+             b = model_forward(model, IDS40[:, 12:], [1] * 28, loaded)
+             self.check(f"{dev}: decode after save/load == original", b, a, 1e-12)
+@@ -420,10 +487,16 @@ class TestInklingA2(unittest.TestCase):
+         # trimmable, so trim_prompt_cache is a no-op for Inkling.
+         self.assertFalse(can_trim_prompt_cache(cache))
+         self.assertEqual(trim_prompt_cache(cache, 1), 0)
+-        REPORT.append(("trim_prompt_cache is a no-op (ArraysCache not trimmable)", 0.0, 1.0))
++        REPORT.append(
++            ("trim_prompt_cache is a no-op (ArraysCache not trimmable)", 0.0, 1.0)
++        )
+         # and decoding continues correctly after the refused trim
+         out = model_forward(model, IDS40[:, 3:8], [1] * 5, cache)
+-        self.check("decode after refused trim vs oracle", out, oracle_forward(IDS40[:, :8])[:, 3:])
++        self.check(
++            "decode after refused trim vs oracle",
++            out,
++            oracle_forward(IDS40[:, :8])[:, 3:],
++        )
+ 
+     # -- batched caches (server paths) ----------------------------------------
+ 
+@@ -444,12 +517,26 @@ class TestInklingA2(unittest.TestCase):
+             oa = R.model_forward_ref(PARAMS, OCFG, a)["caches"]
+             ob = R.model_forward_ref(PARAMS, OCFG, b)["caches"]
+             for t in range(n):
+-                tok = np.stack([IDS40[0, la + t : la + t + 1], IDS40[1, lb + t : lb + t + 1]])
++                tok = np.stack(
++                    [IDS40[0, la + t : la + t + 1], IDS40[1, lb + t : lb + t + 1]]
++                )
+                 lp = np.array(model(mx.array(tok), cache=merged), np.float64)
+-                ra = R.model_forward_ref(PARAMS, OCFG, tok[:1], positions=np.array([la + t]), caches=oa)
+-                rb = R.model_forward_ref(PARAMS, OCFG, tok[1:], positions=np.array([lb + t]), caches=ob)
+-                self.check(f"{dev}: left-padded batch decode step {t} row A", lp[0], ra["logits"][0])
+-                self.check(f"{dev}: left-padded batch decode step {t} row B", lp[1], rb["logits"][0])
++                ra = R.model_forward_ref(
++                    PARAMS, OCFG, tok[:1], positions=np.array([la + t]), caches=oa
++                )
++                rb = R.model_forward_ref(
++                    PARAMS, OCFG, tok[1:], positions=np.array([lb + t]), caches=ob
++                )
++                self.check(
++                    f"{dev}: left-padded batch decode step {t} row A",
++                    lp[0],
++                    ra["logits"][0],
++                )
++                self.check(
++                    f"{dev}: left-padded batch decode step {t} row B",
++                    lp[1],
++                    rb["logits"][0],
++                )
+ 
+     def test_batched_right_padded_prefill_chunked(self):
+         # The server's prompt path: merged empty caches, prepare(lengths,
+@@ -473,17 +560,39 @@ class TestInklingA2(unittest.TestCase):
+                 c.finalize()
+             mx.eval([c.state for c in merged])
+             lp = np.array(mx.concatenate(outs, 1), np.float64)
+-            self.check(f"{dev}: right-padded chunked prefill row A", lp[0, :la], oracle_forward(toks[:1, :la])[0])
+-            self.check(f"{dev}: right-padded chunked prefill row B (valid part)", lp[1, :lb], oracle_forward(toks[1:, :lb])[0])
++            self.check(
++                f"{dev}: right-padded chunked prefill row A",
++                lp[0, :la],
++                oracle_forward(toks[:1, :la])[0],
++            )
++            self.check(
++                f"{dev}: right-padded chunked prefill row B (valid part)",
++                lp[1, :lb],
++                oracle_forward(toks[1:, :lb])[0],
++            )
+             oa = R.model_forward_ref(PARAMS, OCFG, toks[:1, :la])["caches"]
+             ob = R.model_forward_ref(PARAMS, OCFG, toks[1:, :lb])["caches"]
+             for t in range(6):
+-                tok = np.stack([IDS40[0, la + t : la + t + 1], IDS40[1, lb + t : lb + t + 1]])
++                tok = np.stack(
++                    [IDS40[0, la + t : la + t + 1], IDS40[1, lb + t : lb + t + 1]]
++                )
+                 lp = np.array(model(mx.array(tok), cache=merged), np.float64)
+-                ra = R.model_forward_ref(PARAMS, OCFG, tok[:1], positions=np.array([la + t]), caches=oa)
+-                rb = R.model_forward_ref(PARAMS, OCFG, tok[1:], positions=np.array([lb + t]), caches=ob)
+-                self.check(f"{dev}: decode after right-padded prefill step {t} row A", lp[0], ra["logits"][0])
+-                self.check(f"{dev}: decode after right-padded prefill step {t} row B", lp[1], rb["logits"][0])
++                ra = R.model_forward_ref(
++                    PARAMS, OCFG, tok[:1], positions=np.array([la + t]), caches=oa
++                )
++                rb = R.model_forward_ref(
++                    PARAMS, OCFG, tok[1:], positions=np.array([lb + t]), caches=ob
++                )
++                self.check(
++                    f"{dev}: decode after right-padded prefill step {t} row A",
++                    lp[0],
++                    ra["logits"][0],
++                )
++                self.check(
++                    f"{dev}: decode after right-padded prefill step {t} row B",
++                    lp[1],
++                    rb["logits"][0],
++                )
+ 
+     # -- generation entry points ----------------------------------------------
+ 
+@@ -492,15 +601,29 @@ class TestInklingA2(unittest.TestCase):
+         for dev in self.devices():
+             model = build_model()
+             toks, lps = [], []
+-            for tok, lp in generate_step(mx.array(prompt), model, max_tokens=8, sampler=make_sampler(0.0), prefill_step_size=5):
++            for tok, lp in generate_step(
++                mx.array(prompt),
++                model,
++                max_tokens=8,
++                sampler=make_sampler(0.0),
++                prefill_step_size=5,
++            ):
+                 toks.append(int(tok))
+                 lps.append(np.array(lp, np.float64))
+             seq = np.concatenate([prompt, toks])[None]
+             ref = oracle_forward(seq)[0]
+-            ref = ref - np.log(np.exp(ref - ref.max(-1, keepdims=True)).sum(-1, keepdims=True)) - ref.max(-1, keepdims=True)
++            ref = (
++                ref
++                - np.log(
++                    np.exp(ref - ref.max(-1, keepdims=True)).sum(-1, keepdims=True)
++                )
++                - ref.max(-1, keepdims=True)
++            )
+             for t in range(8):
+                 pos = len(prompt) - 1 + t
+-                self.check(f"{dev}: generate_step logprobs step {t}", lps[t], ref[pos], 1e-4)
++                self.check(
++                    f"{dev}: generate_step logprobs step {t}", lps[t], ref[pos], 1e-4
++                )
+                 top = np.argsort(-ref[pos])[:2]
+                 if ref[pos][top[0]] - ref[pos][top[1]] > 1e-3:
+                     self.assertEqual(toks[t], int(top[0]), f"step {t}")
+@@ -515,7 +638,13 @@ class TestInklingA2(unittest.TestCase):
+         n_tokens = [6, 3, 5]
+         for dev in self.devices():
+             model = build_model()
+-            gen = BatchGenerator(model, max_tokens=6, prefill_step_size=5, prefill_batch_size=8, completion_batch_size=8)
++            gen = BatchGenerator(
++                model,
++                max_tokens=6,
++                prefill_step_size=5,
++                prefill_batch_size=8,
++                completion_batch_size=8,
++            )
+             try:
+                 uids = gen.insert(prompts, max_tokens=n_tokens)
+                 toks = {u: [] for u in uids}
+@@ -545,10 +674,21 @@ class TestInklingA2(unittest.TestCase):
+                 self.assertEqual(len(toks[u]), n, u)
+                 seq = np.array(p + toks[u])[None]
+                 ref = oracle_forward(seq)[0]
+-                ref = ref - np.log(np.exp(ref - ref.max(-1, keepdims=True)).sum(-1, keepdims=True)) - ref.max(-1, keepdims=True)
++                ref = (
++                    ref
++                    - np.log(
++                        np.exp(ref - ref.max(-1, keepdims=True)).sum(-1, keepdims=True)
++                    )
++                    - ref.max(-1, keepdims=True)
++                )
+                 for t in range(n):
+                     pos = len(p) - 1 + t
+-                    self.check(f"{dev}: BatchGenerator seq {u} (prompt {len(p)}, {n} tokens) logprobs step {t}", lps[u][t], ref[pos], 1e-4)
++                    self.check(
++                        f"{dev}: BatchGenerator seq {u} (prompt {len(p)}, {n} tokens) logprobs step {t}",
++                        lps[u][t],
++                        ref[pos],
++                        1e-4,
++                    )
+                     top = np.argsort(-ref[pos])[:2]
+                     if ref[pos][top[0]] - ref[pos][top[1]] > 1e-3:
+                         self.assertEqual(toks[u][t], int(top[0]), f"seq {u} step {t}")
+@@ -583,12 +723,25 @@ class TestInklingA2(unittest.TestCase):
+                 if window > 0:
+                     masked |= dist >= window
+                 ref = np.where(masked[None, None], -np.inf, ref)
+-                rl = np.einsum("bihd,de->bhie", r, proj)[..., ::-1].copy()  # K2's reversed bank
+-                out = np.array(M.banded_mask(mx.array(rl.astype(np.float32)), S, window, extent), np.float64)
++                rl = np.einsum("bihd,de->bhie", r, proj)[
++                    ..., ::-1
++                ].copy()  # K2's reversed bank
++                out = np.array(
++                    M.banded_mask(mx.array(rl.astype(np.float32)), S, window, extent),
++                    np.float64,
++                )
+                 self.assertEqual(out.shape, ref.shape)
+-                np.testing.assert_array_equal(np.isinf(out), np.isinf(ref), f"{(B, H, L, S, window, extent)} inf pattern")
++                np.testing.assert_array_equal(
++                    np.isinf(out),
++                    np.isinf(ref),
++                    f"{(B, H, L, S, window, extent)} inf pattern",
++                )
+                 fin = np.isfinite(ref)
+-                self.check(f"{dev}: banded_mask {(B, H, L, S, window, extent)}", out[fin], ref[fin])
++                self.check(
++                    f"{dev}: banded_mask {(B, H, L, S, window, extent)}",
++                    out[fin],
++                    ref[fin],
++                )
+ 
+     def test_router_vs_oracle(self):
+         rs = np.random.RandomState(5)
+@@ -613,30 +766,63 @@ class TestInklingA2(unittest.TestCase):
+                 gs = np.array([1.3], np.float32)
+                 # the oracle sees exactly the float32 logits (identity gate)
+                 idx, tw, gamma, _ = R.router_ref(
+-                    logits.astype(np.float64), np.eye(R_ + S_), bias.astype(np.float64), gs, 8.0, K_, S_
++                    logits.astype(np.float64),
++                    np.eye(R_ + S_),
++                    bias.astype(np.float64),
++                    gs,
++                    8.0,
++                    K_,
++                    S_,
+                 )
+-                for name, fn in [("kernel", M.select_experts), ("compiled", M._select_experts)]:
++                for name, fn in [
++                    ("kernel", M.select_experts),
++                    ("compiled", M._select_experts),
++                ]:
+                     if name == "kernel" and dev == "cpu":
+                         continue
+-                    inds, w = fn(mx.array(logits), mx.array(bias), mx.array(gs), K_, 8.0)
++                    inds, w = fn(
++                        mx.array(logits), mx.array(bias), mx.array(gs), K_, 8.0
++                    )
+                     inds, w = np.array(inds), np.array(w, np.float64)
+                     # routed indices [N, K] (00cdad1) or routed + shared [N, K + S] (cce0834)
+                     self.assertIn(inds.shape, [(N, K_), (N, K_ + S_)])
+                     self.assertEqual(w.shape, (N, K_ + S_))
+                     if inds.shape[1] == K_ + S_:
+-                        np.testing.assert_array_equal(inds[:, K_:], np.broadcast_to(np.arange(R_, R_ + S_), (N, S_)))
++                        np.testing.assert_array_equal(
++                            inds[:, K_:],
++                            np.broadcast_to(np.arange(R_, R_ + S_), (N, S_)),
++                        )
+                     nbad = []
+                     werr = 0.0
+                     for i in range(N):
+                         if set(inds[i, :K_].tolist()) != set(idx[i].tolist()):
+                             nbad.append(i)
+                             continue
+-                        got = dict(zip(inds[i, :K_].tolist() + list(range(R_, R_ + S_)), w[i]))
+-                        ref = dict(zip(idx[i].tolist() + list(range(R_, R_ + S_)), np.concatenate([tw[i], gamma[i]])))
+-                        werr = max(werr, max(abs(got[e] - ref[e]) / abs(ref[e]) for e in ref))
+-                    REPORT.append((f"{dev}: router {name} N={N}: expert sets differ from the oracle on rows {nbad} (row 0 holds the exact tie); max weight rel err {werr:.2e}", werr, 1e-5))
++                        got = dict(
++                            zip(inds[i, :K_].tolist() + list(range(R_, R_ + S_)), w[i])
++                        )
++                        ref = dict(
++                            zip(
++                                idx[i].tolist() + list(range(R_, R_ + S_)),
++                                np.concatenate([tw[i], gamma[i]]),
++                            )
++                        )
++                        werr = max(
++                            werr, max(abs(got[e] - ref[e]) / abs(ref[e]) for e in ref)
++                        )
++                    REPORT.append(
++                        (
++                            f"{dev}: router {name} N={N}: expert sets differ from the oracle on rows {nbad} (row 0 holds the exact tie); max weight rel err {werr:.2e}",
++                            werr,
++                            1e-5,
++                        )
++                    )
+                     # The kernel documents lowest-index ties; argpartition does not
+-                    self.assertEqual([i for i in nbad if i != 0 or name == "kernel"], [], f"{name} N={N}")
++                    self.assertEqual(
++                        [i for i in nbad if i != 0 or name == "kernel"],
++                        [],
++                        f"{name} N={N}",
++                    )
+                     self.assertLessEqual(werr, 1e-5)
+ 
+     def test_short_conv_kernel_equals_fallback(self):
+@@ -647,11 +833,19 @@ class TestInklingA2(unittest.TestCase):
+                 continue
+             for dtype in (mx.bfloat16, mx.float16, mx.float32):
+                 conv = M.ShortConv(C, K, slot=0)
+-                conv.weight = mx.array(rs.standard_normal((C, K, 1)).astype(np.float32) * 0.3)
++                conv.weight = mx.array(
++                    rs.standard_normal((C, K, 1)).astype(np.float32) * 0.3
++                )
+                 for L in (1, 2, 5, 8, 9, 20):
+-                    x = mx.array(rs.standard_normal((2, L, C)).astype(np.float32)).astype(dtype)
+-                    res = mx.array(rs.standard_normal((2, L, C)).astype(np.float32)).astype(dtype)
+-                    st = mx.array(rs.standard_normal((2, K - 1, C)).astype(np.float32)).astype(dtype)
++                    x = mx.array(
++                        rs.standard_normal((2, L, C)).astype(np.float32)
++                    ).astype(dtype)
++                    res = mx.array(
++                        rs.standard_normal((2, L, C)).astype(np.float32)
++                    ).astype(dtype)
++                    st = mx.array(
++                        rs.standard_normal((2, K - 1, C)).astype(np.float32)
++                    ).astype(dtype)
+                     outs = []
+                     for use_kernel in (True, False):
+                         saved = M._short_conv_kernel
+@@ -671,15 +865,35 @@ class TestInklingA2(unittest.TestCase):
+                     # K2 documents the two paths as bit-identical; record whether
+                     # they are, assert they agree to one rounding of the dtype
+                     same = bool(mx.array_equal(yk, yf))
+-                    ulp = {mx.float32: 1e-6, mx.float16: 2.0**-10, mx.bfloat16: 2.0**-7}[dtype]
+-                    REPORT.append((f"{dev}: ShortConv {dtype} L={L} kernel vs fallback (bit-identical: {same})", rel(yk, yf), ulp))
+-                    self.assertLessEqual(rel(yk, yf), ulp, f"{dtype} L={L}: kernel vs fallback")
+-                    self.assertTrue(mx.array_equal(sk, sf), f"{dtype} L={L}: state differs")
++                    ulp = {
++                        mx.float32: 1e-6,
++                        mx.float16: 2.0**-10,
++                        mx.bfloat16: 2.0**-7,
++                    }[dtype]
++                    REPORT.append(
++                        (
++                            f"{dev}: ShortConv {dtype} L={L} kernel vs fallback (bit-identical: {same})",
++                            rel(yk, yf),
++                            ulp,
++                        )
++                    )
++                    self.assertLessEqual(
++                        rel(yk, yf), ulp, f"{dtype} L={L}: kernel vs fallback"
++                    )
++                    self.assertTrue(
++                        mx.array_equal(sk, sf), f"{dtype} L={L}: state differs"
++                    )
+                     # fp32 against the oracle (the kernel path when L <= 8)
+                     if dtype == mx.float32:
+-                        y_ref, s_ref = R.sconv_ref(np.array(x), np.array(conv.weight)[:, :, 0], np.array(st))
++                        y_ref, s_ref = R.sconv_ref(
++                            np.array(x), np.array(conv.weight)[:, :, 0], np.array(st)
++                        )
+                         y_ref = y_ref + np.array(res)
+-                        self.check(f"{dev}: ShortConv fp32 L={L} vs oracle (+residual)", yk, y_ref)
++                        self.check(
++                            f"{dev}: ShortConv fp32 L={L} vs oracle (+residual)",
++                            yk,
++                            y_ref,
++                        )
+                         self.check(f"{dev}: ShortConv state L={L}", sk, s_ref, 0.0)
+ 
+     # -- reduced precision and quantization ----------------------------------------
+@@ -700,22 +914,42 @@ class TestInklingA2(unittest.TestCase):
+             for dtype in (mx.bfloat16, mx.float16):
+                 model = build_model(dtype=dtype)
+                 out, routes = forward_with_routes(model, ids, chunks)
+-                flipped = {(b, pos) for (i, b, pos), r in routes.items() if routes32[(i, b, pos)] != r}
++                flipped = {
++                    (b, pos)
++                    for (i, b, pos), r in routes.items()
++                    if routes32[(i, b, pos)] != r
++                }
+                 keep = np.ones(ids.shape, bool)
+                 for b, pos in flipped:
+                     keep[b, pos] = False
+                 e_all = rel(out, ref)
+                 e_keep = rel(out[keep], ref[keep])
+-                REPORT.append((f"{dev}: {dtype} vs oracle, all tokens ({len(flipped)}/{ids.size} tokens route differently from fp32)", e_all, 1.0))
++                REPORT.append(
++                    (
++                        f"{dev}: {dtype} vs oracle, all tokens ({len(flipped)}/{ids.size} tokens route differently from fp32)",
++                        e_all,
++                        1.0,
++                    )
++                )
+                 # recorded, judged like-for-like against mlx-vlm in review/a2_tiny_bf16.py
+-                REPORT.append((f"{dev}: {dtype} vs oracle on tokens routed like fp32 (information only)", e_keep, 1.0))
++                REPORT.append(
++                    (
++                        f"{dev}: {dtype} vs oracle on tokens routed like fp32 (information only)",
++                        e_keep,
++                        1.0,
++                    )
++                )
+                 saved = (M._short_conv_kernel, M._route_kernel, M._banded_mask_kernel)
+                 try:
+-                    M._short_conv_kernel = M._route_kernel = M._banded_mask_kernel = None
++                    M._short_conv_kernel = M._route_kernel = M._banded_mask_kernel = (
++                        None
++                    )
+                     out2, routes2 = forward_with_routes(model, ids, chunks)
+                 finally:
+                     M._short_conv_kernel, M._route_kernel, M._banded_mask_kernel = saved
+-                self.assertEqual(routes2, routes, f"{dtype}: kernel and fallback routing differ")
++                self.assertEqual(
++                    routes2, routes, f"{dtype}: kernel and fallback routing differ"
++                )
+                 self.check(f"{dev}: {dtype} kernels vs fallbacks", out2, out, 1e-2)
+ 
+     def test_quantized_tiny(self):
+@@ -725,19 +959,37 @@ class TestInklingA2(unittest.TestCase):
+         for dev in self.devices():
+             model = build_model()
+             qmodel, qcfg = quantize_model(model, {}, 32, 4)
+-            kinds = {k: type(m).__name__ for k, m in qmodel.named_modules() if "Quantized" in type(m).__name__}
++            kinds = {
++                k: type(m).__name__
++                for k, m in qmodel.named_modules()
++                if "Quantized" in type(m).__name__
++            }
+             self.assertIn("model.llm.layers.0.attn.qkvr_proj", kinds)
+-            self.assertEqual(qcfg["quantization"]["model.llm.layers.0.attn.qkvr_proj"], {"group_size": 64, "bits": 8})
++            self.assertEqual(
++                qcfg["quantization"]["model.llm.layers.0.attn.qkvr_proj"],
++                {"group_size": 64, "bits": 8},
++            )
+             self.assertIn("model.llm.layers.1.mlp.experts.gate_proj", kinds)
+             self.assertNotIn("model.llm.layers.1.mlp.gate", kinds)
+             self.assertTrue(all(not k.endswith("sconv") for k in kinds))
+             dq = dequantize_model(copy.deepcopy(qmodel))
+             mx.eval(qmodel.parameters(), dq.parameters())
+             for name, chunks in [("full", None), ("decode 7 + 1 x 9", [7] + [1] * 9)]:
+-                self.check(f"{dev}: quantized tiny model {name} vs its dequantized twin", model_forward(qmodel, IDS40[:, :16], chunks), model_forward(dq, IDS40[:, :16], chunks), 2e-5)
++                self.check(
++                    f"{dev}: quantized tiny model {name} vs its dequantized twin",
++                    model_forward(qmodel, IDS40[:, :16], chunks),
++                    model_forward(dq, IDS40[:, :16], chunks),
++                    2e-5,
++                )
+             # the dequantized twin is still close to the oracle (4-bit experts)
+             e = rel(model_forward(dq, IDS40[:, :16]), oracle_forward(IDS40[:, :16]))
+-            REPORT.append((f"{dev}: dequantized 4-bit tiny model vs oracle (information only)", e, 1.0))
++            REPORT.append(
++                (
++                    f"{dev}: dequantized 4-bit tiny model vs oracle (information only)",
++                    e,
++                    1.0,
++                )
++            )
+ 
+ 
+ def _print_report():

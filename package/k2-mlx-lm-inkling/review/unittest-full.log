@@ -1,0 +1,320 @@
+F.................Computing Hessians:   0%|          | 0/8 [00:00<?, ?it/s]Computing Hessians:  12%|█▎        | 1/8 [00:00<00:01,  5.27it/s]Computing Hessians: 100%|██████████| 8/8 [00:00<00:00, 41.59it/s]
+Quantizing:   0%|          | 0/1 [00:00<?, ?it/s]Quantizing: 100%|██████████| 1/1 [00:00<00:00,  2.60it/s]Quantizing: 100%|██████████| 1/1 [00:00<00:00,  2.60it/s]
+.Computing Hessians:   0%|          | 0/8 [00:00<?, ?it/s]Computing Hessians:  12%|█▎        | 1/8 [00:00<00:05,  1.18it/s]Computing Hessians: 100%|██████████| 8/8 [00:00<00:00,  9.44it/s]
+Quantizing:   0%|          | 0/1 [00:00<?, ?it/s]Quantizing: 100%|██████████| 1/1 [00:00<00:00, 86.83it/s]
+.F..F............  0%|          | 0/2 [00:00<?, ?it/s]                                       0%|          | 0/2 [00:00<?, ?it/s] 50%|█████     | 1/2 [00:00<00:00,  6.66it/s]                                              50%|█████     | 1/2 [00:00<00:00,  6.66it/s]100%|██████████| 2/2 [00:00<00:00,  8.28it/s]
+.Loss reduction: 0.7558592557907104
+Loss reduction: 0.40114182233810425
+  0%|          | 0/2 [00:00<?, ?it/s]                                       0%|          | 0/2 [00:00<?, ?it/s]                                       0%|          | 0/2 [00:00<?, ?it/s]100%|██████████| 2/2 [00:00<00:00, 11.17it/s]100%|██████████| 2/2 [00:00<00:00, 11.16it/s]
+Loss reduction: 0.8431065082550049
+Loss reduction: 0.6681538820266724
+  0%|          | 0/2 [00:00<?, ?it/s]                                       0%|          | 0/2 [00:00<?, ?it/s]                                       0%|          | 0/2 [00:00<?, ?it/s]100%|██████████| 2/2 [00:00<00:00, 10.62it/s]100%|██████████| 2/2 [00:00<00:00, 10.61it/s]
+Loss reduction: 0.8124758005142212
+Loss reduction: 0.6991400718688965
+  0%|          | 0/2 [00:00<?, ?it/s]                                       0%|          | 0/2 [00:00<?, ?it/s] 50%|█████     | 1/2 [00:00<00:00,  9.83it/s]                                              50%|█████     | 1/2 [00:00<00:00,  9.83it/s]100%|██████████| 2/2 [00:00<00:00,  9.75it/s]100%|██████████| 2/2 [00:00<00:00,  9.76it/s]
+Loss reduction: 0.6949771046638489
+Loss reduction: 0.5413680076599121
+  0%|          | 0/2 [00:00<?, ?it/s]                                       0%|          | 0/2 [00:00<?, ?it/s] 50%|█████     | 1/2 [00:00<00:00,  8.15it/s]                                              50%|█████     | 1/2 [00:00<00:00,  8.15it/s]100%|██████████| 2/2 [00:00<00:00,  7.45it/s]100%|██████████| 2/2 [00:00<00:00,  7.54it/s]
+.Loss reduction: 0.7458693981170654
+Loss reduction: 0.6767963767051697
+[34m╭─[0m[34m [0m[1;35mmlx_lm.chat[0m[34m [0m[34m───────────────────────────────────────────────────────────────────────────────────────────────────────[0m[34m─╮[0m
+[34m│[0m    [39mmodel     [0m   [1mmlx-community/Llama-3.2-3B-Instruct-4bit[0m                                                             [34m│[0m
+[34m│[0m    [39mmax tokens[0m   [1m256[0m                                                                                                  [34m│[0m
+[34m╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯[0m
+  [39mcommands[0m    [1mq[0m [38;5;244mexit[0m   [1mr[0m [38;5;244mreset[0m   [1mh[0m [38;5;244mhelp[0m
+[38;5;244m───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────[0m
+
+[38;5;244m───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────[0m
+[2A
+  [38;5;244m1 tokens · 1.0 tok/s · prompt 1.0 tok/s · peak 1.00 GB[0m
+[38;5;244m───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────[0m
+
+[38;5;244m───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────[0m
+[2A
+[38;5;244mbye[0m
+....[34m╭─[0m[34m [0m[1;35mmlx_lm.chat[0m[34m [0m[34m───────────────────────────────────────────────────────────────────────────────────────────────────────[0m[34m─╮[0m
+[34m│[0m    [39mmodel     [0m   [1mmlx-community/Llama-3.2-3B-Instruct-4bit[0m                                                             [34m│[0m
+[34m│[0m    [39mmax tokens[0m   [1m256[0m                                                                                                  [34m│[0m
+[34m│[0m    [39msystem    [0m   [1mYou are a weather assistant.[0m                                                                         [34m│[0m
+[34m╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯[0m
+  [39mcommands[0m    [1mq[0m [38;5;244mexit[0m   [1mr[0m [38;5;244mreset[0m   [1mh[0m [38;5;244mhelp[0m
+[38;5;244m───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────[0m
+
+[38;5;244m───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────[0m
+[2A
+  [38;5;244m1 tokens · 1.0 tok/s · prompt 1.0 tok/s · peak 1.00 GB[0m
+[38;5;244m───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────[0m
+
+[38;5;244m───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────[0m
+[2A
+[38;5;244mbye[0m
+.Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+...Loading Hugging Face dataset FiscalNote/billsum.
+Generating train split:   0%|          | 0/18949 [00:00<?, ? examples/s]Generating train split:  42%|████▏     | 8000/18949 [00:00<00:00, 69620.78 examples/s]Generating train split: 100%|██████████| 18949/18949 [00:00<00:00, 91390.01 examples/s]
+Generating test split:   0%|          | 0/3269 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 3269/3269 [00:00<00:00, 98141.69 examples/s]
+Generating ca_test split:   0%|          | 0/1237 [00:00<?, ? examples/s]Generating ca_test split: 100%|██████████| 1237/1237 [00:00<00:00, 77725.82 examples/s]
+......Loading Hugging Face dataset FiscalNote/billsum.
+Loading Hugging Face dataset FiscalNote/billsum.
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00, 22192.08it/s]
+.  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  2.21it/s]100%|██████████| 1/1 [00:00<00:00,  2.20it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00, 90.51it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00, 798.76it/s]
+.  0%|          | 0/3 [00:00<?, ?it/s]100%|██████████| 3/3 [00:00<00:00, 2793.72it/s]
+.  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00, 935.81it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00, 906.48it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00, 514.89it/s]
+.........................[INFO] Quantized model with 11.658 bits per weight.
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:08<00:00,  1.05it/s]Fetching 9 files: 100%|██████████| 9/9 [00:08<00:00,  1.05it/s]
+FFF.......F.....F............F....FF.........................F.................F...........................F...............F.....F........s.......F........................FF.............Converting to GGUF format
+Converted GGUF model saved as: /fake/output/path/gguf_model.gguf
+[INFO] Quantized model with 11.803 bits per weight.
+[INFO] Quantized model with 5.093 bits per weight.
+[INFO] Quantized model with 6.246 bits per weight.
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 2352.83it/s]
+....................................ERROR:root:mlx_lm.server generation thread died: simulated generate crash
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/mlx_lm/server.py", line 558, in _run_generate
+    self._generate()
+  File "<workdir>/upstream/mlx-lm-a2/mlx_lm/server.py", line 780, in _generate
+    self.model_provider.load_default()
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_server.py", line 984, in load_default
+    raise RuntimeError("simulated generate crash")
+RuntimeError: simulated generate crash
+.ERROR:root:mlx_lm.server generation thread died: simulated generate crash
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/mlx_lm/server.py", line 558, in _run_generate
+    self._generate()
+  File "<workdir>/upstream/mlx-lm-a2/mlx_lm/server.py", line 780, in _generate
+    self.model_provider.load_default()
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_server.py", line 984, in load_default
+    raise RuntimeError("simulated generate crash")
+RuntimeError: simulated generate crash
+............Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 1772.41it/s]
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 2495.78it/s]
+.127.0.0.1 - - [29/Oct/2026 02:24:10] "POST /v1/chat/completions HTTP/1.1" 200 -
+.127.0.0.1 - - [29/Oct/2026 02:24:12] "POST /v1/chat/completions HTTP/1.1" 200 -
+.127.0.0.1 - - [29/Oct/2026 02:24:12] "POST /v1/chat/completions HTTP/1.1" 200 -
+.127.0.0.1 - - [29/Oct/2026 02:24:12] "POST /v1/chat/completions HTTP/1.1" 200 -
+.127.0.0.1 - - [29/Oct/2026 02:24:12] "POST /v1/completions HTTP/1.1" 200 -
+127.0.0.1 - - [29/Oct/2026 02:24:13] "POST /v1/completions HTTP/1.1" 200 -
+.127.0.0.1 - - [29/Oct/2026 02:24:14] "GET /v1/models HTTP/1.1" 200 -
+.127.0.0.1 - - [29/Oct/2026 02:24:14] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [29/Oct/2026 02:24:14] "GET /health HTTP/1.1" 503 -
+.127.0.0.1 - - [29/Oct/2026 02:24:14] "POST /v1/completions HTTP/1.1" 400 -
+127.0.0.1 - - [29/Oct/2026 02:24:14] "POST /v1/completions HTTP/1.1" 400 -
+.127.0.0.1 - - [29/Oct/2026 02:24:14] "POST /v1/completions HTTP/1.1" 400 -
+.Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 787.81it/s]
+127.0.0.1 - - [29/Oct/2026 02:24:15] "POST /v1/completions HTTP/1.1" 200 -
+..Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 2481.35it/s]
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 1630.40it/s]
+127.0.0.1 - - [29/Oct/2026 02:24:18] "POST /v1/chat/completions HTTP/1.1" 200 -
+.127.0.0.1 - - [29/Oct/2026 02:24:18] "POST /v1/completions HTTP/1.1" 200 -
+.127.0.0.1 - - [29/Oct/2026 02:24:18] "POST /v1/chat/completions HTTP/1.1" 200 -
+127.0.0.1 - - [29/Oct/2026 02:24:18] "POST /v1/chat/completions HTTP/1.1" 200 -
+.127.0.0.1 - - [29/Oct/2026 02:24:18] "POST /v1/chat/completions HTTP/1.1" 200 -
+.Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 2381.02it/s]
+.............Fetching 5 files:   0%|          | 0/5 [00:00<?, ?it/s]Fetching 5 files:  40%|████      | 2/5 [00:00<00:00, 12.16it/s]Fetching 5 files: 100%|██████████| 5/5 [00:00<00:00,  5.55it/s]Fetching 5 files: 100%|██████████| 5/5 [00:00<00:00,  5.93it/s]
+[transformers] Ignoring clean_up_tokenization_spaces=True for BPE tokenizer TokenizersBackend. The clean_up_tokenization post-processing step is designed for WordPiece tokenizers and is destructive for BPE (it strips spaces before punctuation). Set clean_up_tokenization_spaces=False to suppress this warning, or set clean_up_tokenization_spaces_for_bpe_even_though_it_will_corrupt_output=True to force cleanup anyway.
+..Fetching 8 files:   0%|          | 0/8 [00:00<?, ?it/s]Fetching 8 files: 100%|██████████| 8/8 [00:00<00:00, 1633.06it/s]
+.Fetching 8 files:   0%|          | 0/8 [00:00<?, ?it/s]Fetching 8 files:  12%|█▎        | 1/8 [00:00<00:01,  6.03it/s]Fetching 8 files: 100%|██████████| 8/8 [00:00<00:00, 35.38it/s]Fetching 8 files: 100%|██████████| 8/8 [00:00<00:00, 29.74it/s]
+.Fetching 8 files:   0%|          | 0/8 [00:00<?, ?it/s]Fetching 8 files:  75%|███████▌  | 6/8 [00:00<00:00, 43.04it/s]Fetching 8 files: 100%|██████████| 8/8 [00:00<00:00, 13.63it/s]
+Fetching 5 files:   0%|          | 0/5 [00:00<?, ?it/s]Fetching 5 files: 100%|██████████| 5/5 [00:00<00:00, 2028.39it/s]
+...Fetching 8 files:   0%|          | 0/8 [00:00<?, ?it/s]Fetching 8 files: 100%|██████████| 8/8 [00:00<00:00, 1956.98it/s]
+Fetching 6 files:   0%|          | 0/6 [00:00<?, ?it/s]Fetching 6 files:  17%|█▋        | 1/6 [00:00<00:00,  9.04it/s]Fetching 6 files: 100%|██████████| 6/6 [00:00<00:00, 11.10it/s]Fetching 6 files: 100%|██████████| 6/6 [00:00<00:00, 10.97it/s]
+Fetching 10 files:   0%|          | 0/10 [00:00<?, ?it/s]Fetching 10 files:  10%|█         | 1/10 [00:00<00:01,  6.29it/s]Fetching 10 files:  90%|█████████ | 9/10 [00:00<00:00, 40.37it/s]Fetching 10 files: 100%|██████████| 10/10 [00:00<00:00, 13.41it/s]
+[transformers] This model config has set a `rope_parameters['original_max_position_embeddings']` field, to be used together with `max_position_embeddings` to determine a scaling factor. Please set the `factor` field of `rope_parameters`with this ratio instead -- we recommend the use of this field over `original_max_position_embeddings`, as it is compatible with most model architectures.
+Fetching 6 files:   0%|          | 0/6 [00:00<?, ?it/s]Fetching 6 files:  17%|█▋        | 1/6 [00:00<00:00,  8.79it/s]Fetching 6 files: 100%|██████████| 6/6 [00:00<00:00, 11.44it/s]Fetching 6 files: 100%|██████████| 6/6 [00:00<00:00, 11.25it/s]
+Fetching 5 files:   0%|          | 0/5 [00:00<?, ?it/s]Fetching 5 files: 100%|██████████| 5/5 [00:00<00:00, 1871.29it/s]
+Fetching 5 files:   0%|          | 0/5 [00:00<?, ?it/s]Fetching 5 files:  20%|██        | 1/5 [00:00<00:00,  7.57it/s]Fetching 5 files: 100%|██████████| 5/5 [00:00<00:00, 29.57it/s]
+Fetching 5 files:   0%|          | 0/5 [00:00<?, ?it/s]Fetching 5 files: 100%|██████████| 5/5 [00:00<00:00, 1316.15it/s]
+.Fetching 8 files:   0%|          | 0/8 [00:00<?, ?it/s]Fetching 8 files: 100%|██████████| 8/8 [00:00<00:00, 1617.86it/s]
+Fetching 5 files:   0%|          | 0/5 [00:00<?, ?it/s]Fetching 5 files: 100%|██████████| 5/5 [00:00<00:00, 1659.01it/s]
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files:  14%|█▍        | 1/7 [00:00<00:00,  8.39it/s]Fetching 7 files:  43%|████▎     | 3/7 [00:00<00:00, 12.13it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 20.90it/s]
+............................................[INFO] Loading
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 568.51it/s]
+[INFO] Using dtype: bfloat16
+[INFO] Loading
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 3267.72it/s]
+....[INFO] Using dtype: bfloat16
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 2092.50it/s]
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 2880.92it/s]
+.........
+======================================================================
+FAIL: test_cached_matches_forward (models.test_deepseek_v41.TestDeepseekV41.test_cached_matches_forward)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/tests/models/test_deepseek_v41.py", line 64, in test_cached_matches_forward
+    self.assertTrue(
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_cached_matches_forward (models.test_muse_spark.TestMuseSpark.test_cached_matches_forward)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/tests/models/test_muse_spark.py", line 159, in test_cached_matches_forward
+    self.assertTrue(
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_left_padding (models.test_muse_spark.TestMuseSpark.test_left_padding)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/tests/models/test_muse_spark.py", line 147, in test_left_padding
+    test_models.TestModels.left_padding_test_runner(self, create_model())
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_models.py", line 493, in left_padding_test_runner
+    self.assertTrue(mx.allclose(single_next, batched_next, rtol=1e-4, atol=1e-4))
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_batch_continued_generation (test_generate.TestGenerate.test_batch_continued_generation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_generate.py", line 654, in test_batch_continued_generation
+    self.assertTrue(
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_batch_continued_generation_gated_delta (test_generate.TestGenerate.test_batch_continued_generation_gated_delta)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_generate.py", line 778, in test_batch_continued_generation_gated_delta
+    self._continued_generation_test_helper(model)
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_generate.py", line 715, in _continued_generation_test_helper
+    self.assertTrue(
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_batch_continued_generation_ssm (test_generate.TestGenerate.test_batch_continued_generation_ssm)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_generate.py", line 745, in test_batch_continued_generation_ssm
+    self._continued_generation_test_helper(model)
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_generate.py", line 715, in _continued_generation_test_helper
+    self.assertTrue(
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_batch_matches_single (test_generate.TestGenerate.test_batch_matches_single)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_generate.py", line 261, in test_batch_matches_single
+    self.assertTrue(mx.allclose(blp, lp))
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_batch_sliding_window (test_generate.TestGenerate.test_batch_sliding_window)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_generate.py", line 404, in test_batch_sliding_window
+    self.assertTrue(
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_many_batches (test_generate.TestGenerate.test_many_batches)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_generate.py", line 312, in test_many_batches
+    self.assertTrue(mx.allclose(blp, lp))
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_stream_generate_input_embeddings (test_generate.TestGenerate.test_stream_generate_input_embeddings)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_generate.py", line 189, in test_stream_generate_input_embeddings
+    self.assertEqual("TEST", response)
+AssertionError: 'TEST' != 'Please Please Please have a'
+- TEST
++ Please Please Please have a
+
+
+======================================================================
+FAIL: test_stream_generate_input_embeddings_prefill (test_generate.TestGenerate.test_stream_generate_input_embeddings_prefill)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_generate.py", line 224, in test_stream_generate_input_embeddings_prefill
+    self.assertEqual("TEST", response)
+AssertionError: 'TEST' != 'Please Please Please have a'
+- TEST
++ Please Please Please have a
+
+
+======================================================================
+FAIL: test_afm7_left_padding (test_models.TestModels.test_afm7_left_padding)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_models.py", line 2099, in test_afm7_left_padding
+    self.left_padding_test_runner(model)
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_models.py", line 493, in left_padding_test_runner
+    self.assertTrue(mx.allclose(single_next, batched_next, rtol=1e-4, atol=1e-4))
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_flint (test_models.TestModels.test_flint)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_models.py", line 3533, in test_flint
+    self.left_padding_test_runner(model)
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_models.py", line 493, in left_padding_test_runner
+    self.assertTrue(mx.allclose(single_next, batched_next, rtol=1e-4, atol=1e-4))
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_granitemoehybrid_padded_batch (test_models.TestModels.test_granitemoehybrid_padded_batch)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_models.py", line 3692, in test_granitemoehybrid_padded_batch
+    self.assertLess(err, 1e-5)
+AssertionError: 0.00341796875 not less than 1e-05
+
+======================================================================
+FAIL: test_llama4_chunked_kv_cache (test_models.TestModels.test_llama4_chunked_kv_cache)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_models.py", line 5255, in test_llama4_chunked_kv_cache
+    self.assertTrue(mx.allclose(full, step, atol=1e-3, rtol=1e-3))
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_minicpm3 (test_models.TestModels.test_minicpm3)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_models.py", line 2066, in test_minicpm3
+    self.left_padding_test_runner(model)
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_models.py", line 493, in left_padding_test_runner
+    self.assertTrue(mx.allclose(single_next, batched_next, rtol=1e-4, atol=1e-4))
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_phixtral (test_models.TestModels.test_phixtral)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_models.py", line 2083, in test_phixtral
+    self.left_padding_test_runner(model)
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_models.py", line 493, in left_padding_test_runner
+    self.assertTrue(mx.allclose(single_next, batched_next, rtol=1e-4, atol=1e-4))
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_spark2_5_chunked_vs_oneshot_prefill (test_models.TestModels.test_spark2_5_chunked_vs_oneshot_prefill)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_models.py", line 5651, in test_spark2_5_chunked_vs_oneshot_prefill
+    self.assertTrue(
+AssertionError: array(False, dtype=bool) is not true : chunked/oneshot mismatch: max 0.0027681589126586914
+
+======================================================================
+FAIL: test_ssm (test_models.TestModels.test_ssm)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2/tests/test_models.py", line 5284, in test_ssm
+    self.assertTrue(
+AssertionError: array(False, dtype=bool) is not true
+
+----------------------------------------------------------------------
+Ran 409 tests in 154.211s
+
+FAILED (failures=19, skipped=1)
+[INFO] Quantized model with 6.435 bits per weight.
+[INFO] Quantized model with 4.460 bits per weight.
+[INFO] Quantized model with 5.005 bits per weight.

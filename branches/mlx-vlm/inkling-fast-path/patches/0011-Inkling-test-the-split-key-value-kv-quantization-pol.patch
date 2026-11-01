@@ -1,0 +1,59 @@
+From 968125af28d8b81c3fb24e41fb139a7e89e183f4 Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Thu, 29 Oct 2026 03:22:12 -0400
+Subject: [PATCH 11/12] Inkling: test the split key/value kv quantization
+ policy
+
+A non-homogeneous key/value policy (uniform keys, TurboQuant values)
+descends into the layer entry and installs HybridQuantKVCache on the global
+layer, which hands dequantized floats back; the attention must take it as a
+float cache and keep the window caches on the sliding layers.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ mlx_vlm/tests/test_inkling_fast_path.py | 35 +++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+
+diff --git a/mlx_vlm/tests/test_inkling_fast_path.py b/mlx_vlm/tests/test_inkling_fast_path.py
+index 39701a0..e778fdf 100644
+--- a/mlx_vlm/tests/test_inkling_fast_path.py
++++ b/mlx_vlm/tests/test_inkling_fast_path.py
+@@ -509,3 +509,38 @@ def test_other_kv_quantization_schemes_fail_clearly():
+         model(tokens(1), cache=cache)
+     with pytest.raises(NotImplementedError):
+         _make_cache(model, left_padding=[0, 0], kv_bits=8)
++
++
++def test_split_key_value_policy_dequantizes_the_global_layers():
++    """A non-homogeneous key/value policy installs HybridQuantKVCache, which
++    returns dequantized floats; the attention takes them as a float cache."""
++    from mlx_vlm.generate.common import maybe_quantize_kv_cache
++    from mlx_vlm.turboquant import HybridQuantKVCache
++
++    model = tiny_model(head_dim=32, swa_head_dim=32)
++    ids = tokens(300)
++    reference = model.make_cache()
++    want = run(model, ids, reference, 97)
++    cache = model.make_cache()
++    maybe_quantize_kv_cache(
++        cache,
++        0,
++        32,
++        8,
++        "uniform",
++        8,
++        4,
++        kv_key_scheme="uniform",
++        kv_value_scheme="turboquant",
++    )
++    kinds = [type(c.caches[0]) for c in cache]
++    assert kinds == [SlidingWindowKVCache, HybridQuantKVCache, SlidingWindowKVCache]
++    got = run(model, ids, cache, 97)
++    np.testing.assert_allclose(np.array(got), np.array(want), atol=0.15, rtol=0.05)
++    y = ids[:, -1:]
++    for step in range(10):
++        got = model(y, cache=cache).logits
++        want = model(y, cache=reference).logits
++        np.testing.assert_allclose(np.array(got), np.array(want), atol=0.15, rtol=0.05)
++        assert cache[1].caches[0].offset == 301 + step
++        y = mx.argmax(want[:, -1], axis=-1)[:, None]

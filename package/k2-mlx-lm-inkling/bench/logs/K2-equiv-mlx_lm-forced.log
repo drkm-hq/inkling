@@ -1,0 +1,27 @@
+[03:22:15] extras: {'ref_logprobs': '../results/K2-logprobs-mlx_vlm'}
+[03:22:25] mlx_lm 0.1.dev1+g1f7057ca5: lazy load 3.0s, chunked eval 6.7s, 82.4 GiB, active 82.4 GiB
+[03:22:25] run p_short_raw: 226 prompt tokens (teacher forced)
+[03:22:35]   vs reference (same tokens): KL mean 0.0446 median 0.0036 max 1.2949 nats; |dlogprob| top-1 mean 0.0972 max 3.0435, top-100 max 5.6875; top-1 agreement 94.5%
+[03:22:35]   argmax agrees with the fed tokens at 121/128 steps
+Traceback (most recent call last):
+  File "<workdir>/bench/K2/equiv.py", line 350, in <module>
+    main()
+  File "<workdir>/bench/K2/equiv.py", line 332, in main
+    r["router_audit"] = router_audit(model, seq)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<workdir>/bench/K2/equiv.py", line 145, in router_audit
+    mx.eval(model(x[:, a : a + 2048], cache=cache))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<workdir>/upstream/mlx-lm/mlx_lm/models/inkling_mm_model.py", line 708, in __call__
+    return self.model.llm(inputs, cache, input_embeddings)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<workdir>/upstream/mlx-lm/mlx_lm/models/inkling_mm_model.py", line 684, in __call__
+    h = layer(h, c, rel_index if layer.attn.window > 0 else None)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<workdir>/upstream/mlx-lm/mlx_lm/models/inkling_mm_model.py", line 645, in __call__
+    r = self.mlp(self.mlp_norm(h))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<workdir>/bench/K2/equiv.py", line 137, in hooked
+    y = (y * weights[..., None].astype(y.dtype)).sum(axis=-2)
+         ~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ValueError: [broadcast_shapes] Shapes (354,6,4096) and (354,8,1) cannot be broadcast.

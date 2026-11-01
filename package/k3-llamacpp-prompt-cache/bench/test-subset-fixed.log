@@ -1,0 +1,294 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.14, pytest-8.3.5, pluggy-1.7.0 -- <scratch>
+rootdir: <workdir>/upstream/llama.cpp-k3/tools/server/tests
+configfile: pytest.ini
+plugins: xdist-3.8.0, anyio-4.15.1
+created: 4/4 workers
+4 workers [141 items]
+
+scheduling tests via WorkStealingScheduling
+
+unit/test_completion.py::test_completion[I believe the meaning of life is-8-(going|bed)+-18-8-False-False] 
+unit/test_speculative.py::test_different_draft_min_draft_max 
+unit/test_chat_completion.py::test_chat_template_continue_final_message_mutual_exclusion 
+unit/test_completion.py::test_logit_bias[False-True] 
+[gw0] [  0%] PASSED unit/test_completion.py::test_completion[I believe the meaning of life is-8-(going|bed)+-18-8-False-False] 
+unit/test_completion.py::test_completion[Write a joke about AI from a very long prompt which will not be truncated-64-(princesses|everyone|kids|Anna|forest)+-46-64-False-True] 
+[gw0] [  1%] PASSED unit/test_completion.py::test_completion[Write a joke about AI from a very long prompt which will not be truncated-64-(princesses|everyone|kids|Anna|forest)+-46-64-False-True] 
+unit/test_completion.py::test_completion_stream[I believe the meaning of life is-8-(going|bed)+-18-8-False] 
+[gw0] [  2%] PASSED unit/test_completion.py::test_completion_stream[I believe the meaning of life is-8-(going|bed)+-18-8-False] 
+unit/test_completion.py::test_completion_stream[Write a joke about AI from a very long prompt which will not be truncated-64-(princesses|everyone|kids|Anna|forest)+-46-64-False] 
+[gw0] [  2%] PASSED unit/test_completion.py::test_completion_stream[Write a joke about AI from a very long prompt which will not be truncated-64-(princesses|everyone|kids|Anna|forest)+-46-64-False] 
+unit/test_completion.py::test_completion_stream_vs_non_stream 
+[gw0] [  3%] PASSED unit/test_completion.py::test_completion_stream_vs_non_stream 
+unit/test_completion.py::test_completion_with_openai_library 
+[gw0] [  4%] PASSED unit/test_completion.py::test_completion_with_openai_library 
+unit/test_completion.py::test_completion_stream_with_openai_library 
+[gw0] [  4%] PASSED unit/test_completion.py::test_completion_stream_with_openai_library 
+unit/test_completion.py::test_consistent_result_same_seed[1] 
+[gw0] [  5%] PASSED unit/test_completion.py::test_consistent_result_same_seed[1] 
+unit/test_completion.py::test_consistent_result_same_seed[2] 
+[gw0] [  6%] PASSED unit/test_completion.py::test_consistent_result_same_seed[2] 
+unit/test_completion.py::test_different_result_different_seed[1] 
+[gw0] [  7%] PASSED unit/test_completion.py::test_different_result_different_seed[1] 
+unit/test_completion.py::test_different_result_different_seed[2] 
+[gw0] [  7%] PASSED unit/test_completion.py::test_different_result_different_seed[2] 
+unit/test_completion.py::test_consistent_result_different_batch_size[0.0-16] 
+[gw0] [  8%] PASSED unit/test_completion.py::test_consistent_result_different_batch_size[0.0-16] 
+unit/test_completion.py::test_consistent_result_different_batch_size[0.0-32] 
+[gw0] [  9%] PASSED unit/test_completion.py::test_consistent_result_different_batch_size[0.0-32] 
+unit/test_completion.py::test_cache_vs_nocache_prompt 
+[gw0] [  9%] SKIPPED unit/test_completion.py::test_cache_vs_nocache_prompt 
+unit/test_completion.py::test_nocache_long_input_prompt 
+[gw0] [ 10%] PASSED unit/test_completion.py::test_nocache_long_input_prompt 
+unit/test_completion.py::test_pinned_request_on_busy_slot 
+[gw0] [ 11%] PASSED unit/test_completion.py::test_pinned_request_on_busy_slot 
+unit/test_completion.py::test_json_prompt_no_mtmd 
+[gw0] [ 12%] PASSED unit/test_completion.py::test_json_prompt_no_mtmd 
+unit/test_completion.py::test_json_prompt_mtm_error_when_not_supported 
+[gw0] [ 12%] PASSED unit/test_completion.py::test_json_prompt_mtm_error_when_not_supported 
+unit/test_completion.py::test_completion_with_tokens_input 
+[gw0] [ 13%] PASSED unit/test_completion.py::test_completion_with_tokens_input 
+unit/test_completion.py::test_completion_parallel_slots[1-3] 
+[gw0] [ 14%] PASSED unit/test_completion.py::test_completion_parallel_slots[1-3] 
+unit/test_completion.py::test_completion_parallel_slots[2-2] 
+[gw0] [ 14%] PASSED unit/test_completion.py::test_completion_parallel_slots[2-2] 
+unit/test_completion.py::test_completion_parallel_slots[2-4] 
+[gw0] [ 15%] PASSED unit/test_completion.py::test_completion_parallel_slots[2-4] 
+unit/test_completion.py::test_completion_parallel_slots[4-2] 
+[gw0] [ 16%] PASSED unit/test_completion.py::test_completion_parallel_slots[4-2] 
+unit/test_completion.py::test_completion_parallel_slots[4-6] 
+[gw0] [ 17%] PASSED unit/test_completion.py::test_completion_parallel_slots[4-6] 
+unit/test_completion.py::test_completion_unified[256-4-n_predict_vals0-expected_success0] 
+[gw0] [ 17%] PASSED unit/test_completion.py::test_completion_unified[256-4-n_predict_vals0-expected_success0] 
+unit/test_completion.py::test_completion_unified[256-4-n_predict_vals1-expected_success1] 
+[gw3] [ 18%] PASSED unit/test_chat_completion.py::test_chat_template_continue_final_message_mutual_exclusion 
+unit/test_chat_completion.py::test_apply_chat_template 
+[gw3] [ 19%] PASSED unit/test_chat_completion.py::test_apply_chat_template 
+unit/test_chat_completion.py::test_completion_with_response_format[response_format0-6-"42"] 
+[gw0] [ 19%] PASSED unit/test_completion.py::test_completion_unified[256-4-n_predict_vals1-expected_success1] 
+unit/test_completion.py::test_completion_unified[256-4-n_predict_vals2-expected_success2] 
+[gw3] [ 20%] PASSED unit/test_chat_completion.py::test_completion_with_response_format[response_format0-6-"42"] 
+unit/test_chat_completion.py::test_completion_with_response_format[response_format1-10-[ -3000 ]] 
+[gw0] [ 21%] PASSED unit/test_completion.py::test_completion_unified[256-4-n_predict_vals2-expected_success2] 
+unit/test_completion.py::test_completion_unified[256-4-n_predict_vals3-expected_success3] 
+[gw3] [ 21%] PASSED unit/test_chat_completion.py::test_completion_with_response_format[response_format1-10-[ -3000 ]] 
+unit/test_chat_completion.py::test_completion_with_response_format[response_format2-10-"foooooo"] 
+[gw0] [ 22%] PASSED unit/test_completion.py::test_completion_unified[256-4-n_predict_vals3-expected_success3] 
+unit/test_completion.py::test_completion_response_fields[I believe the meaning of life is-8-response_fields0] 
+[gw3] [ 23%] PASSED unit/test_chat_completion.py::test_completion_with_response_format[response_format2-10-"foooooo"] 
+[gw0] [ 24%] PASSED unit/test_completion.py::test_completion_response_fields[I believe the meaning of life is-8-response_fields0] 
+unit/test_chat_completion.py::test_completion_with_response_format[response_format3-10-(\\{|John)+] 
+unit/test_completion.py::test_completion_response_fields[I believe the meaning of life is-32-response_fields1] 
+[gw3] [ 24%] PASSED unit/test_chat_completion.py::test_completion_with_response_format[response_format3-10-(\\{|John)+] 
+unit/test_chat_completion.py::test_completion_with_response_format[response_format4-0-None] 
+[gw0] [ 25%] PASSED unit/test_completion.py::test_completion_response_fields[I believe the meaning of life is-32-response_fields1] 
+unit/test_completion.py::test_n_probs 
+[gw3] [ 26%] PASSED unit/test_chat_completion.py::test_completion_with_response_format[response_format4-0-None] 
+unit/test_chat_completion.py::test_completion_with_response_format[response_format5-0-None] 
+[gw0] [ 26%] PASSED unit/test_completion.py::test_n_probs 
+unit/test_completion.py::test_n_probs_stream 
+[gw3] [ 27%] PASSED unit/test_chat_completion.py::test_completion_with_response_format[response_format5-0-None] 
+unit/test_chat_completion.py::test_completion_with_response_format[response_format6-0-None] 
+[gw0] [ 28%] PASSED unit/test_completion.py::test_n_probs_stream 
+unit/test_completion.py::test_n_probs_post_sampling 
+[gw3] [ 29%] PASSED unit/test_chat_completion.py::test_completion_with_response_format[response_format6-0-None] 
+unit/test_chat_completion.py::test_completion_with_response_format[response_format7-0-None] 
+[gw0] [ 29%] PASSED unit/test_completion.py::test_n_probs_post_sampling 
+unit/test_completion.py::test_n_probs_post_backend_sampling 
+[gw3] [ 30%] PASSED unit/test_chat_completion.py::test_completion_with_response_format[response_format7-0-None] 
+unit/test_chat_completion.py::test_completion_with_json_schema[False-json_schema0-6-"42"] 
+[gw3] [ 31%] PASSED unit/test_chat_completion.py::test_completion_with_json_schema[False-json_schema0-6-"42"] 
+unit/test_chat_completion.py::test_completion_with_json_schema[True-json_schema1-6-"42"] 
+[gw0] [ 31%] PASSED unit/test_completion.py::test_n_probs_post_backend_sampling 
+unit/test_completion.py::test_logit_bias[False-False] 
+[gw3] [ 32%] PASSED unit/test_chat_completion.py::test_completion_with_json_schema[True-json_schema1-6-"42"] 
+unit/test_chat_completion.py::test_completion_with_grammar[False-root ::= "a"{5,5}-6-a{5,5}] 
+[gw0] [ 33%] PASSED unit/test_completion.py::test_logit_bias[False-False] 
+unit/test_slot_save.py::test_slot_restore_media_file_without_mmproj 
+[gw3] [ 34%] PASSED unit/test_chat_completion.py::test_completion_with_grammar[False-root ::= "a"{5,5}-6-a{5,5}] 
+unit/test_chat_completion.py::test_completion_with_grammar[True-root ::= "a"{5,5}-6-a{5,5}] 
+[gw3] [ 34%] PASSED unit/test_chat_completion.py::test_completion_with_grammar[True-root ::= "a"{5,5}-6-a{5,5}] 
+unit/test_chat_completion.py::test_completion_with_invalid_grammar 
+[gw3] [ 35%] PASSED unit/test_chat_completion.py::test_completion_with_invalid_grammar 
+unit/test_chat_completion.py::test_invalid_chat_completion_req[None] 
+[gw3] [ 36%] PASSED unit/test_chat_completion.py::test_invalid_chat_completion_req[None] 
+unit/test_chat_completion.py::test_invalid_chat_completion_req[string] 
+[gw3] [ 36%] PASSED unit/test_chat_completion.py::test_invalid_chat_completion_req[string] 
+unit/test_chat_completion.py::test_invalid_chat_completion_req[messages2] 
+[gw3] [ 37%] PASSED unit/test_chat_completion.py::test_invalid_chat_completion_req[messages2] 
+unit/test_chat_completion.py::test_invalid_chat_completion_req[messages3] 
+[gw3] [ 38%] PASSED unit/test_chat_completion.py::test_invalid_chat_completion_req[messages3] 
+unit/test_chat_completion.py::test_invalid_chat_completion_req[messages4] 
+[gw3] [ 39%] PASSED unit/test_chat_completion.py::test_invalid_chat_completion_req[messages4] 
+unit/test_chat_completion.py::test_invalid_chat_completion_req[messages5] 
+[gw0] [ 39%] PASSED unit/test_slot_save.py::test_slot_restore_media_file_without_mmproj 
+unit/test_slot_save.py::test_slot_restore_preserves_context_checkpoints[ckpt_slot1.bin] 
+[gw3] [ 40%] PASSED unit/test_chat_completion.py::test_invalid_chat_completion_req[messages5] 
+unit/test_chat_completion.py::test_invalid_chat_completion_req[messages6] 
+[gw3] [ 41%] PASSED unit/test_chat_completion.py::test_invalid_chat_completion_req[messages6] 
+unit/test_chat_completion.py::test_invalid_chat_completion_req[messages7] 
+[gw3] [ 41%] PASSED unit/test_chat_completion.py::test_invalid_chat_completion_req[messages7] 
+unit/test_chat_completion.py::test_chat_completion_with_timings_per_token 
+[gw3] [ 42%] PASSED unit/test_chat_completion.py::test_chat_completion_with_timings_per_token 
+unit/test_chat_completion.py::test_logprobs 
+[gw0] [ 43%] PASSED unit/test_slot_save.py::test_slot_restore_preserves_context_checkpoints[ckpt_slot1.bin] 
+unit/test_slot_save.py::test_slot_restore_preserves_context_checkpoints[ckpt_slot1_\xe9.bin] 
+[gw3] [ 43%] PASSED unit/test_chat_completion.py::test_logprobs 
+unit/test_chat_completion.py::test_logprobs_stream 
+[gw0] [ 44%] PASSED unit/test_slot_save.py::test_slot_restore_preserves_context_checkpoints[ckpt_slot1_\xe9.bin] 
+unit/test_slot_save.py::test_slot_restore_damaged_checkpoint_appendix[oversized_blob] 
+[gw3] [ 45%] PASSED unit/test_chat_completion.py::test_logprobs_stream 
+unit/test_chat_completion.py::test_logit_bias 
+[gw3] [ 46%] PASSED unit/test_chat_completion.py::test_logit_bias 
+unit/test_chat_completion.py::test_context_size_exceeded 
+[gw3] [ 46%] PASSED unit/test_chat_completion.py::test_context_size_exceeded 
+unit/test_chat_completion.py::test_context_size_exceeded_stream 
+[gw0] [ 47%] PASSED unit/test_slot_save.py::test_slot_restore_damaged_checkpoint_appendix[oversized_blob] 
+[gw3] [ 48%] PASSED unit/test_chat_completion.py::test_context_size_exceeded_stream 
+unit/test_chat_completion.py::test_return_progress[64-4-False] 
+unit/test_slot_save.py::test_slot_restore_damaged_checkpoint_appendix[empty_target] 
+[gw3] [ 48%] PASSED unit/test_chat_completion.py::test_return_progress[64-4-False] 
+unit/test_chat_completion.py::test_return_progress[64-2-True] 
+[gw3] [ 49%] PASSED unit/test_chat_completion.py::test_return_progress[64-2-True] 
+unit/test_chat_completion.py::test_chat_completions_multiple_choices 
+[gw3] [ 50%] PASSED unit/test_chat_completion.py::test_chat_completions_multiple_choices 
+unit/test_chat_completion.py::test_chat_completions_token_count 
+[gw0] [ 51%] PASSED unit/test_slot_save.py::test_slot_restore_damaged_checkpoint_appendix[empty_target] 
+unit/test_slot_save.py::test_slot_restore_damaged_checkpoint_appendix[corrupt_state] 
+[gw3] [ 51%] PASSED unit/test_chat_completion.py::test_chat_completions_token_count 
+unit/test_chat_completion.py::test_verbose_debug 
+[gw3] [ 52%] PASSED unit/test_chat_completion.py::test_verbose_debug 
+unit/test_kv_keep_only_active.py::test_clear_and_restore 
+[gw3] [ 53%] PASSED unit/test_kv_keep_only_active.py::test_clear_and_restore 
+unit/test_kv_keep_only_active.py::test_disabled_with_flag 
+[gw3] [ 53%] PASSED unit/test_kv_keep_only_active.py::test_disabled_with_flag 
+unit/test_chat_completion.py::test_chat_completion[None-Book-Hey-8-But she couldn't-69-8-length-True-None] 
+[gw0] [ 54%] PASSED unit/test_slot_save.py::test_slot_restore_damaged_checkpoint_appendix[corrupt_state] 
+[gw3] [ 55%] PASSED unit/test_chat_completion.py::test_chat_completion[None-Book-Hey-8-But she couldn't-69-8-length-True-None] 
+unit/test_slot_save.py::test_slot_restore_damaged_checkpoint_appendix[many_checkpoints] 
+unit/test_chat_completion.py::test_chat_completion[None-Book-What is the best book-8-(Suddenly)+|\\{ " Sarax.-77-8-length-False-None] 
+[gw3] [ 56%] PASSED unit/test_chat_completion.py::test_chat_completion[None-Book-What is the best book-8-(Suddenly)+|\\{ " Sarax.-77-8-length-False-None] 
+unit/test_chat_completion.py::test_chat_completion[None-Book-What is the best book-8-(Suddenly)+|\\{ " Sarax.-77-8-length-True-None] 
+[gw3] [ 56%] PASSED unit/test_chat_completion.py::test_chat_completion[None-Book-What is the best book-8-(Suddenly)+|\\{ " Sarax.-77-8-length-True-None] 
+unit/test_chat_completion.py::test_chat_completion[None-Book-What is the best book-8-(Suddenly)+|\\{ " Sarax.-77-8-length-True-chatml] 
+[gw3] [ 57%] PASSED unit/test_chat_completion.py::test_chat_completion[None-Book-What is the best book-8-(Suddenly)+|\\{ " Sarax.-77-8-length-True-chatml] 
+unit/test_chat_completion.py::test_chat_completion[None-Book-What is the best book-8-^ blue-23-8-length-True-This is not a chat template, it is] 
+[gw0] [ 58%] PASSED unit/test_slot_save.py::test_slot_restore_damaged_checkpoint_appendix[many_checkpoints] 
+unit/test_slot_save.py::test_slot_restore_checkpoints_draft_kv_type_change[f16] 
+[gw3] [ 58%] PASSED unit/test_chat_completion.py::test_chat_completion[None-Book-What is the best book-8-^ blue-23-8-length-True-This is not a chat template, it is] 
+unit/test_chat_completion.py::test_chat_completion[codellama70b-You are a coding assistant.-Write the fibonacci function in c++.-128-(Aside|she|felter|alonger)+-104-128-length-False-None] 
+[gw3] [ 59%] PASSED unit/test_chat_completion.py::test_chat_completion[codellama70b-You are a coding assistant.-Write the fibonacci function in c++.-128-(Aside|she|felter|alonger)+-104-128-length-False-None] 
+unit/test_chat_completion.py::test_chat_completion[codellama70b-You are a coding assistant.-Write the fibonacci function in c++.-128-(Aside|she|felter|alonger)+-104-128-length-True-None] 
+[gw3] [ 60%] PASSED unit/test_chat_completion.py::test_chat_completion[codellama70b-You are a coding assistant.-Write the fibonacci function in c++.-128-(Aside|she|felter|alonger)+-104-128-length-True-None] 
+unit/test_chat_completion.py::test_chat_completion[None-Book-user_prompt8-8-Whillicter-79-8-length-False-None] 
+[gw3] [ 60%] PASSED unit/test_chat_completion.py::test_chat_completion[None-Book-user_prompt8-8-Whillicter-79-8-length-False-None] 
+unit/test_chat_completion.py::test_chat_completion[None-Book-user_prompt9-8-Whillicter-79-8-length-True-None] 
+[gw3] [ 61%] PASSED unit/test_chat_completion.py::test_chat_completion[None-Book-user_prompt9-8-Whillicter-79-8-length-True-None] 
+unit/test_chat_completion.py::test_chat_completion_cached_tokens 
+[gw3] [ 62%] PASSED unit/test_chat_completion.py::test_chat_completion_cached_tokens 
+unit/test_chat_completion.py::test_chat_completion_stream[Book-What is the best book-8-(Suddenly)+-77-8-length] 
+[gw3] [ 63%] PASSED unit/test_chat_completion.py::test_chat_completion_stream[Book-What is the best book-8-(Suddenly)+-77-8-length] 
+unit/test_chat_completion.py::test_chat_completion_stream[You are a coding assistant.-Write the fibonacci function in c++.-128-(Aside|she|felter|alonger)+-104-128-length] 
+[gw3] [ 63%] PASSED unit/test_chat_completion.py::test_chat_completion_stream[You are a coding assistant.-Write the fibonacci function in c++.-128-(Aside|she|felter|alonger)+-104-128-length] 
+[gw1] [ 64%] PASSED unit/test_completion.py::test_logit_bias[False-True] 
+unit/test_chat_completion.py::test_chat_completion_with_openai_library 
+unit/test_completion.py::test_logit_bias[True-False] 
+[gw3] [ 65%] PASSED unit/test_chat_completion.py::test_chat_completion_with_openai_library 
+[gw0] [ 65%] PASSED unit/test_slot_save.py::test_slot_restore_checkpoints_draft_kv_type_change[f16] 
+[gw1] [ 66%] PASSED unit/test_completion.py::test_logit_bias[True-False] 
+unit/test_completion.py::test_logit_bias[True-True] 
+unit/test_slot_save.py::test_slot_restore_checkpoints_draft_kv_type_change[q8_0] 
+unit/test_chat_completion.py::test_chat_template 
+[gw1] [ 67%] PASSED unit/test_completion.py::test_logit_bias[True-True] 
+unit/test_completion.py::test_cancel_request 
+[gw3] [ 68%] PASSED unit/test_chat_completion.py::test_chat_template 
+unit/test_chat_completion.py::test_chat_template_assistant_prefill[Whill-Whill] 
+[gw3] [ 68%] PASSED unit/test_chat_completion.py::test_chat_template_assistant_prefill[Whill-Whill] 
+unit/test_chat_completion.py::test_chat_template_assistant_prefill[prefill1-Wh\n\nill] 
+[gw3] [ 69%] PASSED unit/test_chat_completion.py::test_chat_template_assistant_prefill[prefill1-Wh\n\nill] 
+unit/test_chat_completion.py::test_chat_template_continue_final_message_vllm_compat 
+[gw3] [ 70%] PASSED unit/test_chat_completion.py::test_chat_template_continue_final_message_vllm_compat 
+unit/test_basic.py::test_server_start_simple 
+[gw3] [ 70%] PASSED unit/test_basic.py::test_server_start_simple 
+unit/test_basic.py::test_server_multiple_addresses 
+[gw3] [ 71%] PASSED unit/test_basic.py::test_server_multiple_addresses 
+unit/test_basic.py::test_server_props 
+[gw3] [ 72%] PASSED unit/test_basic.py::test_server_props 
+unit/test_basic.py::test_server_models 
+[gw3] [ 73%] PASSED unit/test_basic.py::test_server_models 
+unit/test_basic.py::test_server_slots 
+[gw3] [ 73%] PASSED unit/test_basic.py::test_server_slots 
+unit/test_basic.py::test_load_split_model 
+[gw3] [ 74%] PASSED unit/test_basic.py::test_load_split_model 
+unit/test_basic.py::test_no_ui 
+[gw1] [ 75%] PASSED unit/test_completion.py::test_cancel_request 
+unit/test_completion.py::test_completion_prompt_cache 
+[gw3] [ 75%] PASSED unit/test_basic.py::test_no_ui 
+unit/test_basic.py::test_server_model_aliases_and_tags 
+[gw0] [ 76%] PASSED unit/test_slot_save.py::test_slot_restore_checkpoints_draft_kv_type_change[q8_0] 
+[gw1] [ 77%] PASSED unit/test_completion.py::test_completion_prompt_cache 
+unit/test_completion.py::test_completion_checkpoint_after_unrelated_prompt 
+unit/test_slot_save.py::test_slot_restore_swa_window 
+[gw3] [ 78%] PASSED unit/test_basic.py::test_server_model_aliases_and_tags 
+unit/test_chat_completion.py::test_chat_completion[None-Book-Hey-8-But she couldn't-69-8-length-False-None] 
+[gw3] [ 78%] PASSED unit/test_chat_completion.py::test_chat_completion[None-Book-Hey-8-But she couldn't-69-8-length-False-None] 
+unit/test_slot_save.py::test_slot_erase 
+[gw1] [ 79%] PASSED unit/test_completion.py::test_completion_checkpoint_after_unrelated_prompt 
+[gw3] [ 80%] PASSED unit/test_slot_save.py::test_slot_erase 
+unit/test_completion.py::test_completion_checkpoint_kept_after_restore 
+unit/test_slot_save.py::test_slot_save_restore_text_only_on_multimodal 
+[gw0] [ 80%] PASSED unit/test_slot_save.py::test_slot_restore_swa_window 
+unit/test_slot_save.py::test_prompt_cache_swa_window 
+[gw3] [ 81%] PASSED unit/test_slot_save.py::test_slot_save_restore_text_only_on_multimodal 
+[gw1] [ 82%] PASSED unit/test_completion.py::test_completion_checkpoint_kept_after_restore 
+unit/test_slot_save.py::test_slot_save_restore_with_image 
+unit/test_completion.py::test_completion_cache_hybrid_memory[0] 
+[gw1] [ 82%] PASSED unit/test_completion.py::test_completion_cache_hybrid_memory[0] 
+unit/test_completion.py::test_completion_cache_hybrid_memory[64] 
+[gw1] [ 83%] PASSED unit/test_completion.py::test_completion_cache_hybrid_memory[64] 
+unit/test_slot_save.py::test_slot_save_restore 
+[gw3] [ 84%] PASSED unit/test_slot_save.py::test_slot_save_restore_with_image 
+unit/test_slot_save.py::test_slot_save_restore_with_two_images 
+[gw0] [ 85%] PASSED unit/test_slot_save.py::test_prompt_cache_swa_window 
+unit/test_ctx_shift.py::test_ctx_shift_enabled 
+[gw1] [ 85%] PASSED unit/test_slot_save.py::test_slot_save_restore 
+unit/test_slot_save.py::test_slot_restore_legacy_token_list 
+[gw3] [ 86%] PASSED unit/test_slot_save.py::test_slot_save_restore_with_two_images 
+unit/test_slot_save.py::test_slot_save_restore_with_image_across_restart 
+[gw1] [ 87%] PASSED unit/test_slot_save.py::test_slot_restore_legacy_token_list 
+unit/test_slot_save.py::test_slot_restore_draft_state 
+[gw3] [ 87%] PASSED unit/test_slot_save.py::test_slot_save_restore_with_image_across_restart 
+[gw0] [ 88%] PASSED unit/test_ctx_shift.py::test_ctx_shift_enabled 
+unit/test_slot_save.py::test_slot_save_restore_image_payload_larger_than_context 
+unit/test_ctx_shift.py::test_ctx_shift_disabled_short_prompt[64-64-False] 
+[gw1] [ 89%] PASSED unit/test_slot_save.py::test_slot_restore_draft_state 
+unit/test_speculative.py::test_with_ctx_shift 
+[gw0] [ 90%] PASSED unit/test_ctx_shift.py::test_ctx_shift_disabled_short_prompt[64-64-False] 
+unit/test_ctx_shift.py::test_ctx_shift_disabled_short_prompt[-1-248-True] 
+[gw0] [ 90%] PASSED unit/test_ctx_shift.py::test_ctx_shift_disabled_short_prompt[-1-248-True] 
+unit/test_speculative.py::test_draft_n_ubatch_smaller_than_target 
+[gw3] [ 91%] PASSED unit/test_slot_save.py::test_slot_save_restore_image_payload_larger_than_context 
+unit/test_ctx_shift.py::test_ctx_shift_disabled_long_prompt 
+[gw3] [ 92%] PASSED unit/test_ctx_shift.py::test_ctx_shift_disabled_long_prompt 
+unit/test_ctx_shift.py::test_ctx_shift_disabled_stream 
+[gw3] [ 92%] PASSED unit/test_ctx_shift.py::test_ctx_shift_disabled_stream 
+unit/test_speculative.py::test_with_and_without_draft 
+[gw0] [ 93%] PASSED unit/test_speculative.py::test_draft_n_ubatch_smaller_than_target 
+unit/test_speculative.py::test_slot_ctx_not_exceeded 
+[gw0] [ 94%] PASSED unit/test_speculative.py::test_slot_ctx_not_exceeded 
+unit/test_speculative.py::test_synth_ignores_target_tokens 
+[gw3] [ 95%] PASSED unit/test_speculative.py::test_with_and_without_draft 
+unit/test_speculative.py::test_multi_requests_parallel[2-2] 
+[gw0] [ 95%] PASSED unit/test_speculative.py::test_synth_ignores_target_tokens 
+unit/test_speculative.py::test_draft_token_probs 
+[gw3] [ 96%] PASSED unit/test_speculative.py::test_multi_requests_parallel[2-2] 
+[gw0] [ 97%] PASSED unit/test_speculative.py::test_draft_token_probs 
+[gw2] [ 97%] PASSED unit/test_speculative.py::test_different_draft_min_draft_max 
+unit/test_speculative.py::test_synth_is_deterministic 
+[gw1] [ 98%] PASSED unit/test_speculative.py::test_with_ctx_shift 
+unit/test_speculative.py::test_multi_requests_parallel[1-2] 
+[gw2] [ 99%] PASSED unit/test_speculative.py::test_synth_is_deterministic 
+[gw1] [100%] PASSED unit/test_speculative.py::test_multi_requests_parallel[1-2] 
+
+================== 140 passed, 1 skipped in 66.56s (0:01:06) ===================

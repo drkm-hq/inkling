@@ -1,0 +1,178 @@
+FFFFetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 1309.13it/s]
+FFFFFFFFFFFFFFFF
+======================================================================
+FAIL: test_cached_matches_forward (models.test_deepseek_v41.TestDeepseekV41.test_cached_matches_forward)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/models/test_deepseek_v41.py", line 64, in test_cached_matches_forward
+    self.assertTrue(
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_cached_matches_forward (models.test_muse_spark.TestMuseSpark.test_cached_matches_forward)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/models/test_muse_spark.py", line 159, in test_cached_matches_forward
+    self.assertTrue(
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_left_padding (models.test_muse_spark.TestMuseSpark.test_left_padding)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/models/test_muse_spark.py", line 147, in test_left_padding
+    test_models.TestModels.left_padding_test_runner(self, create_model())
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_models.py", line 493, in left_padding_test_runner
+    self.assertTrue(mx.allclose(single_next, batched_next, rtol=1e-4, atol=1e-4))
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_batch_continued_generation (test_generate.TestGenerate.test_batch_continued_generation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_generate.py", line 654, in test_batch_continued_generation
+    self.assertTrue(
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_batch_continued_generation_gated_delta (test_generate.TestGenerate.test_batch_continued_generation_gated_delta)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_generate.py", line 778, in test_batch_continued_generation_gated_delta
+    self._continued_generation_test_helper(model)
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_generate.py", line 715, in _continued_generation_test_helper
+    self.assertTrue(
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_batch_continued_generation_ssm (test_generate.TestGenerate.test_batch_continued_generation_ssm)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_generate.py", line 745, in test_batch_continued_generation_ssm
+    self._continued_generation_test_helper(model)
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_generate.py", line 715, in _continued_generation_test_helper
+    self.assertTrue(
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_batch_matches_single (test_generate.TestGenerate.test_batch_matches_single)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_generate.py", line 261, in test_batch_matches_single
+    self.assertTrue(mx.allclose(blp, lp))
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_batch_sliding_window (test_generate.TestGenerate.test_batch_sliding_window)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_generate.py", line 404, in test_batch_sliding_window
+    self.assertTrue(
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_many_batches (test_generate.TestGenerate.test_many_batches)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_generate.py", line 312, in test_many_batches
+    self.assertTrue(mx.allclose(blp, lp))
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_stream_generate_input_embeddings (test_generate.TestGenerate.test_stream_generate_input_embeddings)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_generate.py", line 189, in test_stream_generate_input_embeddings
+    self.assertEqual("TEST", response)
+AssertionError: 'TEST' != 'Please Please Please have a'
+- TEST
++ Please Please Please have a
+
+
+======================================================================
+FAIL: test_stream_generate_input_embeddings_prefill (test_generate.TestGenerate.test_stream_generate_input_embeddings_prefill)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_generate.py", line 224, in test_stream_generate_input_embeddings_prefill
+    self.assertEqual("TEST", response)
+AssertionError: 'TEST' != 'Please Please Please have a'
+- TEST
++ Please Please Please have a
+
+
+======================================================================
+FAIL: test_afm7_left_padding (test_models.TestModels.test_afm7_left_padding)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_models.py", line 2099, in test_afm7_left_padding
+    self.left_padding_test_runner(model)
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_models.py", line 492, in left_padding_test_runner
+    self.assertTrue(mx.allclose(single, batched, rtol=1e-4, atol=1e-4))
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_flint (test_models.TestModels.test_flint)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_models.py", line 3500, in test_flint
+    self.left_padding_test_runner(model)
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_models.py", line 493, in left_padding_test_runner
+    self.assertTrue(mx.allclose(single_next, batched_next, rtol=1e-4, atol=1e-4))
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_granitemoehybrid_padded_batch (test_models.TestModels.test_granitemoehybrid_padded_batch)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_models.py", line 3659, in test_granitemoehybrid_padded_batch
+    self.assertLess(err, 1e-5)
+AssertionError: 0.00341796875 not less than 1e-05
+
+======================================================================
+FAIL: test_llama4_chunked_kv_cache (test_models.TestModels.test_llama4_chunked_kv_cache)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_models.py", line 5222, in test_llama4_chunked_kv_cache
+    self.assertTrue(mx.allclose(full, step, atol=1e-3, rtol=1e-3))
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_minicpm3 (test_models.TestModels.test_minicpm3)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_models.py", line 2066, in test_minicpm3
+    self.left_padding_test_runner(model)
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_models.py", line 493, in left_padding_test_runner
+    self.assertTrue(mx.allclose(single_next, batched_next, rtol=1e-4, atol=1e-4))
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_phixtral (test_models.TestModels.test_phixtral)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_models.py", line 2083, in test_phixtral
+    self.left_padding_test_runner(model)
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_models.py", line 493, in left_padding_test_runner
+    self.assertTrue(mx.allclose(single_next, batched_next, rtol=1e-4, atol=1e-4))
+AssertionError: array(False, dtype=bool) is not true
+
+======================================================================
+FAIL: test_spark2_5_chunked_vs_oneshot_prefill (test_models.TestModels.test_spark2_5_chunked_vs_oneshot_prefill)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_models.py", line 5618, in test_spark2_5_chunked_vs_oneshot_prefill
+    self.assertTrue(
+AssertionError: array(False, dtype=bool) is not true : chunked/oneshot mismatch: max 0.002956695854663849
+
+======================================================================
+FAIL: test_ssm (test_models.TestModels.test_ssm)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workdir>/upstream/mlx-lm-a2-base/tests/test_models.py", line 5251, in test_ssm
+    self.assertTrue(
+AssertionError: array(False, dtype=bool) is not true
+
+----------------------------------------------------------------------
+Ran 19 tests in 39.808s
+
+FAILED (failures=19)

@@ -1,0 +1,30 @@
+{"section": "layer emulation experts=3b attn=bf16"}
+{"label": "weight bytes read per decoded token (est.)", "gb": 9.05, "experts": 3, "attn": "bf16"}
+decode 42 layers + head experts=3b attn=bf16 mask=vendored compile=False ctx=4096 | r1:  213.788 ms (best  188.321)     42 GB/s
+{"label": "tok/s", "value": 4.7, "best": 5.3, "experts": 3, "attn": "bf16", "mask": "vendored", "compile": false}
+decode 42 layers + head experts=3b attn=bf16 mask=vendored compile=True ctx=4096 | r1:  238.470 ms (best  232.947)     38 GB/s
+{"label": "tok/s", "value": 4.2, "best": 4.3, "experts": 3, "attn": "bf16", "mask": "vendored", "compile": true}
+decode 42 layers + head experts=3b attn=bf16 mask=cheap compile=False ctx=4096 | r1:  231.141 ms (best  227.542)     39 GB/s
+{"label": "tok/s", "value": 4.3, "best": 4.4, "experts": 3, "attn": "bf16", "mask": "cheap", "compile": false}
+decode 42 layers + head experts=3b attn=bf16 mask=cheap compile=True ctx=4096 | r1:  237.584 ms (best  224.042)     38 GB/s
+{"label": "tok/s", "value": 4.2, "best": 4.5, "experts": 3, "attn": "bf16", "mask": "cheap", "compile": true}
+decode one sliding layer experts=3b attn=bf16              | r1:    6.430 ms (best    4.677) | r8:    4.377 ms (best    4.167)
+decode one global layer ctx=4096 experts=3b attn=bf16      | r1:    5.106 ms (best    4.577) | r8:    4.732 ms (best    4.415)
+prefill one sliding layer T=2048 experts=3b attn=bf16 (vendored mask) | r1:  265.578 ms (best  245.276)
+prefill one global layer T=2048 experts=3b attn=bf16 (vendored mask) | r1:  252.975 ms (best  243.405)
+{"label": "prefill 42-layer estimate T=2048", "ms": 11066.1, "tok_per_s": 185.0, "experts": 3, "attn": "bf16"}
+{"section": "layer emulation experts=3b attn=8"}
+{"label": "weight bytes read per decoded token (est.)", "gb": 6.54, "experts": 3, "attn": "8"}
+decode 42 layers + head experts=3b attn=8 mask=vendored compile=False ctx=4096 | r1:  153.670 ms (best  139.559)     43 GB/s
+{"label": "tok/s", "value": 6.5, "best": 7.2, "experts": 3, "attn": "8", "mask": "vendored", "compile": false}
+decode 42 layers + head experts=3b attn=8 mask=vendored compile=True ctx=4096 | r1:  197.647 ms (best  153.296)     33 GB/s
+{"label": "tok/s", "value": 5.1, "best": 6.5, "experts": 3, "attn": "8", "mask": "vendored", "compile": true}
+decode 42 layers + head experts=3b attn=8 mask=cheap compile=False ctx=4096 | r1:  213.851 ms (best  162.836)     31 GB/s
+{"label": "tok/s", "value": 4.7, "best": 6.1, "experts": 3, "attn": "8", "mask": "cheap", "compile": false}
+decode 42 layers + head experts=3b attn=8 mask=cheap compile=True ctx=4096 | r1:  195.129 ms (best  162.916)     34 GB/s
+{"label": "tok/s", "value": 5.1, "best": 6.1, "experts": 3, "attn": "8", "mask": "cheap", "compile": true}
+decode one sliding layer experts=3b attn=8                 | r1:    5.265 ms (best    4.089) | r8:    5.118 ms (best    3.982)
+decode one global layer ctx=4096 experts=3b attn=8         | r1:    4.535 ms (best    4.122) | r8:    3.950 ms (best    3.621)
+prefill one sliding layer T=2048 experts=3b attn=8 (vendored mask) | r1:  223.509 ms (best  220.265)
+prefill one global layer T=2048 experts=3b attn=8 (vendored mask) | r1:  203.487 ms (best  201.085)
+{"label": "prefill 42-layer estimate T=2048", "ms": 9247.2, "tok_per_s": 221.0, "experts": 3, "attn": "8"}

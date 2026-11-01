@@ -1,0 +1,759 @@
+From ac6b33b4ecc957e034734f294c25727c4922f6c2 Mon Sep 17 00:00:00 2001
+From: A2 review <nick@drkm.com>
+Date: Thu, 29 Oct 2026 02:48:18 -0400
+Subject: [PATCH 1/3] A2 review: adversarial oracle tests for inkling_mm_model
+
+---
+ tests/test_inkling_a2.py | 743 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 743 insertions(+)
+ create mode 100644 tests/test_inkling_a2.py
+
+diff --git a/tests/test_inkling_a2.py b/tests/test_inkling_a2.py
+new file mode 100644
+index 0000000..c68662e
+--- /dev/null
++++ b/tests/test_inkling_a2.py
+@@ -0,0 +1,743 @@
++# Copyright © 2026 Apple Inc.
++"""A2 review tests: mlx_lm.models.inkling_mm_model against the float64 numpy
++oracle research/oracle/inkling_ref.py (validated against transformers at 1e-7).
++
++The oracle's tiny random model (hidden 64, 2/1 heads, d_rel 4, extent 8, window
++4, 8 routed experts top-2 + 2 shared, 3 layers [sliding, global, sliding],
++log-scaling floor 4) is loaded through Model.sanitize from both checkpoint
++layouts, so every comparison also covers the weight conversion.
++
++Exact (fp32) comparisons require TF32 to be off before MLX is imported:
++
++    MLX_ENABLE_TF32=0 python -m unittest tests.test_inkling_a2 -v
++"""
++
++import os
++
++os.environ.setdefault("MLX_ENABLE_TF32", "0")
++
++import copy  # noqa: E402
++import sys  # noqa: E402
++import tempfile  # noqa: E402
++import unittest  # noqa: E402
++
++import mlx.core as mx  # noqa: E402
++import mlx.nn as nn  # noqa: E402
++import numpy as np  # noqa: E402
++from mlx.utils import tree_flatten, tree_map_with_path  # noqa: E402
++
++from mlx_lm.generate import BatchGenerator, generate_step  # noqa: E402
++from mlx_lm.models import inkling_mm_model as M  # noqa: E402
++from mlx_lm.models.cache import (  # noqa: E402
++    ArraysCache,
++    CacheList,
++    can_trim_prompt_cache,
++    load_prompt_cache,
++    make_prompt_cache,
++    save_prompt_cache,
++    trim_prompt_cache,
++)
++from mlx_lm.sample_utils import make_sampler  # noqa: E402
++from mlx_lm.utils import dequantize_model, quantize_model  # noqa: E402
++
++ORACLE_DIR = os.environ.get("INKLING_ORACLE_DIR") or os.path.normpath(
++    os.path.join(os.path.dirname(__file__), "..", "..", "..", "research", "oracle")
++)
++sys.path.insert(0, ORACLE_DIR)
++import inkling_ref as R  # noqa: E402
++
++BLOB = np.load(os.path.join(ORACLE_DIR, "tiny_params.npy"), allow_pickle=True).item()
++PARAMS, OCFG, IDS, TINY = BLOB["params"], BLOB["cfg"], BLOB["ids"], BLOB["tiny"]
++V = TINY["unpadded_vocab_size"]
++TOL = 1e-5  # relative: max|a - ref| / max|ref|
++# A longer random prompt: crosses the window (4) and the extent (8) many times
++# and keeps the log-scaling floor (4) active on the global layer.
++IDS40 = np.random.RandomState(11).randint(0, V, size=(2, 40))
++REPORT = []
++
++
++def text_config():
++    t = TINY
++    return dict(
++        hidden_size=t["hidden_size"],
++        num_hidden_layers=t["num_hidden_layers"],
++        vocab_size=t["vocab_size"],
++        unpadded_vocab_size=t["unpadded_vocab_size"],
++        rms_norm_eps=t["rms_norm_eps"],
++        use_embed_norm=True,
++        logits_mup_width_multiplier=t["logits_mup_width_multiplier"],
++        num_attention_heads=t["num_attention_heads"],
++        num_key_value_heads=t["num_key_value_heads"],
++        head_dim=t["head_dim"],
++        swa_num_attention_heads=t["swa_num_attention_heads"],
++        swa_num_key_value_heads=t["swa_num_key_value_heads"],
++        swa_head_dim=t["swa_head_dim"],
++        sliding_window_size=t["sliding_window_size"],
++        layer_types=t["layer_types"],
++        d_rel=t["d_rel"],
++        rel_extent=t["rel_extent"],
++        log_scaling_n_floor=t["log_scaling_n_floor"],
++        log_scaling_alpha=t["log_scaling_alpha"],
++        sconv_kernel_size=t["conv_kernel_size"],
++        mlp_layer_types=t["mlp_layer_types"],
++        intermediate_size=t["moe_intermediate_size"],
++        dense_intermediate_size=t["intermediate_size"],
++        n_routed_experts=t["n_routed_experts"],
++        num_experts_per_tok=t["num_experts_per_tok"],
++        n_shared_experts=t["n_shared_experts"],
++        route_scale=t["route_scale"],
++    )
++
++
++def interleave_rows(g, u):
++    """transformers gate/up [..., I, H] -> checkpoint w13 [..., 2I, H] rows [g0,u0,g1,u1,...]."""
++    return np.stack([g, u], axis=-2).reshape(*g.shape[:-2], 2 * g.shape[-2], g.shape[-1])
++
++
++def source_weights(layout="hf"):
++    """The oracle parameters as checkpoint tensors.
++
++    layout "hf": the thinkingmachines source (interleaved w13 rows, [C,1,K]
++    convs, separate q/k/v/r, separate shared experts, bf16 router weight);
++    layout "mlx": the mlx-community layout (split gate/up, [C,K,1] convs).
++    """
++    p, cfg = PARAMS, OCFG
++
++    def f(a):
++        return mx.array(np.asarray(a, np.float32))
++
++    def conv(a):  # oracle/HF [C, 1, K]
++        return f(a) if layout == "hf" else f(np.swapaxes(np.asarray(a), 1, 2))
++
++    w = {
++        "model.llm.embed.weight": f(p["model.embed_tokens.weight"]),
++        "model.llm.embed_norm.weight": f(p["model.embed_tokens.embed_norm.weight"]),
++        "model.llm.norm.weight": f(p["model.norm.weight"]),
++        "model.llm.unembed.weight": f(p["lm_head.weight"]),
++        # Dropped by sanitize
++        "model.visual.layers.linear_0.weight": f(np.zeros((2, 2))),
++        "model.audio.encoder.weight": f(np.zeros((2, 2))),
++        "model.mtp.layers.0.input_proj.weight": f(np.zeros((2, 2))),
++    }
++    for i in range(len(cfg["layer_types"])):
++        s, d = f"model.layers.{i}.", f"model.llm.layers.{i}."
++        for src, dst in [
++            ("q_proj", "wq_du"),
++            ("k_proj", "wk_dv"),
++            ("v_proj", "wv_dv"),
++            ("r_proj", "wr_du"),
++            ("o_proj", "wo_ud"),
++        ]:
++            w[f"{d}attn.{dst}.weight"] = f(p[f"{s}self_attn.{src}.weight"])
++        for n in ("q_norm", "k_norm"):
++            w[f"{d}attn.{n}.weight"] = f(p[f"{s}self_attn.{n}.weight"])
++        w[f"{d}attn.rel_logits_proj.proj"] = f(p[f"{s}self_attn.rel_logits_proj.proj"])
++        w[f"{d}attn.k_sconv.weight"] = conv(p[f"{s}self_attn.k_sconv.conv1d.weight"])
++        w[f"{d}attn.v_sconv.weight"] = conv(p[f"{s}self_attn.v_sconv.conv1d.weight"])
++        w[f"{d}attn_norm.weight"] = f(p[f"{s}input_layernorm.weight"])
++        w[f"{d}mlp_norm.weight"] = f(p[f"{s}post_attention_layernorm.weight"])
++        w[f"{d}attn_sconv.weight"] = conv(p[f"{s}attn_sconv.conv1d.weight"])
++        w[f"{d}mlp_sconv.weight"] = conv(p[f"{s}mlp_sconv.conv1d.weight"])
++        if cfg["mlp_layer_types"][i] == "sparse":
++            # (the HF checkpoint stores this in bf16; the exactness tests need
++            # the oracle's values, the upcast itself is checked separately)
++            w[f"{d}mlp.gate.weight"] = f(p[f"{s}mlp.gate.weight"])
++            w[f"{d}mlp.gate.bias"] = f(p[f"{s}mlp.gate.e_score_correction_bias"])
++            w[f"{d}mlp.gate.global_scale"] = f(p[f"{s}mlp.gate.global_scale"])
++            gu = p[f"{s}mlp.experts.gate_up_proj"]
++            I = gu.shape[1] // 2
++            g, u, dn = gu[:, :I], gu[:, I:], p[f"{s}mlp.experts.down_proj"]
++            sg, su, sd = (
++                p[f"{s}mlp.shared_experts.gate_proj"],
++                p[f"{s}mlp.shared_experts.up_proj"],
++                p[f"{s}mlp.shared_experts.down_proj"],
++            )
++            if layout == "hf":
++                w[f"{d}mlp.experts.w13_weight"] = f(interleave_rows(g, u))
++                w[f"{d}mlp.experts.w2_weight"] = f(dn)
++                w[f"{d}mlp.shared_experts.shared_w13_weight"] = f(interleave_rows(sg, su))
++                w[f"{d}mlp.shared_experts.shared_w2_weight"] = f(sd)
++            else:
++                for part, (gg, uu, dd) in [
++                    ("experts", (g, u, dn)),
++                    ("shared_experts", (sg, su, sd)),
++                ]:
++                    w[f"{d}mlp.{part}.gate_proj.weight"] = f(gg)
++                    w[f"{d}mlp.{part}.up_proj.weight"] = f(uu)
++                    w[f"{d}mlp.{part}.down_proj.weight"] = f(dd)
++        else:
++            g, u, dn = (
++                p[f"{s}mlp.gate_proj.weight"],
++                p[f"{s}mlp.up_proj.weight"],
++                p[f"{s}mlp.down_proj.weight"],
++            )
++            if layout == "hf":
++                w[f"{d}mlp.w13_dn.weight"] = f(interleave_rows(g, u))
++                w[f"{d}mlp.w2_md.weight"] = f(dn)
++            else:
++                w[f"{d}mlp.gate_proj.weight"] = f(g)
++                w[f"{d}mlp.up_proj.weight"] = f(u)
++                w[f"{d}mlp.down_proj.weight"] = f(dn)
++            w[f"{d}mlp.global_scale"] = f(p[f"{s}mlp.global_scale"])
++    return w
++
++
++def build_model(layout="hf", dtype=mx.float32):
++    model = M.Model(M.ModelArgs(model_type="inkling_mm_model", text_config=text_config()))
++    weights = model.sanitize(source_weights(layout))
++    model.load_weights(list(weights.items()), strict=True)
++    if dtype != mx.float32:
++        keep = model.cast_predicate
++
++        def cast(path, a):
++            if keep(path) and mx.issubdtype(a.dtype, mx.floating):
++                return a.astype(dtype)
++            return a
++
++        model.update(tree_map_with_path(cast, model.parameters()))
++    mx.eval(model.parameters())
++    return model
++
++
++def rel(a, b):
++    if isinstance(a, mx.array):
++        a = a.astype(mx.float32)
++    if isinstance(b, mx.array):
++        b = b.astype(mx.float32)
++    a = np.asarray(a, np.float64)
++    b = np.asarray(b, np.float64)
++    return float(np.abs(a - b).max() / (np.abs(b).max() + 1e-300))
++
++
++def oracle_forward(ids, chunks=None):
++    """Full-sequence oracle logits, or the stateful chunked equivalent."""
++    ids = np.asarray(ids)
++    if chunks is None:
++        return R.model_forward_ref(PARAMS, OCFG, ids)["logits"]
++    assert sum(chunks) == ids.shape[1], (chunks, ids.shape)
++    caches, outs, pos = None, [], 0
++    for n in chunks:
++        r = R.model_forward_ref(
++            PARAMS, OCFG, ids[:, pos : pos + n], positions=np.arange(pos, pos + n), caches=caches
++        )
++        caches, pos = r["caches"], pos + n
++        outs.append(r["logits"])
++    return np.concatenate(outs, 1)
++
++
++def model_forward(model, ids, chunks=None, cache=None):
++    x = mx.array(np.asarray(ids))
++    if chunks is None and cache is None:
++        return np.array(model(x).astype(mx.float32), np.float64)
++    if cache is None:
++        cache = make_prompt_cache(model)
++    chunks = chunks or [x.shape[1]]
++    assert sum(chunks) == x.shape[1]
++    outs, pos = [], 0
++    for n in chunks:
++        outs.append(model(x[:, pos : pos + n], cache=cache))
++        mx.eval([c.state for c in cache])
++        pos += n
++    return np.array(mx.concatenate(outs, 1).astype(mx.float32), np.float64)
++
++
++def forward_with_routes(model, ids, chunks):
++    """model_forward plus the sorted routed expert set of every (MoE layer, batch
++    row, position), recorded by hooking the module-level select_experts."""
++    sparse = [i for i, t in enumerate(TINY["mlp_layer_types"]) if t == "sparse"]
++    calls = []
++    orig = M.select_experts
++
++    def hooked(logits, bias, gs, k, rs):
++        inds, w = orig(logits, bias, gs, k, rs)
++        calls.append(np.array(mx.sort(inds[:, :k], axis=-1)))
++        return inds, w
++
++    M.select_experts = hooked
++    try:
++        out = model_forward(model, ids, chunks)
++    finally:
++        M.select_experts = orig
++    routes, pos, k = {}, 0, 0
++    for n in chunks:
++        for i in sparse:
++            inds = calls[k]
++            k += 1
++            for row in range(inds.shape[0]):
++                routes[(i, row // n, pos + row % n)] = tuple(inds[row].tolist())
++        pos += n
++    assert k == len(calls), (k, len(calls))
++    return out, routes
++
++
++def gpu_fp32_exact():
++    rs = np.random.RandomState(0)
++    a, b = rs.standard_normal((64, 64)), rs.standard_normal((64, 64))
++    with mx.stream(mx.gpu):
++        got = np.array(mx.array(a.astype(np.float32)) @ mx.array(b.astype(np.float32)))
++    return rel(got, a @ b) < 1e-5
++
++
++DEVICES = [("cpu", mx.cpu)]
++if mx.metal.is_available():
++    DEVICES.append(("gpu", mx.gpu))
++
++
++class TestInklingA2(unittest.TestCase):
++    """Every check records its measured error in REPORT (printed at exit)."""
++
++    def check(self, name, got, ref, tol=TOL):
++        e = rel(got, ref)
++        REPORT.append((name, e, tol))
++        self.assertLessEqual(e, tol, f"{name}: rel error {e:.3e} > {tol:.0e}")
++        return e
++
++    def devices(self):
++        for name, dev in DEVICES:
++            mx.set_default_device(dev)
++            if dev == mx.gpu and not gpu_fp32_exact():
++                self.skipTest("GPU fp32 GEMMs run at TF32 precision; set MLX_ENABLE_TF32=0")
++            yield name
++
++    # -- weights -------------------------------------------------------------
++
++    def test_sanitize_layouts_agree_and_idempotent(self):
++        model = M.Model(M.ModelArgs(model_type="inkling_mm_model", text_config=text_config()))
++        a = model.sanitize(source_weights("hf"))
++        b = model.sanitize(source_weights("mlx"))
++        self.assertEqual(set(a), set(b))
++        for k in a:
++            self.assertEqual(a[k].dtype, b[k].dtype, k)
++            self.assertTrue(mx.array_equal(a[k], b[k]), k)
++        self.assertFalse(any(k.startswith(("model.visual", "model.audio", "model.mtp")) for k in a))
++        # A converted (already fused / reversed) checkpoint must load unchanged
++        c = model.sanitize(dict(a))
++        self.assertEqual(set(c), set(a))
++        for k in a:
++            self.assertTrue(mx.array_equal(c[k], a[k]), k)
++        # strict load of the sanitized set
++        model.load_weights(list(a.items()), strict=True)
++        # a bf16 router weight (the HF checkpoint's dtype) is upcast to fp32
++        hf = source_weights("hf")
++        key = "model.llm.layers.1.mlp.gate.weight"
++        hf[key] = hf[key].astype(mx.bfloat16)
++        self.assertEqual(model.sanitize(hf)[key].dtype, mx.float32)
++
++    # -- forward passes vs the oracle ----------------------------------------
++
++    def test_full_forward(self):
++        ref = oracle_forward(IDS)
++        layers = R.model_forward_ref(PARAMS, OCFG, IDS)["layer_outputs"]
++        for dev in self.devices():
++            for layout in ("hf", "mlx"):
++                model = build_model(layout)
++                self.check(f"{dev}/{layout}: full forward logits B=2 L=12", model_forward(model, IDS), ref)
++                h = model.model.llm.embed_tokens(mx.array(IDS))
++                for i, layer in enumerate(model.model.llm.layers):
++                    h = layer(h, None)
++                    self.check(f"{dev}/{layout}: layer {i} output", h, layers[i])
++            model = build_model()
++            self.check(f"{dev}: full forward L=40 (many windows, tau active)", model_forward(model, IDS40), oracle_forward(IDS40))
++            # L = 1 without a cache
++            self.check(f"{dev}: single token, no cache", model_forward(model, IDS40[:, :1]), oracle_forward(IDS40[:, :1]))
++            # rows of a batch equal single-sequence runs
++            o2 = model_forward(model, IDS40)
++            self.check(f"{dev}: batch rows == single rows", np.concatenate([model_forward(model, IDS40[:1]), model_forward(model, IDS40[1:])]), o2)
++
++    def test_cached_decode_and_chunked_prefill(self):
++        ref = oracle_forward(IDS40)
++        # the oracle is self-consistent under chunking (sanity of the reference itself)
++        self.check("oracle: chunked (7, 1 x 33) == full", oracle_forward(IDS40, [7] + [1] * 33), ref, 1e-12)
++        plans = {
++            "decode 7 + 1 x 33": [7] + [1] * 33,
++            "chunks of 1": [1] * 40,
++            "chunks of 3": [3] * 13 + [1],
++            "chunks of 5": [5] * 8,
++            "chunks of 7": [7] * 5 + [5],
++            "mixed (5,3,1,1,1,1,...)": [5, 3, 1, 1, 1, 1, 9, 2, 1, 4, 1, 1, 6, 1, 3],
++            "multi-token after rotation (9,1,3,1,2,1,5,1,...)": [9, 1, 3, 1, 2, 1, 5, 1, 8, 1, 7, 1],
++        }
++        for dev in self.devices():
++            model = build_model()
++            for name, chunks in plans.items():
++                self.check(f"{dev}: {name}", model_forward(model, IDS40, chunks), ref)
++
++    def test_cache_contents(self):
++        # After a prefill, the K/V and conv states equal the oracle's: conv
++        # state = the last 3 *inputs* of each stream; K stored post-sconv and
++        # post-k_norm; the sliding cache holds at most the window.
++        L = 9
++        r = R.model_forward_ref(PARAMS, OCFG, IDS40[:, :L])
++        for dev in self.devices():
++            model = build_model()
++            cache = make_prompt_cache(model)
++            model(mx.array(IDS40[:, :L]), cache=cache)
++            mx.eval([c.state for c in cache])
++            for i, c in enumerate(cache):
++                oc = r["caches"][i]
++                kv, conv = c[0], c[1]
++                ks, vs = kv.keys_and_values()
++                keep = ks.shape[2]
++                self.check(f"{dev}: layer {i} cached K (last {keep}) ", ks[:, :, -oc["k"].shape[2] :], oc["k"][:, :, -keep:])
++                self.check(f"{dev}: layer {i} cached V", vs[:, :, -oc["v"].shape[2] :], oc["v"][:, :, -keep:])
++                self.check(f"{dev}: layer {i} k|v conv state", conv[0], np.concatenate([oc["conv"][0], oc["conv"][1]], -1))
++                self.check(f"{dev}: layer {i} attn conv state", conv[1], oc["conv"][2])
++                self.check(f"{dev}: layer {i} mlp conv state", conv[2], oc["conv"][3])
++                if TINY["layer_types"][i] == "hybrid_sliding":
++                    self.assertLessEqual(kv.size(), TINY["sliding_window_size"])
++            # the sliding caches stay bounded under long decode
++            for t in range(L, 40):
++                model(mx.array(IDS40[:, t : t + 1]), cache=cache)
++            for i, c in enumerate(cache):
++                if TINY["layer_types"][i] == "hybrid_sliding":
++                    self.assertEqual(c[0].keys.shape[2], TINY["sliding_window_size"], i)
++                    self.assertEqual(c[0].size(), TINY["sliding_window_size"], i)
++
++    # -- prompt cache save / load and trim -------------------------------------
++
++    def test_prompt_cache_save_load(self):
++        ref = oracle_forward(IDS40)
++        for dev in self.devices():
++            model = build_model()
++            cache = make_prompt_cache(model)
++            model_forward(model, IDS40[:, :12], [9, 1, 1, 1], cache)  # rotated sliding caches
++            with tempfile.TemporaryDirectory() as d:
++                path = os.path.join(d, "cache.safetensors")
++                save_prompt_cache(path, cache, {"note": "a2"})
++                loaded, meta = load_prompt_cache(path, return_metadata=True)
++            self.assertEqual(meta["note"], "a2")
++            self.assertEqual([type(c).__name__ for c in loaded], [type(c).__name__ for c in cache])
++            a = model_forward(model, IDS40[:, 12:], [1] * 28, cache)
++            b = model_forward(model, IDS40[:, 12:], [1] * 28, loaded)
++            self.check(f"{dev}: decode after save/load == original", b, a, 1e-12)
++            self.check(f"{dev}: decode after save/load vs oracle", b, ref[:, 12:])
++
++    def test_trim(self):
++        model = build_model()
++        cache = make_prompt_cache(model)
++        model(mx.array(IDS40[:, :3]), cache=cache)
++        # Documented limitation: the conv states (ArraysCache) are never
++        # trimmable, so trim_prompt_cache is a no-op for Inkling.
++        self.assertFalse(can_trim_prompt_cache(cache))
++        self.assertEqual(trim_prompt_cache(cache, 1), 0)
++        REPORT.append(("trim_prompt_cache is a no-op (ArraysCache not trimmable)", 0.0, 1.0))
++        # and decoding continues correctly after the refused trim
++        out = model_forward(model, IDS40[:, 3:8], [1] * 5, cache)
++        self.check("decode after refused trim vs oracle", out, oracle_forward(IDS40[:, :8])[:, 3:])
++
++    # -- batched caches (server paths) ----------------------------------------
++
++    def test_batched_decode_left_padding(self):
++        # Sequences of different lengths merged after their prompts (left
++        # padding), then decoded together: exercises BatchKVCache,
++        # BatchRotatingKVCache rotation under padding, ArraysCache.merge, tau
++        # from per-sequence offsets and the shared slot index.
++        la, lb, n = 7, 3, 8
++        a, b = IDS40[0:1, :la], IDS40[1:2, :lb]
++        for dev in self.devices():
++            model = build_model()
++            ca, cb = make_prompt_cache(model), make_prompt_cache(model)
++            model(mx.array(a), cache=ca)
++            model(mx.array(b), cache=cb)
++            merged = [CacheList.merge([x, y]) for x, y in zip(ca, cb)]
++            mx.eval([c.state for c in merged])
++            oa = R.model_forward_ref(PARAMS, OCFG, a)["caches"]
++            ob = R.model_forward_ref(PARAMS, OCFG, b)["caches"]
++            for t in range(n):
++                tok = np.stack([IDS40[0, la + t : la + t + 1], IDS40[1, lb + t : lb + t + 1]])
++                lp = np.array(model(mx.array(tok), cache=merged), np.float64)
++                ra = R.model_forward_ref(PARAMS, OCFG, tok[:1], positions=np.array([la + t]), caches=oa)
++                rb = R.model_forward_ref(PARAMS, OCFG, tok[1:], positions=np.array([lb + t]), caches=ob)
++                self.check(f"{dev}: left-padded batch decode step {t} row A", lp[0], ra["logits"][0])
++                self.check(f"{dev}: left-padded batch decode step {t} row B", lp[1], rb["logits"][0])
++
++    def test_batched_right_padded_prefill_chunked(self):
++        # The server's prompt path: merged empty caches, prepare(lengths,
++        # right_padding), chunked prefill (chunk 4 over 11 tokens so the short
++        # sequence's lengths go negative), finalize, then decode.
++        la, lb, chunk = 11, 5, 4
++        toks = np.zeros((2, la), np.int64)
++        toks[0] = IDS40[0, :la]
++        toks[1, :lb] = IDS40[1, :lb]
++        for dev in self.devices():
++            model = build_model()
++            caches = [make_prompt_cache(model) for _ in range(2)]
++            merged = [CacheList.merge(list(cs)) for cs in zip(*caches)]
++            for c in merged:
++                c.prepare(lengths=[la, lb], right_padding=[0, la - lb])
++            outs = []
++            for s in range(0, la, chunk):
++                outs.append(model(mx.array(toks[:, s : s + chunk]), cache=merged))
++                mx.eval([c.state for c in merged])
++            for c in merged:
++                c.finalize()
++            mx.eval([c.state for c in merged])
++            lp = np.array(mx.concatenate(outs, 1), np.float64)
++            self.check(f"{dev}: right-padded chunked prefill row A", lp[0, :la], oracle_forward(toks[:1, :la])[0])
++            self.check(f"{dev}: right-padded chunked prefill row B (valid part)", lp[1, :lb], oracle_forward(toks[1:, :lb])[0])
++            oa = R.model_forward_ref(PARAMS, OCFG, toks[:1, :la])["caches"]
++            ob = R.model_forward_ref(PARAMS, OCFG, toks[1:, :lb])["caches"]
++            for t in range(6):
++                tok = np.stack([IDS40[0, la + t : la + t + 1], IDS40[1, lb + t : lb + t + 1]])
++                lp = np.array(model(mx.array(tok), cache=merged), np.float64)
++                ra = R.model_forward_ref(PARAMS, OCFG, tok[:1], positions=np.array([la + t]), caches=oa)
++                rb = R.model_forward_ref(PARAMS, OCFG, tok[1:], positions=np.array([lb + t]), caches=ob)
++                self.check(f"{dev}: decode after right-padded prefill step {t} row A", lp[0], ra["logits"][0])
++                self.check(f"{dev}: decode after right-padded prefill step {t} row B", lp[1], rb["logits"][0])
++
++    # -- generation entry points ----------------------------------------------
++
++    def test_generate_step(self):
++        prompt = IDS40[0, :11]
++        for dev in self.devices():
++            model = build_model()
++            toks, lps = [], []
++            for tok, lp in generate_step(mx.array(prompt), model, max_tokens=8, sampler=make_sampler(0.0), prefill_step_size=5):
++                toks.append(int(tok))
++                lps.append(np.array(lp, np.float64))
++            seq = np.concatenate([prompt, toks])[None]
++            ref = oracle_forward(seq)[0]
++            ref = ref - np.log(np.exp(ref - ref.max(-1, keepdims=True)).sum(-1, keepdims=True)) - ref.max(-1, keepdims=True)
++            for t in range(8):
++                pos = len(prompt) - 1 + t
++                self.check(f"{dev}: generate_step logprobs step {t}", lps[t], ref[pos], 1e-4)
++                top = np.argsort(-ref[pos])[:2]
++                if ref[pos][top[0]] - ref[pos][top[1]] > 1e-3:
++                    self.assertEqual(toks[t], int(top[0]), f"step {t}")
++
++    def test_batch_generator(self):
++        prompts = [IDS40[0, :9].tolist(), IDS40[1, :4].tolist(), IDS40[1, :13].tolist()]
++        n = 6
++        for dev in self.devices():
++            model = build_model()
++            gen = BatchGenerator(model, max_tokens=n, prefill_step_size=5, prefill_batch_size=8, completion_batch_size=8)
++            try:
++                uids = gen.insert(prompts, max_tokens=[n] * len(prompts))
++                toks = {u: [] for u in uids}
++                lps = {u: [] for u in uids}
++                done = set()
++                for _ in range(1000):
++                    _, responses = gen.next()
++                    for r in responses:
++                        toks[r.uid].append(int(r.token))
++                        lps[r.uid].append(np.array(r.logprobs, np.float64))
++                        if r.finish_reason is not None:
++                            done.add(r.uid)
++                    if len(done) == len(uids):
++                        break
++            finally:
++                gen.close()
++            for u, p in zip(uids, prompts):
++                self.assertEqual(len(toks[u]), n, u)
++                seq = np.array(p + toks[u])[None]
++                ref = oracle_forward(seq)[0]
++                ref = ref - np.log(np.exp(ref - ref.max(-1, keepdims=True)).sum(-1, keepdims=True)) - ref.max(-1, keepdims=True)
++                for t in range(n):
++                    pos = len(p) - 1 + t
++                    self.check(f"{dev}: BatchGenerator seq {u} (prompt {len(p)}) logprobs step {t}", lps[u][t], ref[pos], 1e-4)
++                    top = np.argsort(-ref[pos])[:2]
++                    if ref[pos][top[0]] - ref[pos][top[1]] > 1e-3:
++                        self.assertEqual(toks[u][t], int(top[0]), f"seq {u} step {t}")
++
++    # -- kernels in isolation vs the oracle -------------------------------------
++
++    def test_banded_mask_vs_oracle(self):
++        rs = np.random.RandomState(3)
++        cases = [  # (B, H, Lq, S, window, extent)
++            (1, 2, 1, 600, 512, 512),
++            (2, 2, 8, 2000, 512, 512),
++            (1, 3, 37, 548, 512, 512),
++            (1, 2, 600, 1111, 512, 512),
++            (1, 2, 1, 1500, 0, 1024),
++            (2, 2, 8, 1030, 0, 1024),
++            (1, 2, 37, 1100, 0, 1024),
++            (1, 2, 1300, 1300, 0, 1024),
++            (2, 2, 3, 10, 4, 4),
++            (1, 2, 12, 12, 4, 4),
++            (1, 2, 5, 12, 0, 8),
++            (1, 2, 1, 1, 4, 4),
++        ]
++        for dev in self.devices():
++            for B, H, L, S, window, extent in cases:
++                r = rs.standard_normal((B, L, H, 4))
++                proj = rs.standard_normal((4, extent))
++                q_pos = np.arange(S - L, S)
++                k_pos = np.arange(S)
++                ref = R.rel_bias_ref(r, proj, q_pos, k_pos)
++                dist = q_pos[:, None] - k_pos[None]
++                masked = dist < 0
++                if window > 0:
++                    masked |= dist >= window
++                ref = np.where(masked[None, None], -np.inf, ref)
++                rl = np.einsum("bihd,de->bhie", r, proj)[..., ::-1].copy()  # K2's reversed bank
++                out = np.array(M.banded_mask(mx.array(rl.astype(np.float32)), S, window, extent), np.float64)
++                self.assertEqual(out.shape, ref.shape)
++                np.testing.assert_array_equal(np.isinf(out), np.isinf(ref), f"{(B, H, L, S, window, extent)} inf pattern")
++                fin = np.isfinite(ref)
++                self.check(f"{dev}: banded_mask {(B, H, L, S, window, extent)}", out[fin], ref[fin])
++
++    def test_router_vs_oracle(self):
++        rs = np.random.RandomState(5)
++        R_, S_, K_ = 256, 2, 6
++        for dev in self.devices():
++            for N in (1, 37, 300):
++                x = rs.standard_normal((N, 16))
++                gw = rs.standard_normal((R_ + S_, 16)) * 0.3
++                logits = (x @ gw.T).astype(np.float32)
++                bias = (rs.standard_normal(R_) * 0.05).astype(np.float32)
++                clear = [1, 50, 100, 200, 255]
++                bias[clear + [5, 9, 17, 29]] = 0
++                # row 0: five clear winners, then an exact tie (5 vs 9) for the
++                # sixth slot; row 1: a near tie (17 above 29 by ~1e-4 in score)
++                for row, pair, delta in [(0, (5, 9), 0.0), (1, (17, 29), 4e-4)]:
++                    if row >= N:
++                        continue
++                    logits[row, :R_] = rs.uniform(-6, -4, R_)
++                    logits[row, clear] = [3, 2.5, 2, 1.5, 1.0]
++                    logits[row, pair[0]] = np.float32(0.5 + delta)
++                    logits[row, pair[1]] = np.float32(0.5)
++                gs = np.array([1.3], np.float32)
++                # the oracle sees exactly the float32 logits (identity gate)
++                idx, tw, gamma, _ = R.router_ref(
++                    logits.astype(np.float64), np.eye(R_ + S_), bias.astype(np.float64), gs, 8.0, K_, S_
++                )
++                for name, fn in [("kernel", M.select_experts), ("compiled", M._select_experts)]:
++                    if name == "kernel" and dev == "cpu":
++                        continue
++                    inds, w = fn(mx.array(logits), mx.array(bias), mx.array(gs), K_, 8.0)
++                    inds, w = np.array(inds), np.array(w, np.float64)
++                    # routed indices [N, K] (00cdad1) or routed + shared [N, K + S] (cce0834)
++                    self.assertIn(inds.shape, [(N, K_), (N, K_ + S_)])
++                    self.assertEqual(w.shape, (N, K_ + S_))
++                    if inds.shape[1] == K_ + S_:
++                        np.testing.assert_array_equal(inds[:, K_:], np.broadcast_to(np.arange(R_, R_ + S_), (N, S_)))
++                    nbad = []
++                    werr = 0.0
++                    for i in range(N):
++                        if set(inds[i, :K_].tolist()) != set(idx[i].tolist()):
++                            nbad.append(i)
++                            continue
++                        got = dict(zip(inds[i, :K_].tolist() + list(range(R_, R_ + S_)), w[i]))
++                        ref = dict(zip(idx[i].tolist() + list(range(R_, R_ + S_)), np.concatenate([tw[i], gamma[i]])))
++                        werr = max(werr, max(abs(got[e] - ref[e]) / abs(ref[e]) for e in ref))
++                    REPORT.append((f"{dev}: router {name} N={N}: expert sets differ from the oracle on rows {nbad} (row 0 holds the exact tie); max weight rel err {werr:.2e}", werr, 1e-5))
++                    # The kernel documents lowest-index ties; argpartition does not
++                    self.assertEqual([i for i in nbad if i != 0 or name == "kernel"], [], f"{name} N={N}")
++                    self.assertLessEqual(werr, 1e-5)
++
++    def test_short_conv_kernel_equals_fallback(self):
++        rs = np.random.RandomState(9)
++        C, K = 48, 4
++        for dev in self.devices():
++            if dev != "gpu" or M._short_conv_kernel is None:
++                continue
++            for dtype in (mx.bfloat16, mx.float16, mx.float32):
++                conv = M.ShortConv(C, K, slot=0)
++                conv.weight = mx.array(rs.standard_normal((C, K, 1)).astype(np.float32) * 0.3)
++                for L in (1, 2, 5, 8, 9, 20):
++                    x = mx.array(rs.standard_normal((2, L, C)).astype(np.float32)).astype(dtype)
++                    res = mx.array(rs.standard_normal((2, L, C)).astype(np.float32)).astype(dtype)
++                    st = mx.array(rs.standard_normal((2, K - 1, C)).astype(np.float32)).astype(dtype)
++                    outs = []
++                    for use_kernel in (True, False):
++                        saved = M._short_conv_kernel
++                        if not use_kernel:
++                            M._short_conv_kernel = None
++                        try:
++                            cache = ArraysCache(3)
++                            cache[0] = st
++                            y = conv(x, cache, residual=res)
++                            mx.eval(y, cache[0])
++                            outs.append((y, cache[0]))
++                        finally:
++                            M._short_conv_kernel = saved
++                    (yk, sk), (yf, sf) = outs
++                    self.assertEqual(yk.dtype, dtype)
++                    self.assertEqual(sk.dtype, sf.dtype)
++                    # K2 documents the two paths as bit-identical; record whether
++                    # they are, assert they agree to one rounding of the dtype
++                    same = bool(mx.array_equal(yk, yf))
++                    ulp = {mx.float32: 1e-6, mx.float16: 2.0**-10, mx.bfloat16: 2.0**-7}[dtype]
++                    REPORT.append((f"{dev}: ShortConv {dtype} L={L} kernel vs fallback (bit-identical: {same})", rel(yk, yf), ulp))
++                    self.assertLessEqual(rel(yk, yf), ulp, f"{dtype} L={L}: kernel vs fallback")
++                    self.assertTrue(mx.array_equal(sk, sf), f"{dtype} L={L}: state differs")
++                    # fp32 against the oracle (the kernel path when L <= 8)
++                    if dtype == mx.float32:
++                        y_ref, s_ref = R.sconv_ref(np.array(x), np.array(conv.weight)[:, :, 0], np.array(st))
++                        y_ref = y_ref + np.array(res)
++                        self.check(f"{dev}: ShortConv fp32 L={L} vs oracle (+residual)", yk, y_ref)
++                        self.check(f"{dev}: ShortConv state L={L}", sk, s_ref, 0.0)
++
++    # -- reduced precision and quantization ----------------------------------------
++
++    def test_reduced_precision_paths(self):
++        # bf16 / fp16 through the Metal kernels. On this tiny random model the
++        # routed expert sets flip on near ties at reduced precision, which the
++        # MoE amplifies, so the oracle error is split by whether a token's
++        # routing matched the fp32 model. Asserted: the kernel paths equal the
++        # pure-MLX fallbacks, and the un-flipped tokens stay close.
++        ids, chunks = IDS40[:, :16], [7] + [1] * 9
++        ref = oracle_forward(ids)
++        for dev in self.devices():
++            if dev != "gpu":
++                continue
++            out32, routes32 = forward_with_routes(build_model(), ids, chunks)
++            self.check(f"{dev}: fp32 (routes recorded) vs oracle", out32, ref)
++            for dtype in (mx.bfloat16, mx.float16):
++                model = build_model(dtype=dtype)
++                out, routes = forward_with_routes(model, ids, chunks)
++                flipped = {(b, pos) for (i, b, pos), r in routes.items() if routes32[(i, b, pos)] != r}
++                keep = np.ones(ids.shape, bool)
++                for b, pos in flipped:
++                    keep[b, pos] = False
++                e_all = rel(out, ref)
++                e_keep = rel(out[keep], ref[keep])
++                REPORT.append((f"{dev}: {dtype} vs oracle, all tokens ({len(flipped)}/{ids.size} tokens route differently from fp32)", e_all, 1.0))
++                # recorded, judged like-for-like against mlx-vlm in review/a2_tiny_bf16.py
++                REPORT.append((f"{dev}: {dtype} vs oracle on tokens routed like fp32 (information only)", e_keep, 1.0))
++                saved = (M._short_conv_kernel, M._route_kernel, M._banded_mask_kernel)
++                try:
++                    M._short_conv_kernel = M._route_kernel = M._banded_mask_kernel = None
++                    out2, routes2 = forward_with_routes(model, ids, chunks)
++                finally:
++                    M._short_conv_kernel, M._route_kernel, M._banded_mask_kernel = saved
++                self.assertEqual(routes2, routes, f"{dtype}: kernel and fallback routing differ")
++                self.check(f"{dev}: {dtype} kernels vs fallbacks", out2, out, 1e-2)
++
++    def test_quantized_tiny(self):
++        # K2's quant_predicate: attention / embed / unembed at 8 bits g64,
++        # everything else at the requested (4 bits, g32); the fused qkvr rows and
++        # the 10-expert SwitchGLU through gather_qmm vs the dequantized model.
++        for dev in self.devices():
++            model = build_model()
++            qmodel, qcfg = quantize_model(model, {}, 32, 4)
++            kinds = {k: type(m).__name__ for k, m in qmodel.named_modules() if "Quantized" in type(m).__name__}
++            self.assertIn("model.llm.layers.0.attn.qkvr_proj", kinds)
++            self.assertEqual(qcfg["quantization"]["model.llm.layers.0.attn.qkvr_proj"], {"group_size": 64, "bits": 8})
++            self.assertIn("model.llm.layers.1.mlp.experts.gate_proj", kinds)
++            self.assertNotIn("model.llm.layers.1.mlp.gate", kinds)
++            self.assertTrue(all(not k.endswith("sconv") for k in kinds))
++            dq = dequantize_model(copy.deepcopy(qmodel))
++            mx.eval(qmodel.parameters(), dq.parameters())
++            for name, chunks in [("full", None), ("decode 7 + 1 x 9", [7] + [1] * 9)]:
++                self.check(f"{dev}: quantized tiny model {name} vs its dequantized twin", model_forward(qmodel, IDS40[:, :16], chunks), model_forward(dq, IDS40[:, :16], chunks), 2e-5)
++            # the dequantized twin is still close to the oracle (4-bit experts)
++            e = rel(model_forward(dq, IDS40[:, :16]), oracle_forward(IDS40[:, :16]))
++            REPORT.append((f"{dev}: dequantized 4-bit tiny model vs oracle (information only)", e, 1.0))
++
++
++def _print_report():
++    if not REPORT:
++        return
++    print("\nA2 report (rel error, tolerance):")
++    for name, e, tol in REPORT:
++        flag = "" if e <= tol else "   <-- FAIL"
++        print(f"  {e:.3e} <= {tol:.0e}  {name}{flag}")
++
++
++import atexit  # noqa: E402
++
++atexit.register(_print_report)
++
++if __name__ == "__main__":
++    unittest.main()

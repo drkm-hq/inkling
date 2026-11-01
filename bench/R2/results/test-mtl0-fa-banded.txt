@@ -1,0 +1,36 @@
+ggml_metal_library_init: using embedded metal library
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_init: allocating
+ggml_metal_init: found device: Apple M5 Max
+ggml_metal_init: picking default device: Apple M5 Max
+ggml_metal_init: use fusion         = true
+ggml_metal_init: use concurrency    = true
+ggml_metal_init: use graph optimize = true
+Testing 3 devices
+
+Backend 1/3: MTL0
+  Device description: Apple M5 Max
+  Device memory: 110100 MB (110099 MB free)
+
+  FLASH_ATTN_EXT_BANDED(d=64,n_head=2,n_head_kv=1,n_q=8,n_kv=8,rel_extent=8,mask_kind=1,kv_type=f32,rel_type=f32,strided=0): not supported [MTL0] 
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=2,n_q=16,n_kv=16,rel_extent=8,mask_kind=1,kv_type=f16,rel_type=f16,strided=0): not supported [MTL0] 
+  FLASH_ATTN_EXT_BANDED(d=64,n_head=8,n_head_kv=2,n_q=1,n_kv=64,rel_extent=8,mask_kind=1,kv_type=f32,rel_type=f32,strided=0): not supported [MTL0] 
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=2,n_q=64,n_kv=64,rel_extent=8,mask_kind=2,kv_type=bf16,rel_type=bf16,strided=0): not supported [MTL0] 
+  FLASH_ATTN_EXT_BANDED(d=64,n_head=8,n_head_kv=1,n_q=64,n_kv=64,rel_extent=512,mask_kind=1,kv_type=f16,rel_type=f32,strided=0): not supported [MTL0] 
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=2,n_q=17,n_kv=33,rel_extent=8,mask_kind=1,kv_type=f16,rel_type=f16,strided=1): not supported [MTL0] 
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0): not supported [MTL0] 
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16384,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0): not supported [MTL0] 
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16403,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0): not supported [MTL0] 
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16896,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0): not supported [MTL0] 
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=17024,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0): not supported [MTL0] 
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=1,n_kv=17024,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0): not supported [MTL0] 
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=32768,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0): not supported [MTL0] 
+ggml_metal_free: deallocating
+  0/0 tests passed
+  Backend MTL0: [1;32mOK[0m
+Backend 2/3: BLAS
+  Skipping
+Backend 3/3: CPU
+  Skipping
+3/3 backends passed
+[1;32mOK[0m

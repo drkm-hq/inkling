@@ -1,0 +1,175 @@
+diff --git a/mlx_lm/models/cache.py b/mlx_lm/models/cache.py
+index 034d8ee..1101b15 100644
+--- a/mlx_lm/models/cache.py
++++ b/mlx_lm/models/cache.py
+@@ -537,8 +537,9 @@ class RotatingKVCache(_BaseCache):
+         s = mx.arange(S)
+         if self.keys.shape[2] > self.max_size:
+             # Temporal order, right after a multi-token update
+-            return S - 1 - s
+-        dist = (self._idx - 1 - s) % (self.max_size - self.keep)
++            dist = S - 1 - s
++        else:
++            dist = (self._idx - 1 - s) % (self.max_size - self.keep)
+         if self.keep > 0:
+             dist = mx.where(s < self.keep, self.offset - 1 - s, dist)
+         return dist
+diff --git a/mlx_lm/models/inkling_mm_model.py b/mlx_lm/models/inkling_mm_model.py
+index a007429..cfd232b 100644
+--- a/mlx_lm/models/inkling_mm_model.py
++++ b/mlx_lm/models/inkling_mm_model.py
+@@ -209,6 +209,7 @@ class ShortConv(nn.Module):
+             state = mx.zeros((B, K - 1, C), x.dtype)
+         if (
+             _short_conv_kernel is not None
++            and not self.training
+             and mx.default_device() == mx.gpu
+             and cache is not None
+             and cache.lengths is None
+@@ -289,7 +290,7 @@ def _make_banded_mask_kernel():
+ _banded_mask_kernel = _make_banded_mask_kernel()
+ 
+ 
+-def banded_mask(rel_logits, n_keys, window, extent):
++def banded_mask(rel_logits, n_keys, window, extent, *, use_kernel=True):
+     """Additive attention mask carrying the relative position bias.
+ 
+     ``rel_logits`` is ``[B, H, L, extent]`` in reversed distance order: column
+@@ -301,7 +302,7 @@ def banded_mask(rel_logits, n_keys, window, extent):
+     """
+     B, H, L, E = rel_logits.shape
+     dtype = rel_logits.dtype
+-    if _banded_mask_kernel is not None and mx.default_device() == mx.gpu:
++    if use_kernel and _banded_mask_kernel is not None and mx.default_device() == mx.gpu:
+         return _banded_mask_kernel(
+             inputs=[rel_logits],
+             template=[("T", dtype), ("WINDOW", window), ("EXTENT", E)],
+@@ -391,7 +392,9 @@ class Attention(nn.Module):
+         r = r.reshape(B, L, self.n_heads, self.d_rel)
+         rel_logits = (r @ self.rel_logits_proj.proj_reversed).transpose(0, 2, 1, 3)
+         if L > 1:
+-            mask = banded_mask(rel_logits, S, self.window, self.extent)
++            mask = banded_mask(
++                rel_logits, S, self.window, self.extent, use_kernel=not self.training
++            )
+         elif self.window > 0 and cache is not None:
+             # The rotating cache of a sliding layer: gather by slot distance
+             if rel_index is None:
+@@ -563,12 +566,12 @@ def _make_route_kernel():
+ _route_kernel = _make_route_kernel()
+ 
+ 
+-def select_experts(logits, bias, global_scale, top_k, route_scale):
++def select_experts(logits, bias, global_scale, top_k, route_scale, *, use_kernel=True):
+     """Expert indices ``[N, top_k + n_shared]`` (the shared experts last) and
+     their routing weights from fp32 router logits ``[N, n_routed + n_shared]``."""
+     N, n_total = logits.shape
+     n_routed = bias.shape[0]
+-    if _route_kernel is not None and mx.default_device() == mx.gpu:
++    if use_kernel and _route_kernel is not None and mx.default_device() == mx.gpu:
+         return _route_kernel(
+             inputs=[logits, bias, route_scale * global_scale],
+             template=[("R", n_routed), ("S", n_total - n_routed), ("K", top_k)],
+@@ -604,7 +607,12 @@ class MoE(nn.Module):
+         x = x.reshape(-1, D)
+         logits = x.astype(mx.float32) @ self.gate.weight.astype(mx.float32).T
+         inds, weights = select_experts(
+-            logits, self.gate.bias, self.gate.global_scale, self.top_k, self.route_scale
++            logits,
++            self.gate.bias,
++            self.gate.global_scale,
++            self.top_k,
++            self.route_scale,
++            use_kernel=not self.training,
+         )
+         y = self.experts(x, inds)
+         y = (y * weights[..., None].astype(y.dtype)).sum(axis=-2)
+diff --git a/mlx_lm/utils.py b/mlx_lm/utils.py
+index da365de..aff2443 100644
+--- a/mlx_lm/utils.py
++++ b/mlx_lm/utils.py
+@@ -58,6 +58,7 @@ MODEL_REMAPPING = {
+     "xverse": "llama",
+     "gemma4_unified": "gemma4",  # encoder-free multimodal variant; vision/audio weights stripped by sanitize()
+     "deepseek_v41_text": "deepseek_v41",
++    "inkling_text": "inkling_mm_model",
+ }
+ 
+ MODEL_ARCHITECTURE_REMAPPING = {
+diff --git a/tests/test_inkling.py b/tests/test_inkling.py
+index a5b26b8..a45bb61 100644
+--- a/tests/test_inkling.py
++++ b/tests/test_inkling.py
+@@ -3,6 +3,7 @@
+ import unittest
+ 
+ import mlx.core as mx
++import mlx.nn as nn
+ import numpy as np
+ from mlx.utils import tree_flatten, tree_unflatten
+ 
+@@ -64,6 +65,7 @@ def random_model(seed=0, dtype=mx.float32, **overrides):
+             v = v.astype(dtype)
+         params.append((k, v))
+     model.update(tree_unflatten(params))
++    model.eval()
+     mx.eval(model.parameters())
+     return model, args
+ 
+@@ -164,6 +166,7 @@ class TestInkling(unittest.TestCase):
+     def test_short_conv_state(self):
+         B, L, C, K = 2, 11, 16, 4
+         conv = inkling.ShortConv(C, K, slot=0)
++        conv.eval()
+         conv.weight = mx.random.normal((C, K, 1))
+         x = mx.random.normal((B, L, C)).astype(mx.bfloat16)
+         cache = make_prompt_cache(random_model()[0])[0][1]
+@@ -373,6 +376,36 @@ class TestInkling(unittest.TestCase):
+         self.assertTrue(mx.allclose(lp[0], ref[0][1][0], **tol))
+         self.assertTrue(mx.allclose(lp[1], ref[1][1][0], **tol))
+ 
++    def test_key_distances_with_kept_prefix(self):
++        cache = RotatingKVCache(max_size=6, keep=2)
++        offset = 0
++        for n in (8, 2, 1, 1, 3, 1):
++            positions = mx.arange(offset, offset + n).reshape(1, 1, n, 1)
++            keys, _ = cache.update_and_fetch(positions, positions)
++            offset += n
++            self.assertTrue(
++                mx.array_equal(cache.key_distances(), offset - 1 - keys.reshape(-1))
++            )
++
++    def test_training_gradients(self):
++        model, _ = random_model()
++        model.train()
++        ids = mx.array([[1, 2, 3, 4]])
++        for cached in (False, True):
++            cache = make_prompt_cache(model) if cached else None
++            loss_and_grad = nn.value_and_grad(
++                model, lambda m: mx.square(m(ids, cache=cache)).mean()
++            )
++            loss, grads = loss_and_grad(model)
++            mx.eval(loss, grads)
++            self.assertTrue(mx.isfinite(loss).item())
++            for name, grad in tree_flatten(grads):
++                self.assertTrue(mx.all(mx.isfinite(grad)).item(), name)
++            attn_grad = dict(tree_flatten(grads))[
++                "model.llm.layers.0.attn.qkvr_proj.weight"
++            ]
++            self.assertGreater(mx.abs(attn_grad).sum().item(), 0)
++
+     def test_prefill_decode_consistency(self):
+         model, args = random_model(dtype=mx.float16)
+         ids = mx.random.randint(0, 60, (2, 12))
+@@ -423,6 +456,11 @@ class TestInkling(unittest.TestCase):
+         self.assertTrue(any("kv_bits" in str(w.message) for w in caught))
+ 
+     def test_flat_text_config(self):
++        from mlx_lm.utils import _get_classes
++
++        model_class, args_class = _get_classes({"model_type": "inkling_text"})
++        self.assertIs(model_class, inkling.Model)
++        self.assertIs(args_class, inkling.ModelArgs)
+         args = inkling.ModelArgs.from_dict(
+             {"model_type": "inkling_text", **tiny_text_config()}
+         )

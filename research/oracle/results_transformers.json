@@ -1,0 +1,146 @@
+{
+ "embedding + embed_norm": {
+  "max_abs": 3.7511223593966747e-07,
+  "max_rel": 9.457730417497655e-08
+ },
+ "layer 0 output (hybrid_sliding, dense)": {
+  "max_abs": 8.160529740841582e-07,
+  "max_rel": 1.2682860665767707e-07
+ },
+ "layer 1 output (hybrid, sparse)": {
+  "max_abs": 4.014601317159361e-06,
+  "max_rel": 1.665609244333169e-07
+ },
+ "final norm output (last_hidden_state)": {
+  "max_abs": 1.717893024721917e-06,
+  "max_rel": 4.19503305812276e-07
+ },
+ "logits (sliced to unpadded vocab)": {
+  "max_abs": 6.907957529334041e-07,
+  "max_rel": 4.217044567874466e-07
+ },
+ "sconv_ref (prefill, no state)": {
+  "max_abs": 2.669694056933736e-07,
+  "max_rel": 6.225675540584952e-08
+ },
+ "sconv_ref (chunked with carried state) vs prefill": {
+  "max_abs": 2.669694056933736e-07,
+  "max_rel": 6.225675384091993e-08
+ },
+ "rel_bias_ref (global layer, q offset 3, 8 keys)": {
+  "max_abs": 4.440892098500626e-16,
+  "max_rel": 1.295353748399256e-16
+ },
+ "router_ref topk weights (index-sorted)": {
+  "max_abs": 0.0,
+  "max_rel": 0.0
+ },
+ "router_ref shared gammas": {
+  "max_abs": 2.220446049250313e-16,
+  "max_rel": 6.265508835930847e-17
+ },
+ "moe_ref (router + experts + shared)": {
+  "max_abs": 6.078279133348019e-07,
+  "max_rel": 4.311173658307249e-08
+ },
+ "dense_mlp_ref (global_scale)": {
+  "max_abs": 4.440892098500626e-16,
+  "max_rel": 1.4814176582914979e-16
+ },
+ "attention_ref full (GQA 2:1 + bias + causal)": {
+  "max_abs": 1.1459195570218128e-07,
+  "max_rel": 5.8661309810089586e-08
+ },
+ "attention_ref sliding window 4": {
+  "max_abs": 2.1087066603975302e-07,
+  "max_rel": 8.693743234448056e-08
+ },
+ "transformers cached decode vs transformers full forward": {
+  "max_abs": 4.936912233466373e-07,
+  "max_rel": 3.013796835805215e-07
+ },
+ "oracle stateful decode vs oracle full forward": {
+  "max_abs": 1.887379141862766e-15,
+  "max_rel": 1.1521729720997935e-15
+ },
+ "oracle stateful decode vs transformers cached decode": {
+  "max_abs": 6.907957529334041e-07,
+  "max_rel": 4.217044897548421e-07
+ },
+ "chunked prefill (5,3,1,1,1,1): transformers vs full": {
+  "max_abs": 2.58688203330637e-07,
+  "max_rel": 1.5791929282700716e-07
+ },
+ "chunked prefill (5,3,1,1,1,1): oracle vs full": {
+  "max_abs": 2.3869795029440866e-15,
+  "max_rel": 1.45715993530268e-15
+ },
+ "mtp_step_ref chain hidden": {
+  "max_abs": 1.4589138643827937e-06,
+  "max_rel": 2.059857912543098e-07
+ },
+ "mtp_step_ref logits": {
+  "max_abs": 4.840437126674146e-07,
+  "max_rel": 1.2844609501334846e-07
+ },
+ "[local depth] MtpModel chain hidden vs mtp_step_ref variant=transformers": {
+  "max_abs": 3.2883244165018017,
+  "max_rel": 0.46924608619902813
+ },
+ "[local depth] MtpModel logits vs mtp_step_ref variant=transformers": {
+  "max_abs": 1.1057783589884354,
+  "max_rel": 0.34264713947650516
+ },
+ "[local depth] MtpModel chain hidden vs mtp_step_ref variant=vllm": {
+  "max_abs": 2.5098156462083567,
+  "max_rel": 0.3954550867538631
+ },
+ "[local depth] MtpModel logits vs mtp_step_ref variant=vllm": {
+  "max_abs": 1.2924793035345357,
+  "max_rel": 0.4208152796755994
+ },
+ "[local depth] MtpModel chain hidden vs mtp_step_ref variant=mlx": {
+  "max_abs": 3.2883244165018017,
+  "max_rel": 0.46924608619902813
+ },
+ "[local depth] MtpModel logits vs mtp_step_ref variant=mlx": {
+  "max_abs": 1.453007044054185,
+  "max_rel": 0.7678382811895006
+ },
+ "[local depth] MtpModel block with sliding mask forced vs variant=transformers": {
+  "max_abs": 9.48658098076649e-07,
+  "max_rel": 1.3537414296155333e-07
+ },
+ "[global depth] MtpModel chain hidden vs mtp_step_ref variant=transformers": {
+  "max_abs": 6.840134960661715e-07,
+  "max_rel": 1.382401909515035e-07
+ },
+ "[global depth] MtpModel logits vs mtp_step_ref variant=transformers": {
+  "max_abs": 4.151006030017612e-07,
+  "max_rel": 1.4177518194140762e-07
+ },
+ "[global depth] MtpModel chain hidden vs mtp_step_ref variant=vllm": {
+  "max_abs": 1.9792779588475127,
+  "max_rel": 0.37378855615163936
+ },
+ "[global depth] MtpModel logits vs mtp_step_ref variant=vllm": {
+  "max_abs": 0.6789438665181359,
+  "max_rel": 0.22927976235557
+ },
+ "[global depth] MtpModel chain hidden vs mtp_step_ref variant=mlx": {
+  "max_abs": 6.840134960661715e-07,
+  "max_rel": 1.382401909515035e-07
+ },
+ "[global depth] MtpModel logits vs mtp_step_ref variant=mlx": {
+  "max_abs": 1.4035682662674867,
+  "max_rel": 0.6841374362637699
+ },
+ "forward with generate-style mask dict vs plain forward logits": {
+  "max_abs": 1.655973077834418,
+  "max_rel": 1.0109084760155451
+ },
+ "generate() first-step logits vs oracle last-position logits": {
+  "max_abs": 4.2984825376901625e-07,
+  "max_rel": 2.832150966841228e-07
+ }
+}

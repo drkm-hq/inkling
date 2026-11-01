@@ -1,0 +1,108 @@
+BASE k1: git -C <workdir> archive 7c25a0a9b55bd336e0bf050f11a17c78f9337100 (tar extracted in <workdir>)
+$ git init --quiet [cwd=<workdir>]
+exit=0
+$ git apply --check --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+PASS k1: sequential application complete
+BASE k2: git -C <workdir>/upstream/mlx-lm archive f98688c1cc1339d596430293483466910ceed2f9 (tar extracted in <workdir>)
+$ git init --quiet [cwd=<workdir>]
+exit=0
+$ git apply --check --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --check --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+K2 test equality deferred until boundary-test update is packaged.
+BASE k4: git -C <workdir>/upstream/mlx-vlm archive ee1be2540c9ec3266dabdd86d46764404a8a80e7 (tar extracted in <workdir>)
+$ git init --quiet [cwd=<workdir>]
+exit=0
+$ git apply --check --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --check --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --check --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --check --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --check --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+EXACT SOURCE + AST OK k4 mlx_vlm/models/inkling/language.py sha256=75be1a60a2e012adf172d92c2e49ba283a30491d25c19be1b261ce8bc4f29e04
+EXACT SOURCE + AST OK k4 mlx_vlm/tests/test_inkling_sconv_pair.py sha256=7bed1e94d025a9841e561975146a6ca4437fdef4aec2aa0d1548c66c0c315010
+EXACT SOURCE + AST OK k4 mlx_vlm/tests/test_inkling_convnorm.py sha256=488c4c0cf7d2f0f9e615fcc605b7f5bcbb0507b6206d13af2f4e0f9bca1af341
+EXACT SOURCE + AST OK k4 mlx_vlm/tests/test_inkling_fast_path.py sha256=7a163c4b19b55c30106ccf6d0375910fb6e9058f9aa6b9ce227f09ccc7ca186e
+PASS k4: sequential application complete
+$ git apply --check --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --check --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+EXACT SOURCE OK k1 plus experimental ggml/src/ggml-metal/ggml-metal-ops.cpp
+EXACT SOURCE OK k1 plus experimental ggml/src/ggml-metal/ggml-metal-impl.h
+EXACT SOURCE OK k1 plus experimental ggml/src/ggml-metal/kernels/ssm.metal
+EXACT SOURCE OK k1 plus experimental tests/test-backend-ops.cpp
+EXACT SOURCE OK k1 plus experimental src/models/inkling.cpp
+PASS k1 experimental: main01 -> experimental02 -> experimental03
+EXACT PREREQUISITE COPY 02-mlx-lm-fixes.patch sha256=dd7d8d67293e6ad4d9b784ca481f7a579ffb64b2c8a181101f54d32a472de9e5
+EXACT PREREQUISITE COPY 03-mlx-vlm-cache-fixes.patch sha256=aa6006ae7c5ff6dce6aeaf3f9b74f2d783f91cb3b89fe9b809fc1dd23436241a
+EXACT PREREQUISITE COPY 04-mlx-vlm-quantization-fix.patch sha256=6f74411c57ab0438a6ee8a80cc040559fbb895e94a21b758c372906ff8877da0
+FINAL K1 BASE 7c25a0a9b55bd336e0bf050f11a17c78f9337100 -> <workdir>
+$ git init --quiet [cwd=<workdir>]
+exit=0
+$ git apply --check --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --check --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --check --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+EXACT SOURCE OK K1 final ggml/src/ggml-metal/ggml-metal-fusion.cpp sha256=3c6fd298f2992dfb487a973592f690afa87c973aa0f7e588e508f0969ca69db5
+EXACT SOURCE OK K1 final ggml/src/ggml-metal/ggml-metal-fusion.h sha256=341a5e7c0bbfa67cbd2db4496282a54c2d92af5d2c30d7dbe341bd2a24def6f2
+EXACT SOURCE OK K1 final ggml/src/ggml-metal/ggml-metal-impl.h sha256=f8382a6598143ae9ca3990be721109c1c4f8c5c9b8f511d0f6a969d2fbf35765
+EXACT SOURCE OK K1 final ggml/src/ggml-metal/ggml-metal-ops.cpp sha256=4713150c17c0e53f6ec2053f7fd31170b2a0ba162068c558a1566797200eef71
+EXACT SOURCE OK K1 final ggml/src/ggml-metal/kernels/misc.metal sha256=4d9b8461bb8ddb0afd1a21d984f1ae23d08a9ff127d1d4f63b7c88f03c80ab0d
+EXACT SOURCE OK K1 final ggml/src/ggml-metal/kernels/ssm.metal sha256=a0b6ddf4d1ddaa3b20142b40a53df912a9658653486e63c63bfd9d2d3136b9db
+EXACT SOURCE OK K1 final src/models/inkling.cpp sha256=5b13fcd963bc9d7df127fb2abcf959f9421491fdbe3ff286b68914ef959b835a
+EXACT SOURCE OK K1 final tests/test-backend-ops.cpp sha256=e532ab3536d8ad1eae3536c85d3e30458633614b21a0f783bcb2f3e59aa779fd
+EXACT SOURCE OK K1 final tests/test-metal-graph-optimize.cpp sha256=a5250afe57c80566b074ecae63424cc7122c0249038de9710e45e712040a0781
+PASS K1 FINAL main01 -> experimental02 -> experimental03; all changed files match frozen runtime.
+FINAL K2 BASE f98688c1cc1339d596430293483466910ceed2f9 -> <workdir>
+$ git init --quiet [cwd=<workdir>]
+exit=0
+$ git apply --check --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --check --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+$ git apply --whitespace=error-all <workdir> [cwd=<workdir>]
+exit=0
+EXACT SOURCE + AST OK K2 final mlx_lm/models/cache.py sha256=741f9080bb8b3abd2e85011cc83d0886b71e5b837eca010ae02de09220025a09
+EXACT SOURCE + AST OK K2 final mlx_lm/models/inkling_mm_model.py sha256=ab46d00c494c20642014246be0d29fbafbec1dfa61bfc7749e699ec548a7df46
+EXACT SOURCE + AST OK K2 final mlx_lm/utils.py sha256=236c8d96288063251a45b99409e6b35583dd8a83b041e41da12993cbe9590ce1
+EXACT SOURCE + AST OK K2 final tests/test_inkling.py sha256=c2abe715d67f2c3a73ccf56cc92e2ec142b9afc0fa6a8c8c2844d6e8c76232dd
+EXACT SOURCE + AST OK K2 final tests/test_inkling_gate_up.py sha256=b07b09404c7b1b6628c453863007e5c09650a78df2cc5bd329b77cdf06a62d4a
+PASS K2 FINAL prerequisite02 -> performance02; all changed files match frozen runtime and final boundary tests.
+FINAL SUMMARY: K1 main01; K1 main01 -> experimental02 -> experimental03; K2 prerequisite02 -> performance02; K4 prerequisite03 -> prerequisite04 -> performance03 -> performance04 -> performance05 all apply cleanly with --whitespace=error-all.

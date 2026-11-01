@@ -1,0 +1,5 @@
+=== subset, fixed binary (2026-10-29T03:54:23Z) load={ 16.43 19.03 19.18 }
+exit: 1 ; ============= 1 failed, 140 passed, 1 skipped in 184.10s (0:03:04) =============
+=== subset, baseline binary (2026-10-29T03:57:29Z) load={ 28.25 22.90 20.76 }
+exit: 1 ; ============= 2 failed, 139 passed, 1 skipped in 181.17s (0:03:01) =============
+=== done (2026-10-29T04:00:32Z)

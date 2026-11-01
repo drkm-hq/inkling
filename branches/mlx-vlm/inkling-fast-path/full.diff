@@ -1,0 +1,1523 @@
+diff --git a/mlx_vlm/models/cache.py b/mlx_vlm/models/cache.py
+index 65291ce..56309ef 100644
+--- a/mlx_vlm/models/cache.py
++++ b/mlx_vlm/models/cache.py
+@@ -2317,7 +2317,8 @@ class BufferedRotatingKVCache(RotatingKVCache):
+     def state(self, v):
+         self.keys, self.values = v
+         self._idx = 0 if self.keys is None else int(self.keys.shape[2])
+-        self.start_position = max(0, int(self.offset) - self._idx)
++        # from_state() assigns state before meta_state on a bare instance.
++        self.start_position = max(0, int(getattr(self, "offset", 0)) - self._idx)
+ 
+     @property
+     def meta_state(self):
+@@ -2343,6 +2344,219 @@ class BufferedRotatingKVCache(RotatingKVCache):
+         self.buffer_size = vals[5] if len(vals) > 5 else 64
+ 
+ 
++class SlidingWindowKVCache(BufferedRotatingKVCache):
++    """Bounded KV cache for a sliding-window layer whose attention is formed
++    by the model itself (a distance-based bias, a model-built mask).
++
++    Keys stay in temporal order: ``update_and_fetch`` returns the newest
++    positions as one ``[B, H, n, D]`` view, and once the window is full
++    ``max_size - 1 <= n - L <= max_size - 1 + buffer_size`` for an update of
++    ``L`` tokens, so the last query sees exactly its window plus a bounded
++    slack the caller may slice off. ``RotatingKVCache`` returns its ring out
++    of order at decode, which a bias indexed by distance cannot use; this
++    cache compacts in place every ``buffer_size`` tokens instead. It is
++    trimmable for speculative rollback, its snapshot round-trips through
++    ``state``/``meta_state``, and ``to_batch``/``merge`` keep the layout for
++    continuous batching.
++    """
++
++    def __init__(self, max_size: int, buffer_size: int = 256):
++        super().__init__(max_size=max_size, keep=0, buffer_size=buffer_size)
++
++    def update_and_fetch(self, keys: mx.array, values: mx.array):
++        incoming = int(keys.shape[2])
++        drop = self._planned_drop(incoming)
++        keep = self._idx - drop
++        needed = keep + incoming
++        if self.keys is None or drop > 0 or needed > self.keys.shape[2]:
++            # One allocation covers both compaction and growth.
++            if self.keys is not None and needed <= self.keys.shape[2]:
++                capacity = self.keys.shape[2]
++            else:
++                capacity = self._capacity_for(needed)
++            new_keys = mx.zeros(
++                (*keys.shape[:2], capacity, keys.shape[-1]), dtype=keys.dtype
++            )
++            new_values = mx.zeros(
++                (*values.shape[:2], capacity, values.shape[-1]), dtype=values.dtype
++            )
++            if keep > 0:
++                new_keys[..., :keep, :] = self.keys[..., drop : self._idx, :]
++                new_values[..., :keep, :] = self.values[..., drop : self._idx, :]
++            self.keys, self.values = new_keys, new_values
++            self.start_position += drop
++            self._idx = keep
++        self.keys[..., self._idx : needed, :] = keys
++        self.values[..., self._idx : needed, :] = values
++        self._idx = needed
++        self.offset += incoming
++        return self.keys[..., : self._idx, :], self.values[..., : self._idx, :]
++
++    def trim(self, n):
++        # Rolling back past the keys that compaction already dropped would
++        # leave the next query fewer than max_size - 1 old keys while
++        # is_trimmable() still reports True; refuse instead of narrowing the
++        # window silently. A cache that never evicted can trim to any depth.
++        n = min(int(n), self._idx, self.offset)
++        if self.start_position > 0 and n > self._idx - (self.max_size - 1):
++            raise ValueError(
++                f"SlidingWindowKVCache.trim({n}) would rewind past the window: "
++                f"only {max(0, self._idx - (self.max_size - 1))} of the retained "
++                f"{self._idx} keys are slack, the rest were kept for the next query"
++            )
++        return super().trim(n)
++
++    def to_batch(self, left_padding: List[int]):
++        return BatchSlidingWindowKVCache(
++            self.max_size, left_padding, buffer_size=self.buffer_size
++        )
++
++    @classmethod
++    def merge(cls, caches):
++        return BatchSlidingWindowKVCache.merge(caches)
++
++    def prefix_cache_merge(self, rows, prefix_lens):
++        if not rows or len(rows) != len(prefix_lens):
++            return None
++        for row, length in zip(rows, prefix_lens):
++            if not isinstance(row, SlidingWindowKVCache):
++                return None
++            if row.max_size != self.max_size:
++                return None
++            if row.keys is not None and int(row.offset) != int(length):
++                return None
++        return self.merge(rows)
++
++
++class BatchSlidingWindowKVCache(BatchKVCache):
++    """Batched, left-padded form of ``SlidingWindowKVCache``.
++
++    Rows share one column timeline (``BatchKVCache`` layout); the cache is
++    compacted by dropping the leading columns no row can see any more, which
++    shifts ``left_padding`` with them (a negative value means the padding was
++    evicted). Compaction waits while right padding is pending, so
++    ``finalize`` can roll the padded rows into place first: during a
++    right-padded prompt the whole prompt is kept (as with ``BatchKVCache``)
++    and the window bound applies from the first update after ``finalize``.
++    """
++
++    memory_profile = _windowed_memory_profile
++
++    def __init__(self, max_size: int, left_padding: List[int], buffer_size: int = 256):
++        super().__init__(left_padding)
++        self.max_size = int(max_size)
++        self.buffer_size = max(0, int(buffer_size))
++        self.start_position = 0
++
++    def _planned_drop(self, incoming: int) -> int:
++        if self._right_padding is not None:
++            return 0
++        if self._idx + incoming <= self.max_size + max(self.buffer_size, incoming):
++            return 0
++        return max(0, self._idx - (self.max_size - 1))
++
++    def update_and_fetch(self, keys: mx.array, values: mx.array):
++        drop = self._planned_drop(int(keys.shape[2]))
++        if drop > 0:
++            keep = self._idx - drop
++            capacity = self.keys.shape[2]
++            new_keys = mx.zeros(
++                (*self.keys.shape[:2], capacity, self.keys.shape[-1]),
++                dtype=self.keys.dtype,
++            )
++            new_values = mx.zeros(
++                (*self.values.shape[:2], capacity, self.values.shape[-1]),
++                dtype=self.values.dtype,
++            )
++            if keep > 0:
++                new_keys[..., :keep, :] = self.keys[..., drop : self._idx, :]
++                new_values[..., :keep, :] = self.values[..., drop : self._idx, :]
++            self.keys, self.values = new_keys, new_values
++            self.left_padding = self.left_padding - drop
++            self.start_position += drop
++            self._idx = keep
++        return super().update_and_fetch(keys, values)
++
++    @property
++    def meta_state(self):
++        return tuple(map(str, (self.max_size, self.buffer_size, self.start_position)))
++
++    @meta_state.setter
++    def meta_state(self, v):
++        self.max_size, self.buffer_size, self.start_position = map(int, v)
++
++    def trim(self, n):
++        # Same guard as SlidingWindowKVCache.trim: never rewind past the
++        # columns compaction already dropped.
++        n = min(int(n), self._idx)
++        if self.start_position > 0 and n > self._idx - (self.max_size - 1):
++            raise ValueError(
++                f"BatchSlidingWindowKVCache.trim({n}) would rewind past the window: "
++                f"only {max(0, self._idx - (self.max_size - 1))} of the retained "
++                f"{self._idx} columns are slack"
++            )
++        return super().trim(n)
++
++    def extend(self, other):
++        if other.max_size != self.max_size:
++            raise ValueError(
++                "BatchSlidingWindowKVCache can only extend caches with the same "
++                "window size"
++            )
++        super().extend(other)
++        self.start_position = max(self.start_position, other.start_position)
++
++    def extract(self, idx):
++        cache = SlidingWindowKVCache(self.max_size, buffer_size=self.buffer_size)
++        if self.keys is None:
++            return cache
++        padding = max(0, int(self.left_padding[idx].item()))
++        cache.keys = mx.contiguous(self.keys[idx : idx + 1, :, padding : self._idx])
++        cache.values = mx.contiguous(self.values[idx : idx + 1, :, padding : self._idx])
++        cache.offset = int(self.offset[idx].item())
++        cache._idx = cache.keys.shape[2]
++        cache.start_position = max(0, cache.offset - cache._idx)
++        return cache
++
++    @classmethod
++    def merge(cls, caches):
++        max_size = caches[0].max_size
++        if not all(c.max_size == max_size for c in caches):
++            raise ValueError(
++                "BatchSlidingWindowKVCache can only merge caches with the same "
++                "window size"
++            )
++        buffer_size = max(c.buffer_size for c in caches)
++        states = [(None, None) if c.keys is None else c.state for c in caches]
++        lengths = [0 if k is None else int(k.shape[2]) for k, _ in states]
++        max_length = max(lengths)
++        if max_length == 0:
++            return cls(max_size, [0] * len(caches), buffer_size=buffer_size)
++
++        padding = [max_length - length for length in lengths]
++        B = len(caches)
++        H = max(k.shape[1] for k, _ in states if k is not None)
++        Dk = max(k.shape[3] for k, _ in states if k is not None)
++        Dv = max(v.shape[3] for _, v in states if v is not None)
++        dt = next(iter(k.dtype for k, _ in states if k is not None))
++
++        keys = mx.zeros((B, H, max_length, Dk), dtype=dt)
++        values = mx.zeros((B, H, max_length, Dv), dtype=dt)
++        for i, (p, length, (k, v)) in enumerate(zip(padding, lengths, states)):
++            if k is None:
++                continue
++            keys[i : i + 1, :, p : p + length] = k
++            values[i : i + 1, :, p : p + length] = v
++
++        cache = cls(max_size, padding, buffer_size=buffer_size)
++        cache.keys = keys
++        cache.values = values
++        cache.offset = mx.array([int(c.offset) for c in caches])
++        cache._idx = max_length
++        cache.start_position = max(int(c.start_position) for c in caches)
++        return cache
++
++
+ class BatchQuantizedKVCache(_BaseCache):
+     """Batch-aware quantized KV cache for continuous batching.
+ 
+diff --git a/mlx_vlm/models/inkling/language.py b/mlx_vlm/models/inkling/language.py
+index 4226079..9444541 100644
+--- a/mlx_vlm/models/inkling/language.py
++++ b/mlx_vlm/models/inkling/language.py
+@@ -6,7 +6,7 @@ import mlx.nn as nn
+ from mlx.utils import tree_flatten
+ 
+ from ..base import LanguageModelOutput, scaled_dot_product_attention
+-from ..cache import ArraysCache, CacheList, KVCache
++from ..cache import ArraysCache, CacheList, KVCache, SlidingWindowKVCache
+ from ..mlp import SwiGLUMLP
+ from ..switch_layers import SwitchGLU, _gather_sort, _scatter_unsort
+ from .config import TextConfig as ModelConfig
+@@ -46,7 +46,9 @@ def _snapshot_cache_state(caches):
+             ):
+                 states.append((_CACHE_DICT_STATE, _clone_cache_tree(vars(subcache))))
+             else:
+-                states.append(_clone_cache_tree(subcache.state))
++                # state alone does not fix the absolute position of a windowed
++                # or quantized cache; meta_state carries it.
++                states.append((_clone_cache_tree(subcache.state), subcache.meta_state))
+         snapshot.append(states)
+     arrays = [v for _, v in tree_flatten(snapshot) if isinstance(v, mx.array)]
+     if arrays:
+@@ -63,7 +65,9 @@ def _restore_cache_state(caches, snapshot):
+                 subcache.__dict__.clear()
+                 subcache.__dict__.update(_clone_cache_tree(state[1]))
+             else:
+-                subcache.state = _clone_cache_tree(state)
++                cache_state, meta_state = state
++                subcache.meta_state = meta_state
++                subcache.state = _clone_cache_tree(cache_state)
+ 
+ 
+ _MASK_SRC = r"""
+@@ -254,18 +258,29 @@ _SCONV_SRC = r"""
+     uint c = thread_position_in_grid.x;   // channel
+     uint b = thread_position_in_grid.y;   // batch row
+     if (c >= C || b >= B) return;
+-    float w0 = (float)w[c * K + 0];
+-    float w1 = (float)w[c * K + 1];
+-    float w2 = (float)w[c * K + 2];
+-    float w3 = (float)w[c * K + 3];
++    // Inputs are read through their strides: the k/v streams arrive as
++    // column slices of the fused qkvr projection, and the kernel would
++    // otherwise need a contiguous copy of each per call.
++    const size_t xb = (size_t)b * x_strides[0] + (size_t)c * x_strides[2];
++    const size_t xs = (size_t)x_strides[1];
++    const size_t sb = (size_t)b * state_strides[0] + (size_t)c * state_strides[2];
++    const size_t ss = (size_t)state_strides[1];
++    const size_t rb = (size_t)b * res_strides[0] + (size_t)c * res_strides[2];
++    const size_t rs = (size_t)res_strides[1];
++    const size_t wb = (size_t)c * w_strides[0];
++    const size_t ws = (size_t)w_strides[1];
++    float w0 = (float)w[wb + 0 * ws];
++    float w1 = (float)w[wb + 1 * ws];
++    float w2 = (float)w[wb + 2 * ws];
++    float w3 = (float)w[wb + 3 * ws];
+     // Virtual padded input xp = [state (K-1 rows, fp32); x (L rows, T)].
+     for (uint i = 0; i < L; ++i) {
+         float acc = 0.0f;
+         for (uint k = 0; k < K; ++k) {
+             int r = (int)(i + k) - (int)(K - 1);  // row into x; negative -> state
+             float v = (r < 0)
+-                ? state[(b * (K - 1) + (uint)(r + (int)(K - 1))) * C + c]
+-                : (float)x[(b * L + (uint)r) * C + c];
++                ? state[sb + (size_t)(r + (int)(K - 1)) * ss]
++                : (float)x[xb + (size_t)r * xs];
+             float wk = (k == 0) ? w0 : (k == 1) ? w1 : (k == 2) ? w2 : w3;
+             acc += wk * v;
+         }
+@@ -273,10 +288,10 @@ _SCONV_SRC = r"""
+         // before the fp32 residual add; the layer residual is a second bf16
+         // add on top (as the decoder layer's x + sconv(r) was).
+         float conv_r = (float)((T)acc);
+-        T inner = (T)(conv_r + (float)x[(b * L + i) * C + c]);
++        T inner = (T)(conv_r + (float)x[xb + (size_t)i * xs]);
+         if (HAS_RES) {
+             out[(b * L + i) * C + c] =
+-                (T)((float)inner + (float)res[(b * L + i) * C + c]);
++                (T)((float)inner + (float)res[rb + (size_t)i * rs]);
+         } else {
+             out[(b * L + i) * C + c] = inner;
+         }
+@@ -284,8 +299,8 @@ _SCONV_SRC = r"""
+     for (uint s = 0; s < K - 1; ++s) {
+         int r = (int)(L + s) - (int)(K - 1);
+         nstate[(b * (K - 1) + s) * C + c] = (r < 0)
+-            ? state[(b * (K - 1) + (uint)(r + (int)(K - 1))) * C + c]
+-            : (float)x[(b * L + (uint)r) * C + c];
++            ? state[sb + (size_t)(r + (int)(K - 1)) * ss]
++            : (float)x[xb + (size_t)r * xs];
+     }
+ """
+ _sconv_kernel = mx.fast.metal_kernel(
+@@ -293,6 +308,7 @@ _sconv_kernel = mx.fast.metal_kernel(
+     input_names=["x", "state", "w", "res"],
+     output_names=["out", "nstate"],
+     source=_SCONV_SRC,
++    ensure_row_contiguous=False,
+ )
+ 
+ 
+@@ -334,7 +350,7 @@ class InklingShortConvolution(nn.Module):
+                 inputs=[
+                     x,
+                     state,
+-                    self.conv.weight.reshape(-1),
++                    self.conv.weight,  # [C, K, 1], read through its strides
+                     residual if residual is not None else x,
+                 ],
+                 template=[
+@@ -373,6 +389,26 @@ class InklingShortConvolution(nn.Module):
+ _SLIDING_KV_SLICE = True
+ 
+ 
++class InklingCacheList(CacheList):
++    """A layer's (kv, conv) cache pair, exposing the hooks the generic
++    kv-bits plumbing looks for on a layer entry: ``offset`` and
++    ``to_quantized``. Only a global layer's full KVCache is quantized; a
++    sliding layer's window cache holds at most window + slack keys and stays
++    in floats."""
++
++    @property
++    def offset(self):
++        return self.caches[0].offset
++
++    def to_quantized(self, group_size: int = 64, bits: int = 4):
++        kv = self.caches[0]
++        if type(kv) is not KVCache:
++            return self
++        return InklingCacheList(
++            kv.to_quantized(group_size=group_size, bits=bits), *self.caches[1:]
++        )
++
++
+ class InklingAttention(nn.Module):
+     def __init__(self, config: ModelConfig, layer_idx: int):
+         super().__init__()
+@@ -434,7 +470,19 @@ class InklingAttention(nn.Module):
+ 
+         if kv is not None:
+             k, v = kv.update_and_fetch(k, v)
+-        S = k.shape[2]
++        if isinstance(k, mx.array):
++            quantized = False
++            S = k.shape[2]
++        elif isinstance(k, (tuple, list)):
++            # QuantizedKVCache: (packed, scales, biases) per tensor; a tuple
++            # from its own allocation, a list from mx.quantize in to_quantized.
++            quantized = True
++            S = k[0].shape[2]
++        else:
++            raise NotImplementedError(
++                f"{type(kv).__name__} is not supported by the Inkling attention; "
++                "quantize the KV cache with --kv-quant-scheme uniform"
++            )
+ 
+         q = qkvr[..., :dq]
+         r = qkvr[..., dq + dk + dv :].reshape(B, L, self.n_heads, self.d_rel)
+@@ -448,9 +496,13 @@ class InklingAttention(nn.Module):
+             # The mask keeps the right positions: its offset is S_eff - L,
+             # and any left padding shifts with the slice.
+             j0 = S - L - (self.sliding - 1)
+-            k = k[:, :, j0:, :]
+-            v = v[:, :, j0:, :]
+-            S = k.shape[2]
++            if quantized:
++                k = tuple(t[:, :, j0:, :] for t in k)
++                v = tuple(t[:, :, j0:, :] for t in v)
++            else:
++                k = k[:, :, j0:, :]
++                v = v[:, :, j0:, :]
++            S = (k[0] if quantized else k).shape[2]
+             if left_padding is not None:
+                 left_padding = mx.maximum(left_padding - j0, 0)
+         offset = S - L
+@@ -463,17 +515,27 @@ class InklingAttention(nn.Module):
+             self.sliding,
+             self.rel_extent,
+             left_padding=left_padding,
+-            shape_ref=k,
++            shape_ref=k[0] if quantized else k,
+         )
+-        if self.log_floor is not None:
++        # Log scaling is exactly 1 for every query position up to the floor
++        # (the real checkpoints set it at 128K): skip the tau passes over q
++        # and the [B, H, L, S] mask until a position crosses it.
++        if self.log_floor is not None and offset + L > self.log_floor:
+             qpos = (mx.arange(L) + offset + 1).astype(mx.float32)
+             tau = 1.0 + self.log_alpha * mx.log(mx.maximum(qpos / self.log_floor, 1.0))
+             tau = tau.reshape(1, 1, L, 1).astype(x.dtype)
+             q = q * tau
+             mask = mx.where(mask > -1e29, mask * tau, mask)
+ 
++        if quantized and self.n_heads != self.n_kv:
++            # The quantized SDPA scores GQA as [B, n_kv, n_rep, L, S]; the
++            # per-head mask has to be grouped the same way. Note that
++            # quantized_scaled_dot_product_attention scales its ``queries``
++            # argument in place (``queries *= scale``); q is not read again
++            # after this call, so no copy is needed here.
++            mask = mask.reshape(B, self.n_kv, self.n_heads // self.n_kv, L, S)
+         out = scaled_dot_product_attention(
+-            q, k, v, cache=None, scale=self.scale, mask=mask
++            q, k, v, cache=kv if quantized else None, scale=self.scale, mask=mask
+         )
+         out = out.transpose(0, 2, 1, 3).reshape(B, L, -1)
+         return self.o_proj(out)
+@@ -487,7 +549,12 @@ class InklingDenseMLP(SwiGLUMLP):
+         self.global_scale = mx.ones((1,))
+ 
+     def __call__(self, x):
+-        return super().__call__(x) * self.global_scale
++        scale = self.global_scale
++        if scale.dtype != x.dtype:
++            # An fp32 scalar (the reference checkpoint stores one) would
++            # promote the residual stream, and every later layer, to fp32.
++            scale = scale.astype(x.dtype)
++        return super().__call__(x) * scale
+ 
+ 
+ class InklingSwitchGLU(SwitchGLU):
+@@ -537,7 +604,9 @@ _ROUTE_SRC = r"""
+     uint lane = thread_position_in_grid.x;   // 0..31, simd lane
+     uint n = thread_position_in_grid.y;      // token
+     if (n >= N) return;
+-    const device T* lg = logits + (size_t)n * (R + SH);
++    // Index logits directly: MLX binds inputs under 32 bytes (tiny test
++    // configs) in constant memory, which a device pointer cannot alias.
++    const size_t lbase = (size_t)n * (R + SH);
+     float ws = wscale[0];
+     constexpr int PER = (R + 31) / 32;
+     float sc[PER];
+@@ -547,7 +616,7 @@ _ROUTE_SRC = r"""
+         uint j = lane + (uint)t * 32u;
+         taken[t] = false;
+         if (j < R) {
+-            float l = (float)lg[j];
++            float l = (float)logits[lbase + j];
+             tl_[t] = l;
+             sc[t] = 1.0f / (1.0f + metal::exp(-l)) + (float)corr[j];
+         } else {
+@@ -573,7 +642,7 @@ _ROUTE_SRC = r"""
+     float lp[K + SH];
+     float m = -INFINITY;
+     for (uint t = 0; t < K + SH; ++t) {
+-        float tv = (t < K) ? btl[t] : (float)lg[R + (t - K)];
++        float tv = (t < K) ? btl[t] : (float)logits[lbase + R + (t - K)];
+         float a = -tv;
+         float lad = metal::max(a, 0.0f)
+                   + metal::log(1.0f + metal::exp(-metal::fabs(a)));
+@@ -945,9 +1014,17 @@ class LanguageModel(nn.Module):
+         if inputs_embeds is None:
+             inputs_embeds = input_embeddings
+         pre_norm = self.model(inputs, cache, inputs_embeds, skip_final_norm=True)
+-        logits = (
+-            None if skip_logits else self._logits_from_norm(self.model.norm(pre_norm))
+-        )
++        if skip_logits:
++            logits = None
++        else:
++            # generate_step and the batch generator ask for the trailing rows
++            # only; the 201024-wide head over a whole prompt chunk is 0.8 GB
++            # of logits per 2048 tokens otherwise. Hidden states stay whole.
++            h = pre_norm
++            keep = kwargs.get("logits_to_keep")
++            if keep and 0 < int(keep) < h.shape[1]:
++                h = h[:, -int(keep) :, :]
++            logits = self._logits_from_norm(self.model.norm(h))
+         return LanguageModelOutput(
+             logits=logits,
+             hidden_states=[pre_norm] if return_hidden else None,
+@@ -990,4 +1067,18 @@ class LanguageModel(nn.Module):
+         return self.model.layers
+ 
+     def make_cache(self):
+-        return [CacheList(KVCache(), ArraysCache(4)) for _ in self.model.layers]
++        # Sliding layers never read keys older than their window (see the
++        # slice in InklingAttention), so they get a bounded cache that keeps
++        # the last ``sliding_window_size - 1`` keys plus a slack buffer in
++        # temporal order; global layers keep everything.
++        return [
++            InklingCacheList(
++                (
++                    SlidingWindowKVCache(layer.self_attn.sliding)
++                    if layer.self_attn.sliding > 0
++                    else KVCache()
++                ),
++                ArraysCache(4),
++            )
++            for layer in self.model.layers
++        ]
+diff --git a/mlx_vlm/tests/test_cache.py b/mlx_vlm/tests/test_cache.py
+index 18b838d..5d20550 100644
+--- a/mlx_vlm/tests/test_cache.py
++++ b/mlx_vlm/tests/test_cache.py
+@@ -1810,6 +1810,7 @@ def sample(name, length=0):
+         "PoolingCache": lambda: C.PoolingCache(2),
+         "RingSlidingKVCache": lambda: RingSlidingKVCache(max(16, length)),
+         "RotatingKVCache": lambda: C.RotatingKVCache(max(16, length * 2)),
++        "SlidingWindowKVCache": lambda: C.SlidingWindowKVCache(max(16, length * 2)),
+         "StaticPrefixKVCache": lambda: C.StaticPrefixKVCache(max(16, length)),
+     }
+     cache = constructors.get(name, getattr(C, name, globals().get(name)))()
+@@ -1840,7 +1841,7 @@ def sample(name, length=0):
+             cache.update_index_and_fetch(keys)
+     else:
+         cache.keys, cache.values, cache.offset = keys, keys * 2, length
+-        if name == "RotatingKVCache":
++        if name in ("RotatingKVCache", "SlidingWindowKVCache"):
+             cache._idx = length
+         if name == "QSAKVCache":
+             cache.index_keys = mx.ones((1, length, 4)) * 3
+diff --git a/mlx_vlm/tests/test_inkling_fast_path.py b/mlx_vlm/tests/test_inkling_fast_path.py
+new file mode 100644
+index 0000000..e778fdf
+--- /dev/null
++++ b/mlx_vlm/tests/test_inkling_fast_path.py
+@@ -0,0 +1,546 @@
++"""Inkling decode fast path: bounded window caches and the attention around them.
++
++Every test compares against the straightforward implementation (an unbounded
++KVCache per layer, the mask built from all keys), so the bounded caches have
++to reproduce it exactly: same logits, same masks, same rollback behaviour,
++and the same per-row results under batching.
++"""
++
++import mlx.core as mx
++import numpy as np
++import pytest
++from mlx.utils import tree_flatten
++
++import mlx_vlm.models.inkling.language as lang
++from mlx_vlm.generate.ar import _make_cache
++from mlx_vlm.models.cache import (
++    ArraysCache,
++    BatchSlidingWindowKVCache,
++    CacheList,
++    KVCache,
++    SlidingWindowKVCache,
++)
++from mlx_vlm.models.inkling.config import TextConfig
++from mlx_vlm.models.inkling.language import LanguageModel
++
++VOCAB = 64
++
++
++def tiny_config(window=8, **overrides):
++    config = dict(
++        hidden_size=32,
++        num_hidden_layers=3,
++        vocab_size=VOCAB,
++        unpadded_vocab_size=VOCAB - 4,
++        num_attention_heads=4,
++        num_key_value_heads=2,
++        head_dim=8,
++        swa_num_attention_heads=4,
++        swa_num_key_value_heads=2,
++        swa_head_dim=8,
++        sliding_window_size=window,
++        layer_types=["hybrid_sliding", "hybrid", "hybrid_sliding"],
++        d_rel=4,
++        rel_extent=16,
++        log_scaling_n_floor=4096,
++        sconv_kernel_size=4,
++        mlp_layer_types=["dense", "moe", "dense"],
++        intermediate_size=16,
++        dense_intermediate_size=64,
++        n_routed_experts=4,
++        num_experts_per_tok=2,
++        n_shared_experts=1,
++        logits_mup_width_multiplier=16.0,
++    )
++    config.update(overrides)
++    return TextConfig(**config)
++
++
++def tiny_model(window=8, seed=0, **overrides):
++    mx.random.seed(seed)
++    model = LanguageModel(tiny_config(window, **overrides))
++    # Zero-initialized parameters (relative projection, router) need values.
++    randomized = {
++        k: mx.random.normal(v.shape) * 0.5
++        for k, v in tree_flatten(model.parameters())
++        if not mx.any(v).item()
++    }
++    model.load_weights(list(randomized.items()), strict=False)
++    model.eval()
++    mx.eval(model.parameters())
++    return model
++
++
++def full_cache(model):
++    """The cache layout before bounded windows: everything is kept."""
++    return [CacheList(KVCache(), ArraysCache(4)) for _ in model.layers]
++
++
++def tokens(n, seed=1, batch=1):
++    mx.random.seed(seed)
++    return mx.random.randint(0, VOCAB - 4, (batch, n))
++
++
++def run(model, ids, cache, chunk):
++    outs = []
++    for start in range(0, ids.shape[1], chunk):
++        outs.append(model(ids[:, start : start + chunk], cache=cache).logits)
++    return mx.concatenate(outs, axis=1)
++
++
++def close(a, b, atol=1e-5):
++    np.testing.assert_allclose(np.array(a), np.array(b), atol=atol, rtol=1e-5)
++
++
++def test_make_cache_bounds_only_the_sliding_layers():
++    model = tiny_model(window=8)
++    caches = model.make_cache()
++    kinds = [type(c.caches[0]) for c in caches]
++    assert kinds == [SlidingWindowKVCache, KVCache, SlidingWindowKVCache]
++    assert all(isinstance(c.caches[1], ArraysCache) for c in caches)
++    assert caches[0].caches[0].max_size == 8
++
++
++@pytest.mark.parametrize("window,chunk", [(8, 157), (512, 157), (512, 600)])
++def test_window_cache_matches_full_cache(window, chunk):
++    model = tiny_model(window=window)
++    ids = tokens(600)
++    bounded, reference = model.make_cache(), full_cache(model)
++    close(run(model, ids, bounded, chunk), run(model, ids, reference, chunk))
++    for layer, c in zip(model.layers, bounded):
++        kv = c.caches[0]
++        if layer.self_attn.sliding:
++            assert kv.offset == 600
++            assert kv._idx <= window - 1 + max(kv.buffer_size, chunk)
++            assert kv.keys.shape[2] <= kv._capacity_for(
++                window + max(kv.buffer_size, chunk)
++            )
++        else:
++            assert kv.offset == 600 and kv.keys.shape[2] >= 600
++
++    # Greedy decode steps: the bounded caches must give the same next token
++    # and the same logits as the unbounded ones, past several compactions.
++    y = mx.argmax(model(ids[:, -1:], cache=bounded).logits[:, -1], axis=-1)
++    model(ids[:, -1:], cache=reference)
++    for _ in range(300 if window == 8 else 200):
++        got = model(y[:, None], cache=bounded).logits
++        want = model(y[:, None], cache=reference).logits
++        close(got, want)
++        y = mx.argmax(got[:, -1], axis=-1)
++    for layer, c in zip(model.layers, bounded):
++        kv = c.caches[0]
++        if layer.self_attn.sliding:
++            assert kv.offset == reference[0].caches[0].offset
++            assert kv._idx <= window + kv.buffer_size
++            assert kv.start_position > 0
++
++
++def test_window_mask_indexes_the_bias_by_distance(monkeypatch):
++    """The additive mask on a bounded cache equals the one built on all keys and
++    the closed form: bias[j] = r . proj[:, dist] with dist = (S - 1) - j."""
++    model = tiny_model(window=8)
++    masks = []
++    real = lang.banded_additive_mask
++
++    def spy(*args, **kwargs):
++        mask = real(*args, **kwargs)
++        masks.append((args[0], args[1], kwargs.get("shape_ref"), mask))
++        return mask
++
++    monkeypatch.setattr(lang, "banded_additive_mask", spy)
++    ids = tokens(40)
++    bounded, reference = model.make_cache(), full_cache(model)
++    model(ids, cache=bounded)
++    model(ids, cache=reference)
++    for step in range(12):
++        tok = ids[:, step : step + 1]
++        del masks[:]
++        model(tok, cache=bounded)
++        bounded_masks = list(masks)
++        del masks[:]
++        model(tok, cache=reference)
++        for (rel, proj, k_b, m_b), (_, _, k_r, m_r) in zip(bounded_masks, masks):
++            assert m_b.shape == m_r.shape
++            close(m_b, m_r)
++            S = m_b.shape[-1]
++            assert k_b.shape[2] == S
++            dist = (S - 1) - mx.arange(S)
++            bias = (rel @ proj)[0, 0]  # [H, extent]
++            idx = mx.clip(dist, 0, proj.shape[1] - 1)[None]
++            expected = mx.take_along_axis(
++                bias, mx.broadcast_to(idx, (bias.shape[0], S)), axis=-1
++            )
++            sliding = m_b.shape[-1] <= 8
++            if sliding:
++                assert S == 8
++                close(m_b[0, :, 0], expected)
++            else:
++                outside = dist >= proj.shape[1]
++                close(mx.where(outside[None], 0.0, expected), m_b[0, :, 0])
++
++
++def test_window_cache_rollback_matches_replay():
++    model = tiny_model(window=8)
++    ids = tokens(600)
++    cache = model.make_cache()
++    model(ids, cache=cache)
++    verify = tokens(4, seed=7)
++    hidden, _, state = model.speculative_verify_hidden(verify, cache)
++    assert hidden.shape == (1, 4, 32)
++    offsets = [c.caches[0].offset for c in cache]
++    assert offsets == [604, 604, 604]
++    accepted = model.rollback_speculative_cache(cache, state, 1, 4)
++    assert accepted == 1
++    assert [c.caches[0].offset for c in cache] == [602, 602, 602]
++    reference = full_cache(model)
++    model(mx.concatenate([ids, verify[:, :2]], axis=1), cache=reference)
++    nxt = tokens(1, seed=9)
++    close(model(nxt, cache=cache).logits, model(nxt, cache=reference).logits)
++
++
++def test_batched_window_cache_matches_single_rows():
++    model = tiny_model(window=8)
++    rows = [tokens(600, seed=3), tokens(591, seed=4)]
++    pad = 600 - 591
++    batch_ids = mx.concatenate(
++        [rows[0], mx.concatenate([mx.zeros((1, pad), mx.int32), rows[1]], axis=1)]
++    )
++    cache = _make_cache(model, left_padding=[0, pad])
++    assert isinstance(cache[0].caches[0], BatchSlidingWindowKVCache)
++    assert cache[0].caches[1].left_padding.tolist() == [0, pad]
++    batched = run(model, batch_ids, cache, 157)
++    singles = [model.make_cache() for _ in rows]
++    for row, (ids, single) in enumerate(zip(rows, singles)):
++        logits = run(model, ids, single, 157)
++        close(batched[row : row + 1, pad * row :], logits)
++    y = batch_ids[:, -1:]
++    for _ in range(40):
++        got = model(y, cache=cache).logits
++        for row, single in enumerate(singles):
++            close(got[row : row + 1], model(y[row : row + 1], cache=single).logits)
++        y = mx.argmax(got[:, -1], axis=-1)[:, None]
++    assert cache[0].caches[0].start_position > 0
++    assert cache[0].caches[0].keys.shape[2] <= 1024
++
++
++# --------------------------------------------- continuous batching end to end
++
++
++def test_prompt_processing_batch_matches_single_rows():
++    """The batch generator path: right-padded prompts, chunked prefill through
++    PromptProcessingBatch, then GenerationBatch decode on the batched window
++    caches, must produce each row's single-sequence greedy tokens."""
++    from mlx_vlm.generate.ar import PromptProcessingBatch
++
++    model = tiny_model(window=8)
++    rows = [tokens(600, seed=3)[0].tolist(), tokens(591, seed=4)[0].tolist()]
++    width = max(len(r) for r in rows)
++    right_pad = [width - len(r) for r in rows]
++    padded = [r + [0] * pad for r, pad in zip(rows, right_pad)]
++    steps = 30
++    batch = PromptProcessingBatch(
++        model=model,
++        uids=[0, 1],
++        input_ids=rows,  # unpadded ids: their lengths mark where rows end
++        max_tokens=[steps, steps],
++        inputs_embeds=model.model.embed(mx.array(padded)),
++        prompt_kwargs={},
++        prefill_step_size=157,
++        right_pad_per_row=right_pad,
++        greedy_sampling=True,
++    )
++    while batch.needs_processing():
++        assert batch.prompt_step() > 0
++    assert isinstance(batch.prompt_cache[0].caches[0], BatchSlidingWindowKVCache)
++    gen = batch.generate(
++        sampler=lambda logits: mx.argmax(logits, axis=-1),
++        stop_criteria=lambda _: False,
++        compute_logprobs=False,
++    )
++    generated = {0: [], 1: []}
++    while len(gen):
++        for response in gen.next():
++            generated[response.uid].append(int(response.token))
++    assert all(len(v) == steps for v in generated.values())
++
++    for uid, row in enumerate(rows):
++        ids = mx.array([row])
++        cache = model.make_cache()
++        logits = run(model, ids, cache, 157)
++        want = []
++        y = mx.argmax(logits[:, -1], axis=-1)
++        for _ in range(steps):
++            want.append(int(y.item()))
++            y = mx.argmax(model(y[:, None], cache=cache).logits[:, -1], axis=-1)
++        assert generated[uid] == want, uid
++
++
++# --------------------------------------------------------------- kernel counts
++
++
++def _unfused_sconv(conv, x, state, residual):
++    """The pure-MLX path, with the same cache contents, for reference."""
++    cache = [None] * 4
++    cache[conv.conv_idx] = state
++    conv_cpu = lang.InklingShortConvolution(x.shape[-1], 4, conv.conv_idx)
++    conv_cpu.conv.weight = conv.conv.weight
++    with mx.stream(mx.cpu):
++        out = conv_cpu(x, cache=cache, residual=residual)
++        mx.eval(out, cache[conv.conv_idx])
++    return out, cache[conv.conv_idx]
++
++
++@pytest.mark.parametrize("dtype", [mx.float32, mx.bfloat16])
++@pytest.mark.parametrize("L", [1, 5, 8])
++@pytest.mark.parametrize("with_residual", [False, True])
++def test_sconv_kernel_reads_strided_inputs_exactly(dtype, L, with_residual):
++    if not (mx.default_device() == mx.gpu and mx.metal.is_available()):
++        pytest.skip("Metal kernel path")
++    B, C, width = 2, 24, 70
++    mx.random.seed(5)
++    conv = lang.InklingShortConvolution(C, 4, conv_idx=1)
++    # Checkpoint layout: [C, 1, K] transposed to [C, K, 1] (a strided view).
++    conv.conv.weight = mx.random.normal((C, 1, 4)).transpose(0, 2, 1).astype(dtype)
++    fused = mx.random.normal((B, L, width)).astype(dtype)
++    x = fused[..., 30 : 30 + C]  # a column slice, like the k/v streams
++    residual = mx.random.normal((B, L, C)).astype(dtype) if with_residual else None
++    # A state that is itself a strided slice (what the prefill path stores).
++    state = mx.concatenate([mx.random.normal((B, 3, C)), mx.zeros((B, 2, C))], axis=1)[
++        :, :3
++    ]
++    mx.eval(conv.conv.weight, fused, state)
++
++    cache = [None] * 4
++    cache[1] = state
++    out = conv(x, cache=cache, residual=residual)
++    mx.eval(out, cache[1])
++    assert out.dtype == dtype and cache[1].dtype == mx.float32
++
++    contiguous_cache = [None] * 4
++    contiguous_cache[1] = mx.contiguous(state)
++    out_c = conv(mx.contiguous(x), cache=contiguous_cache, residual=residual)
++    assert mx.array_equal(out, out_c).item()
++    assert mx.array_equal(cache[1], contiguous_cache[1]).item()
++
++    # The unfused conv accumulates the four taps in another order: 1 ulp.
++    ref, ref_state = _unfused_sconv(
++        conv, mx.contiguous(x), mx.contiguous(state), residual
++    )
++    assert mx.array_equal(cache[1], ref_state).item()
++    np.testing.assert_allclose(
++        np.array(out.astype(mx.float32)),
++        np.array(ref.astype(mx.float32)),
++        rtol=1e-6 if dtype == mx.float32 else 1e-2,
++        atol=1e-6 if dtype == mx.float32 else 2e-2,
++    )
++
++
++def _attention_inputs(monkeypatch):
++    captured = []
++    real = lang.scaled_dot_product_attention
++
++    def spy(q, k, v, cache, scale, mask, **kwargs):
++        captured.append((q, mask))
++        return real(q, k, v, cache, scale, mask, **kwargs)
++
++    monkeypatch.setattr(lang, "scaled_dot_product_attention", spy)
++    return captured
++
++
++def test_log_scaling_skipped_below_the_floor(monkeypatch):
++    floor = 8
++    config = tiny_config(log_scaling_n_floor=floor, layer_types=["hybrid"] * 3)
++    mx.random.seed(2)
++    scaled = lang.InklingAttention(config, layer_idx=0)
++    scaled.rel_proj = mx.random.normal(scaled.rel_proj.shape)
++    plain = lang.InklingAttention(config, layer_idx=0)
++    plain.update(scaled.parameters())
++    plain.log_floor = None
++    x = mx.random.normal((1, 12, 32))
++    captured = _attention_inputs(monkeypatch)
++    logs = []
++    real_log = mx.log
++    monkeypatch.setattr(mx, "log", lambda *a, **k: logs.append(1) or real_log(*a, **k))
++
++    # Prefill crossing the floor: tau applies to the rows past it only.
++    cache = CacheList(KVCache(), ArraysCache(4))
++    out = scaled(x, cache=cache)
++    plain_out = plain(x, cache=CacheList(KVCache(), ArraysCache(4)))
++    (q_s, m_s), (q_p, m_p) = captured
++    assert len(logs) == 1
++    tau = 1 + 0.1 * np.log(np.maximum(np.arange(1, 13) / floor, 1.0))
++    np.testing.assert_allclose(
++        np.array(q_s), np.array(q_p) * tau[None, None, :, None], rtol=1e-6
++    )
++    finite = np.array(m_p) > -1e29
++    np.testing.assert_allclose(
++        np.where(finite, np.array(m_s), 0),
++        np.where(finite, np.array(m_p) * tau[None, None, :, None], 0),
++        rtol=1e-6,
++        atol=1e-6,
++    )
++    assert np.array_equal(np.array(m_s) > -1e29, finite)
++    close(out[:, :floor], plain_out[:, :floor])
++    assert not np.allclose(np.array(out[:, floor:]), np.array(plain_out[:, floor:]))
++
++    # Decode below the floor: no tau ops at all, same q and mask as unscaled.
++    del captured[:]
++    del logs[:]
++    cache = CacheList(KVCache(), ArraysCache(4))
++    plain_cache = CacheList(KVCache(), ArraysCache(4))
++    for step in range(floor):
++        tok = x[:, step : step + 1]
++        close(scaled(tok, cache=cache), plain(tok, cache=plain_cache))
++    assert logs == []
++    for (q_s, m_s), (q_p, m_p) in zip(captured[::2], captured[1::2]):
++        assert mx.array_equal(q_s, q_p).item() and mx.array_equal(m_s, m_p).item()
++    # The step that crosses the floor scales again.
++    scaled(x[:, floor : floor + 1], cache=cache)
++    assert len(logs) == 1
++
++
++# ------------------------------------------------------------ logits_to_keep
++
++
++def test_logits_to_keep_limits_the_head_only():
++    model = tiny_model()
++    ids = tokens(12)
++    full = model(ids, cache=model.make_cache()).logits
++    assert full.shape == (1, 12, VOCAB - 4)
++    kept = model(ids, cache=model.make_cache(), logits_to_keep=3)
++    assert kept.logits.shape == (1, 3, VOCAB - 4)
++    close(kept.logits, full[:, -3:])
++    one = model(ids, cache=model.make_cache(), logits_to_keep=1, return_hidden=True)
++    assert one.logits.shape == (1, 1, VOCAB - 4)
++    close(one.logits, full[:, -1:])
++    assert one.hidden_states[-1].shape == (1, 12, 32)
++    for keep in (None, 0, 12, 50):
++        out = model(ids, cache=model.make_cache(), logits_to_keep=keep).logits
++        assert out.shape == full.shape
++    assert (
++        model(ids, cache=model.make_cache(), skip_logits=True, logits_to_keep=1).logits
++        is None
++    )
++
++
++# ------------------------------------------------- dense MLP scale dtype (H1)
++
++
++@pytest.mark.parametrize("dtype", [mx.bfloat16, mx.float16])
++def test_dense_mlp_scale_keeps_the_activation_dtype(dtype):
++    config = tiny_config()
++    mx.random.seed(3)
++    mlp = lang.InklingDenseMLP(config)
++    mlp.set_dtype(dtype)
++    mlp.global_scale = mx.array([1.5], dtype=mx.float32)
++    x = mx.random.normal((1, 3, 32)).astype(dtype)
++    out = mlp(x)
++    assert out.dtype == dtype
++    native = lang.InklingDenseMLP(config)
++    native.update(mlp.parameters())
++    native.global_scale = mx.array([1.5], dtype=dtype)
++    assert mx.array_equal(out, native(x)).item()
++
++    # End to end: an fp32 scale in a dense layer must not promote the stream.
++    model = tiny_model()
++    model.set_dtype(dtype)
++    model.model.layers[0].mlp.global_scale = mx.array([1.0], dtype=mx.float32)
++    out = model(tokens(6), cache=model.make_cache(), return_hidden=True)
++    assert out.hidden_states[-1].dtype == dtype
++    assert out.logits.dtype == dtype
++
++
++# ------------------------------------------------------ quantized KV (H2)
++
++
++def test_kv_bits_quantizes_the_global_layers_only():
++    from mlx_vlm.generate.common import maybe_quantize_kv_cache
++    from mlx_vlm.models.cache import QuantizedKVCache
++
++    model = tiny_model(head_dim=32, swa_head_dim=32)
++    ids = tokens(300)
++    reference = model.make_cache()
++    want = run(model, ids, reference, 97)
++    cache = model.make_cache()
++    assert all(type(c) is lang.InklingCacheList for c in cache)
++    maybe_quantize_kv_cache(cache, 0, 32, 8)
++    kinds = [type(c.caches[0]) for c in cache]
++    assert kinds == [SlidingWindowKVCache, QuantizedKVCache, SlidingWindowKVCache]
++    assert all(type(c) is lang.InklingCacheList for c in cache)
++    got = run(model, ids, cache, 97)
++    assert cache[1].caches[0].offset == 300 and cache[1].offset == 300
++    np.testing.assert_allclose(np.array(got), np.array(want), atol=0.15, rtol=0.05)
++    y = ids[:, -1:]
++    for _ in range(20):
++        got = model(y, cache=cache).logits
++        want = model(y, cache=reference).logits
++        np.testing.assert_allclose(np.array(got), np.array(want), atol=0.15, rtol=0.05)
++        y = mx.argmax(want[:, -1], axis=-1)[:, None]
++    # Snapshot/rollback carries the quantized cache's absolute position.
++    verify = tokens(3, seed=8)
++    _, _, state = model.speculative_verify_hidden(verify, cache)
++    assert model.rollback_speculative_cache(cache, state, 0, 3) == 0
++    assert cache[1].caches[0].offset == 321
++
++    # generate_step converts after the first prefill chunk, i.e. on a
++    # non-empty cache: KVCache.to_quantized stores what mx.quantize returns
++    # (lists), while an empty cache allocates tuples. Both must decode.
++    late, fresh = model.make_cache(), model.make_cache()
++    run(model, ids, late, 97)
++    run(model, ids, fresh, 97)
++    maybe_quantize_kv_cache(late, 0, 32, 8)
++    assert isinstance(late[1].caches[0].keys, list)
++    y = ids[:, -1:]
++    for _ in range(5):
++        got = model(y, cache=late).logits
++        want = model(y, cache=fresh).logits
++        np.testing.assert_allclose(np.array(got), np.array(want), atol=0.15, rtol=0.05)
++        y = mx.argmax(want[:, -1], axis=-1)[:, None]
++
++
++def test_other_kv_quantization_schemes_fail_clearly():
++    from mlx_vlm.generate.common import maybe_quantize_kv_cache
++
++    model = tiny_model(head_dim=32, swa_head_dim=32)
++    cache = model.make_cache()
++    model(tokens(10), cache=cache)
++    maybe_quantize_kv_cache(cache, 0, 32, 3.5)  # fractional bits: TurboQuant
++    with pytest.raises(NotImplementedError, match="kv-quant-scheme uniform"):
++        model(tokens(1), cache=cache)
++    with pytest.raises(NotImplementedError):
++        _make_cache(model, left_padding=[0, 0], kv_bits=8)
++
++
++def test_split_key_value_policy_dequantizes_the_global_layers():
++    """A non-homogeneous key/value policy installs HybridQuantKVCache, which
++    returns dequantized floats; the attention takes them as a float cache."""
++    from mlx_vlm.generate.common import maybe_quantize_kv_cache
++    from mlx_vlm.turboquant import HybridQuantKVCache
++
++    model = tiny_model(head_dim=32, swa_head_dim=32)
++    ids = tokens(300)
++    reference = model.make_cache()
++    want = run(model, ids, reference, 97)
++    cache = model.make_cache()
++    maybe_quantize_kv_cache(
++        cache,
++        0,
++        32,
++        8,
++        "uniform",
++        8,
++        4,
++        kv_key_scheme="uniform",
++        kv_value_scheme="turboquant",
++    )
++    kinds = [type(c.caches[0]) for c in cache]
++    assert kinds == [SlidingWindowKVCache, HybridQuantKVCache, SlidingWindowKVCache]
++    got = run(model, ids, cache, 97)
++    np.testing.assert_allclose(np.array(got), np.array(want), atol=0.15, rtol=0.05)
++    y = ids[:, -1:]
++    for step in range(10):
++        got = model(y, cache=cache).logits
++        want = model(y, cache=reference).logits
++        np.testing.assert_allclose(np.array(got), np.array(want), atol=0.15, rtol=0.05)
++        assert cache[1].caches[0].offset == 301 + step
++        y = mx.argmax(want[:, -1], axis=-1)[:, None]
+diff --git a/mlx_vlm/tests/test_load_eval_chunks.py b/mlx_vlm/tests/test_load_eval_chunks.py
+new file mode 100644
+index 0000000..4d87bb6
+--- /dev/null
++++ b/mlx_vlm/tests/test_load_eval_chunks.py
+@@ -0,0 +1,84 @@
++"""Eager loads evaluate the parameters in bounded chunks.
++
++A single ``mx.eval`` over every parameter of an 80+ GB checkpoint is one
++command buffer; on some machines it trips the Metal GPU watchdog and the load
++aborts with ``GPU Timeout``. ``eval_parameters`` bounds each eval by bytes.
++"""
++
++import mlx.core as mx
++import mlx.nn as nn
++import pytest
++from mlx.utils import tree_flatten
++
++from mlx_vlm import utils
++
++
++class _Tiny(nn.Module):
++    def __init__(self):
++        super().__init__()
++        self.a = nn.Linear(16, 16, bias=True)
++        self.b = nn.Linear(16, 8, bias=False)
++        self.scale = mx.ones((4,))
++
++
++def _spy_eval(monkeypatch):
++    calls = []
++    real_eval = mx.eval
++
++    def spy(*args):
++        calls.append(
++            [a for _, a in tree_flatten(list(args)) if isinstance(a, mx.array)]
++        )
++        return real_eval(*args)
++
++    monkeypatch.setattr(mx, "eval", spy)
++    return calls
++
++
++def _flat(params):
++    return [a for _, a in tree_flatten(params) if isinstance(a, mx.array)]
++
++
++@pytest.mark.parametrize("chunk_bytes", [1, 200, utils.EVAL_CHUNK_BYTES])
++def test_eval_parameters_covers_every_array_once(monkeypatch, chunk_bytes):
++    model = _Tiny()
++    params = _flat(model.parameters())
++    calls = _spy_eval(monkeypatch)
++    utils.eval_parameters(model.parameters(), chunk_bytes=chunk_bytes)
++    seen = [id(a) for call in calls for a in call]
++    assert sorted(seen) == sorted(id(a) for a in params)
++    assert len(seen) == len(set(seen))
++    for call in calls[:-1]:
++        # A chunk closes as soon as it reaches the byte bound.
++        assert sum(a.nbytes for a in call) >= chunk_bytes
++        assert sum(a.nbytes for a in call[:-1]) < chunk_bytes
++    if chunk_bytes == 1:
++        assert all(len(call) == 1 for call in calls)
++    if chunk_bytes == utils.EVAL_CHUNK_BYTES:
++        assert len(calls) == 1
++
++
++def test_load_model_weights_evaluates_everything(monkeypatch, tmp_path):
++    model = _Tiny()
++    weights = {
++        k: mx.random.normal(v.shape) * 2  # lazy: not evaluated until loaded
++        for k, v in tree_flatten(model.parameters())
++    }
++    monkeypatch.setattr(utils, "EVAL_CHUNK_BYTES", 100)
++    calls = _spy_eval(monkeypatch)
++    utils.load_model_weights(model, {}, dict(weights), tmp_path)
++    loaded = dict(tree_flatten(model.parameters()))
++    evaluated = {id(a) for call in calls for a in call}
++    assert {id(a) for a in loaded.values()} <= evaluated
++    assert len(calls) > 1
++    for k, v in weights.items():
++        assert mx.array_equal(loaded[k], v).item(), k
++    assert model.model_path == tmp_path
++
++
++def test_lazy_load_does_not_eval(monkeypatch, tmp_path):
++    model = _Tiny()
++    weights = dict(tree_flatten(model.parameters()))
++    calls = _spy_eval(monkeypatch)
++    utils.load_model_weights(model, {}, weights, tmp_path, lazy=True)
++    assert calls == []
+diff --git a/mlx_vlm/tests/test_sliding_window_cache.py b/mlx_vlm/tests/test_sliding_window_cache.py
+new file mode 100644
+index 0000000..1f5f26d
+--- /dev/null
++++ b/mlx_vlm/tests/test_sliding_window_cache.py
+@@ -0,0 +1,281 @@
++"""SlidingWindowKVCache keeps a bounded, temporally ordered window.
++
++The reference is an unbounded ``KVCache`` fed the same tokens: after every
++update the window cache must return a suffix of the reference's keys, at
++least ``max_size - 1`` positions before the new ones, inside a bounded
++buffer. The batch form must match per-row single caches.
++"""
++
++import mlx.core as mx
++import pytest
++
++from mlx_vlm.generate import dispatch
++from mlx_vlm.models.cache import (
++    BatchKVCache,
++    BatchSlidingWindowKVCache,
++    CacheList,
++    KVCache,
++    SlidingWindowKVCache,
++)
++
++H, D = 2, 4
++
++
++def kv(positions, batch=1):
++    """Keys/values whose value encodes the absolute position (and the row)."""
++    positions = list(positions)
++    pos = mx.array(positions, dtype=mx.float32)
++    rows = mx.arange(batch, dtype=mx.float32)[:, None, None, None] * 1000
++    base = mx.broadcast_to(pos[None, None, :, None], (batch, H, len(positions), D))
++    return base + rows, base + rows + 0.5
++
++
++def positions_of(keys):
++    return keys[0, 0, :, 0].tolist()
++
++
++@pytest.mark.parametrize("buffer_size", [0, 3, 64])
++@pytest.mark.parametrize(
++    "schedule", [[1] * 40, [13, 1, 1, 7, 1, 1, 1, 1, 30, 1, 1, 1], [40, 2, 2, 1]]
++)
++def test_window_matches_reference_suffix(buffer_size, schedule):
++    window = 8
++    cache = SlidingWindowKVCache(window, buffer_size=buffer_size)
++    reference = KVCache()
++    pos = 0
++    for L in schedule:
++        k, v = kv(range(pos, pos + L))
++        ref_k, _ = reference.update_and_fetch(k, v)
++        out_k, out_v = cache.update_and_fetch(k, v)
++        pos += L
++        n = out_k.shape[2]
++        assert cache.offset == reference.offset == pos
++        assert positions_of(out_k) == positions_of(ref_k)[-n:]
++        assert mx.array_equal(out_v[..., 0], out_k[..., 0] + 0.5).item()
++        retained = n - L
++        assert retained == min(pos - L, max(window - 1, retained))
++        assert retained <= window - 1 + max(buffer_size, L)
++        assert cache.start_position == pos - n
++        assert cache._idx == n
++        assert cache.keys.shape[2] <= cache._capacity_for(window + max(buffer_size, L))
++
++
++def test_buffer_stays_bounded_over_a_long_decode():
++    cache = SlidingWindowKVCache(512, buffer_size=256)
++    k, v = kv(range(2048))
++    cache.update_and_fetch(k, v)
++    for pos in range(2048, 2048 + 3000):
++        k, v = kv([pos])
++        out_k, _ = cache.update_and_fetch(k, v)
++        assert 512 <= out_k.shape[2] <= 512 + 256
++    assert cache.keys.shape[2] <= 2560  # capacity set by the 2048-token chunk
++    assert cache.nbytes == 2 * cache.keys.nbytes
++
++
++def test_trim_rolls_back_like_the_reference():
++    cache = SlidingWindowKVCache(8, buffer_size=4)
++    reference = KVCache()
++    k, v = kv(range(20))
++    cache.update_and_fetch(k, v)
++    reference.update_and_fetch(k, v)
++    for pos in range(20, 26):
++        cache.update_and_fetch(*kv([pos]))
++        reference.update_and_fetch(*kv([pos]))
++    assert cache.is_trimmable()
++    # 20 tokens then 6 decodes: the compaction at 25 kept positions 18..,
++    # so one key of slack exists; trimming 1 keeps full coverage.
++    assert cache.start_position == 18 and cache._idx == 8
++    assert cache.trim(1) == reference.trim(1) == 1
++    assert cache.offset == reference.offset == 25
++    for pos in range(25, 33):
++        out_k, _ = cache.update_and_fetch(*kv([pos + 100]))
++        ref_k, _ = reference.update_and_fetch(*kv([pos + 100]))
++        n = out_k.shape[2]
++        assert positions_of(out_k) == positions_of(ref_k)[-n:]
++        assert n - 1 >= 7  # the query always sees its full window
++
++
++def test_trim_past_the_compaction_slack_is_refused():
++    cache = SlidingWindowKVCache(8, buffer_size=4)
++    cache.update_and_fetch(*kv(range(20)))
++    for pos in range(20, 26):
++        cache.update_and_fetch(*kv([pos]))
++    assert cache.start_position == 18 and cache._idx == 8
++    with pytest.raises(ValueError, match="rewind past the window"):
++        cache.trim(2)  # would leave the query at 24 with 6 old keys, not 7
++    assert cache.offset == 26 and cache._idx == 8  # untouched
++    out_k, _ = cache.update_and_fetch(*kv([26]))
++    assert positions_of(out_k) == [float(p) for p in range(18, 27)]
++
++    # A cache that never evicted can be trimmed to any depth (it is then a
++    # short context, like a prompt shorter than the window).
++    fresh = SlidingWindowKVCache(8, buffer_size=4)
++    fresh.update_and_fetch(*kv(range(6)))
++    assert fresh.trim(5) == 5 and fresh.offset == 1
++    out_k, _ = fresh.update_and_fetch(*kv([1]))
++    assert positions_of(out_k) == [0.0, 1.0]
++
++    batch = BatchSlidingWindowKVCache(8, [0, 0], buffer_size=4)
++    batch.update_and_fetch(*kv(range(20), batch=2))
++    for pos in range(20, 26):
++        batch.update_and_fetch(*kv([pos], batch=2))
++    assert batch.start_position == 18 and batch._idx == 8
++    assert batch.trim(1) == 1 and batch.offset.tolist() == [25, 25]
++    with pytest.raises(ValueError, match="rewind past the window"):
++        batch.trim(1)  # no slack left after the previous trim
++
++
++def test_snapshot_round_trips_through_state_and_meta_state():
++    cache = SlidingWindowKVCache(8, buffer_size=4)
++    for pos in range(0, 30, 3):
++        cache.update_and_fetch(*kv(range(pos, pos + 3)))
++    out_k, _ = cache.update_and_fetch(*kv([30]))
++
++    restored = SlidingWindowKVCache.from_state(
++        [mx.array(a) for a in cache.state], cache.meta_state
++    )
++    assert type(restored) is SlidingWindowKVCache
++    assert (restored.offset, restored._idx, restored.start_position) == (
++        cache.offset,
++        cache._idx,
++        cache.start_position,
++    )
++    again = SlidingWindowKVCache(8, buffer_size=4)
++    again.prefix_cache_restore(cache.prefix_cache_snapshot())
++    for c in (cache, restored, again):
++        step_k, _ = c.update_and_fetch(*kv([31]))
++        assert positions_of(step_k) == positions_of(out_k) + [31.0]
++        assert c.offset == 32
++
++
++def test_prefix_reuse_declines_once_the_window_evicted():
++    cache = SlidingWindowKVCache(8, buffer_size=2)
++    cache.update_and_fetch(*kv(range(6)))
++    assert dispatch._prefix_cache_trim_amount([cache], 4) == 2
++    cache.update_and_fetch(*kv(range(6, 30)))
++    assert cache.start_position == 0  # one update keeps its own slack
++    for pos in range(30, 35):
++        cache.update_and_fetch(*kv([pos]))
++    assert cache.start_position > 0
++    assert dispatch._prefix_cache_trim_amount([cache], 10) is None
++
++
++def _single_rows(batch_positions):
++    rows = []
++    for row, positions in enumerate(batch_positions):
++        single = SlidingWindowKVCache(8, buffer_size=4)
++        for chunk in positions:
++            k, v = kv(chunk)
++            single.update_and_fetch(k + row * 1000, v + row * 1000)
++        rows.append(single)
++    return rows
++
++
++def _visible(batch_cache, row):
++    keys = batch_cache.keys[row, 0, : batch_cache._idx, 0]
++    pad = max(0, int(batch_cache.left_padding[row].item()))
++    return keys[pad:].tolist()
++
++
++@pytest.mark.parametrize("buffer_size", [0, 4])
++def test_batch_rows_match_single_caches(buffer_size):
++    prompts = [list(range(11)), list(range(4))]
++    left = [0, 7]
++    batch = BatchSlidingWindowKVCache(8, left, buffer_size=buffer_size)
++    singles = [SlidingWindowKVCache(8, buffer_size=buffer_size) for _ in prompts]
++    # Left-padded prompt: pad columns carry garbage the mask must hide.
++    k, v = kv(range(11), batch=2)
++    k = mx.where(
++        mx.arange(11)[None, None, :, None] >= mx.array(left)[:, None, None, None], k, -1
++    )
++    batch.update_and_fetch(k, v)
++    for row, prompt in enumerate(prompts):
++        singles[row].update_and_fetch(*kv([p + 7 * row for p in prompt]))
++    for step in range(30):
++        pos = 11 + step
++        bk, bv = batch.update_and_fetch(*kv([pos], batch=2))
++        assert bk.shape[2] <= 8 + max(buffer_size, 1)
++        for row in range(2):
++            sk, _ = singles[row].update_and_fetch(*kv([pos]))
++            visible = _visible(batch, row)
++            n = min(len(visible), sk.shape[2])
++            assert visible[-n:] == [x + row * 1000 for x in positions_of(sk)[-n:]]
++            assert len(visible) >= min(8, singles[row].offset)
++        assert batch.offset.tolist() == [pos + 1, pos + 1 - 7]
++    assert batch.start_position > 0
++    assert batch.keys.shape[2] <= 256 + 8 + buffer_size
++
++    # extract() gives back temporally ordered single-row caches.
++    for row in range(2):
++        single = batch.extract(row)
++        assert type(single) is SlidingWindowKVCache
++        assert single.offset == batch.offset[row].item()
++        assert positions_of(single.keys[..., : single._idx, :]) == _visible(batch, row)
++        assert single.start_position == single.offset - single._idx
++
++
++def test_merge_extend_filter_and_trim():
++    # Row 0 decodes one token past a 13-token prompt, which evicts down to
++    # the window; the others never fill it.
++    rows = _single_rows([[list(range(13)), [13]], [list(range(3))], []])
++    assert rows[0].start_position == 6
++    merged = BatchSlidingWindowKVCache.merge(rows)
++    assert type(merged) is BatchSlidingWindowKVCache
++    assert merged.offset.tolist() == [14, 3, 0]
++    assert merged.left_padding.tolist() == [0, 5, 8]
++    assert merged.start_position == 6
++    assert _visible(merged, 0) == [float(p) for p in range(6, 14)]
++    assert _visible(merged, 1) == [1000.0, 1001.0, 1002.0]
++    assert rows[0].prefix_cache_merge(rows, [14, 3, 0]) is not None
++    assert rows[0].prefix_cache_merge(rows, [13, 3, 0]) is None
++    assert rows[0].prefix_cache_merge([rows[0], KVCache()], [14, 0]) is None
++
++    other = BatchSlidingWindowKVCache.merge(_single_rows([[list(range(5))]]))
++    merged.extend(other)
++    assert merged.batch_size == 4
++    assert merged.offset.tolist() == [14, 3, 0, 5]
++    assert _visible(merged, 3) == [float(p) for p in range(5)]
++    merged.filter(mx.array([0, 3]))
++    assert merged.offset.tolist() == [14, 5]
++    assert _visible(merged, 0) == [float(p) for p in range(6, 14)]
++    # Row 0 compacted to positions 6..13 (one key of slack): trim 1 only.
++    with pytest.raises(ValueError, match="rewind past the window"):
++        merged.trim(2)
++    assert merged.trim(1) == 1
++    assert merged.offset.tolist() == [13, 4]
++    k, _ = merged.update_and_fetch(*kv([99], batch=2))
++    assert _visible(merged, 0) == [float(p) for p in range(6, 13)] + [99.0]
++    assert _visible(merged, 1) == [0.0, 1.0, 2.0, 3.0, 1099.0]
++
++    with pytest.raises(ValueError):
++        merged.extend(BatchSlidingWindowKVCache(4, [0]))
++
++
++def test_right_padding_is_rolled_before_compaction():
++    batch = BatchSlidingWindowKVCache(8, [0, 0], buffer_size=0)
++    batch.prepare(lengths=[12, 9], right_padding=[0, 3])
++    k, v = kv(range(12), batch=2)
++    batch.update_and_fetch(k, v)
++    assert batch.start_position == 0  # nothing evicted while padding pends
++    batch.finalize()
++    assert batch.left_padding.tolist() == [0, 3]
++    bk, _ = batch.update_and_fetch(*kv([12], batch=2))
++    assert bk.shape[2] <= 9
++    assert _visible(batch, 0) == [float(p) for p in range(5, 13)]
++    # Row 1 (9 real tokens, rolled right by 3) keeps 7 old keys + the new one.
++    assert _visible(batch, 1) == [1000.0 + p for p in range(2, 9)] + [1012.0]
++
++
++def test_to_batch_and_cache_list_plumbing():
++    single = SlidingWindowKVCache(8, buffer_size=4)
++    batch = single.to_batch([0, 3])
++    assert isinstance(batch, BatchSlidingWindowKVCache)
++    assert isinstance(batch, BatchKVCache)
++    assert batch.max_size == 8 and batch.buffer_size == 4
++    assert SlidingWindowKVCache.merge([single, single]).batch_size == 2
++    pair = CacheList(single, KVCache())
++    single.update_and_fetch(*kv(range(20)))
++    clone = CacheList.from_state(pair.state, pair.meta_state)
++    assert isinstance(clone.caches[0], SlidingWindowKVCache)
++    assert clone.caches[0].offset == 20
++    assert isinstance(clone.caches[1], KVCache)
+diff --git a/mlx_vlm/utils.py b/mlx_vlm/utils.py
+index fd84120..eec8549 100644
+--- a/mlx_vlm/utils.py
++++ b/mlx_vlm/utils.py
+@@ -738,13 +738,41 @@ def load_model_weights(
+         )
+ 
+     if not lazy:
+-        mx.eval(model.parameters())
++        eval_parameters(model.parameters())
+ 
+     model.model_path = model_path
+     model.eval()
+     return model
+ 
+ 
++# Bytes of parameters evaluated per ``mx.eval`` when a model is loaded eagerly.
++# One ``mx.eval`` over a whole 80+ GB checkpoint runs as a single command
++# buffer, which can exceed the Metal GPU watchdog budget and abort the load
++# with ``GPU Timeout``; bounded chunks keep every command buffer short.
++EVAL_CHUNK_BYTES = 4 * 2**30
++
++
++def eval_parameters(parameters, chunk_bytes: Optional[int] = None) -> None:
++    """Evaluate every array in ``parameters``, at most ``chunk_bytes`` per eval.
++
++    Equivalent to ``mx.eval(parameters)`` once it returns; models smaller than
++    ``chunk_bytes`` (default ``EVAL_CHUNK_BYTES``) still take one ``mx.eval``.
++    """
++    if chunk_bytes is None:
++        chunk_bytes = EVAL_CHUNK_BYTES
++    chunk, nbytes = [], 0
++    for _, value in tree_flatten(parameters):
++        if not isinstance(value, mx.array):
++            continue
++        chunk.append(value)
++        nbytes += value.nbytes
++        if nbytes >= chunk_bytes:
++            mx.eval(chunk)
++            chunk, nbytes = [], 0
++    if chunk:
++        mx.eval(chunk)
++
++
+ def _load_safetensors(path: str) -> dict:
+     try:
+         return mx.load(path)

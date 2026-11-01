@@ -1,0 +1,40 @@
+
+==================================== ERRORS ====================================
+_______________ ERROR collecting tests/models/test_muse_spark.py _______________
+ImportError while importing test module '<workdir>/upstream/mlx-lm-a2/tests/models/test_muse_spark.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/models/test_muse_spark.py:7: in <module>
+    import test_models
+E   ModuleNotFoundError: No module named 'test_models'
+___________________ ERROR collecting tests/test_evaluate.py ____________________
+ImportError while importing test module '<workdir>/upstream/mlx-lm-a2/tests/test_evaluate.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_evaluate.py:9: in <module>
+    from mlx_lm.evaluate import MLXLM
+mlx_lm/evaluate.py:17: in <module>
+    import lm_eval
+E   ModuleNotFoundError: No module named 'lm_eval'
+____________________ ERROR collecting tests/test_server.py _____________________
+ImportError while importing test module '<workdir>/upstream/mlx-lm-a2/tests/test_server.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_server.py:14: in <module>
+    import requests
+E   ModuleNotFoundError: No module named 'requests'
+=========================== short test summary info ============================
+ERROR tests/models/test_muse_spark.py
+ERROR tests/test_evaluate.py
+ERROR tests/test_server.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 3 errors during collection !!!!!!!!!!!!!!!!!!!!
+3 errors in 4.97s

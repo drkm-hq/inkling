@@ -1,0 +1,490 @@
+From f7f79d17f0df93726017d497c0839c18338699e8 Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Wed, 28 Oct 2026 22:45:25 -0400
+Subject: [PATCH 02/11] Add bounded, temporally ordered sliding-window KV
+ caches
+
+SlidingWindowKVCache keeps the last max_size - 1 keys of a sliding-window
+layer plus a slack buffer, in temporal order, and compacts in place every
+buffer_size tokens; the update returns one contiguous view the model can
+slice to its exact window. RotatingKVCache cannot serve layers that build
+their own attention bias from query/key distance because it returns the
+ring out of temporal order once it wraps, and the unbounded KVCache that
+such layers use today grows with the whole context although only the window
+is ever read. The cache is trimmable for speculative rollback, snapshots
+through state/meta_state (prefix cache, from_state), reports a windowed
+memory profile, and converts to BatchSlidingWindowKVCache for continuous
+batching: the batched form shares BatchKVCache's left-padded column layout,
+drops the leading columns no row can see any more (shifting left_padding
+with them), defers compaction while right padding is pending so finalize()
+can roll rows first, and supports extract/merge/extend/filter/trim.
+BufferedRotatingKVCache's state setter no longer requires offset to exist,
+which from_state() violated by assigning state before meta_state. Tests
+check the window against an unbounded reference over several update
+schedules, the memory bound over a long decode, trim, snapshot round trips,
+prefix-reuse refusal after eviction, and per-row equality of the batched
+cache with single-row caches including right-padded prompts.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ mlx_vlm/models/cache.py                    | 188 +++++++++++++++-
+ mlx_vlm/tests/test_sliding_window_cache.py | 244 +++++++++++++++++++++
+ 2 files changed, 431 insertions(+), 1 deletion(-)
+ create mode 100644 mlx_vlm/tests/test_sliding_window_cache.py
+
+diff --git a/mlx_vlm/models/cache.py b/mlx_vlm/models/cache.py
+index 65291ce..1b611df 100644
+--- a/mlx_vlm/models/cache.py
++++ b/mlx_vlm/models/cache.py
+@@ -2317,7 +2317,8 @@ class BufferedRotatingKVCache(RotatingKVCache):
+     def state(self, v):
+         self.keys, self.values = v
+         self._idx = 0 if self.keys is None else int(self.keys.shape[2])
+-        self.start_position = max(0, int(self.offset) - self._idx)
++        # from_state() assigns state before meta_state on a bare instance.
++        self.start_position = max(0, int(getattr(self, "offset", 0)) - self._idx)
+ 
+     @property
+     def meta_state(self):
+@@ -2343,6 +2344,191 @@ class BufferedRotatingKVCache(RotatingKVCache):
+         self.buffer_size = vals[5] if len(vals) > 5 else 64
+ 
+ 
++class SlidingWindowKVCache(BufferedRotatingKVCache):
++    """Bounded KV cache for a sliding-window layer whose attention is formed
++    by the model itself (a distance-based bias, a model-built mask).
++
++    Keys stay in temporal order: ``update_and_fetch`` returns the newest
++    positions as one ``[B, H, n, D]`` view, and once the window is full
++    ``max_size - 1 <= n - L <= max_size - 1 + buffer_size`` for an update of
++    ``L`` tokens, so the last query sees exactly its window plus a bounded
++    slack the caller may slice off. ``RotatingKVCache`` returns its ring out
++    of order at decode, which a bias indexed by distance cannot use; this
++    cache compacts in place every ``buffer_size`` tokens instead. It is
++    trimmable for speculative rollback, its snapshot round-trips through
++    ``state``/``meta_state``, and ``to_batch``/``merge`` keep the layout for
++    continuous batching.
++    """
++
++    def __init__(self, max_size: int, buffer_size: int = 256):
++        super().__init__(max_size=max_size, keep=0, buffer_size=buffer_size)
++
++    def update_and_fetch(self, keys: mx.array, values: mx.array):
++        incoming = int(keys.shape[2])
++        drop = self._planned_drop(incoming)
++        keep = self._idx - drop
++        needed = keep + incoming
++        if self.keys is None or drop > 0 or needed > self.keys.shape[2]:
++            # One allocation covers both compaction and growth.
++            if self.keys is not None and needed <= self.keys.shape[2]:
++                capacity = self.keys.shape[2]
++            else:
++                capacity = self._capacity_for(needed)
++            new_keys = mx.zeros(
++                (*keys.shape[:2], capacity, keys.shape[-1]), dtype=keys.dtype
++            )
++            new_values = mx.zeros(
++                (*values.shape[:2], capacity, values.shape[-1]), dtype=values.dtype
++            )
++            if keep > 0:
++                new_keys[..., :keep, :] = self.keys[..., drop : self._idx, :]
++                new_values[..., :keep, :] = self.values[..., drop : self._idx, :]
++            self.keys, self.values = new_keys, new_values
++            self.start_position += drop
++            self._idx = keep
++        self.keys[..., self._idx : needed, :] = keys
++        self.values[..., self._idx : needed, :] = values
++        self._idx = needed
++        self.offset += incoming
++        return self.keys[..., : self._idx, :], self.values[..., : self._idx, :]
++
++    def to_batch(self, left_padding: List[int]):
++        return BatchSlidingWindowKVCache(
++            self.max_size, left_padding, buffer_size=self.buffer_size
++        )
++
++    @classmethod
++    def merge(cls, caches):
++        return BatchSlidingWindowKVCache.merge(caches)
++
++    def prefix_cache_merge(self, rows, prefix_lens):
++        if not rows or len(rows) != len(prefix_lens):
++            return None
++        for row, length in zip(rows, prefix_lens):
++            if not isinstance(row, SlidingWindowKVCache):
++                return None
++            if row.max_size != self.max_size:
++                return None
++            if row.keys is not None and int(row.offset) != int(length):
++                return None
++        return self.merge(rows)
++
++
++class BatchSlidingWindowKVCache(BatchKVCache):
++    """Batched, left-padded form of ``SlidingWindowKVCache``.
++
++    Rows share one column timeline (``BatchKVCache`` layout); the cache is
++    compacted by dropping the leading columns no row can see any more, which
++    shifts ``left_padding`` with them (a negative value means the padding was
++    evicted). Compaction waits while right padding is pending, so
++    ``finalize`` can roll the padded rows into place first.
++    """
++
++    memory_profile = _windowed_memory_profile
++
++    def __init__(self, max_size: int, left_padding: List[int], buffer_size: int = 256):
++        super().__init__(left_padding)
++        self.max_size = int(max_size)
++        self.buffer_size = max(0, int(buffer_size))
++        self.start_position = 0
++
++    def _planned_drop(self, incoming: int) -> int:
++        if self._right_padding is not None:
++            return 0
++        if self._idx + incoming <= self.max_size + max(self.buffer_size, incoming):
++            return 0
++        return max(0, self._idx - (self.max_size - 1))
++
++    def update_and_fetch(self, keys: mx.array, values: mx.array):
++        drop = self._planned_drop(int(keys.shape[2]))
++        if drop > 0:
++            keep = self._idx - drop
++            capacity = self.keys.shape[2]
++            new_keys = mx.zeros(
++                (*self.keys.shape[:2], capacity, self.keys.shape[-1]),
++                dtype=self.keys.dtype,
++            )
++            new_values = mx.zeros(
++                (*self.values.shape[:2], capacity, self.values.shape[-1]),
++                dtype=self.values.dtype,
++            )
++            if keep > 0:
++                new_keys[..., :keep, :] = self.keys[..., drop : self._idx, :]
++                new_values[..., :keep, :] = self.values[..., drop : self._idx, :]
++            self.keys, self.values = new_keys, new_values
++            self.left_padding = self.left_padding - drop
++            self.start_position += drop
++            self._idx = keep
++        return super().update_and_fetch(keys, values)
++
++    @property
++    def meta_state(self):
++        return tuple(map(str, (self.max_size, self.buffer_size, self.start_position)))
++
++    @meta_state.setter
++    def meta_state(self, v):
++        self.max_size, self.buffer_size, self.start_position = map(int, v)
++
++    def extend(self, other):
++        if other.max_size != self.max_size:
++            raise ValueError(
++                "BatchSlidingWindowKVCache can only extend caches with the same "
++                "window size"
++            )
++        super().extend(other)
++        self.start_position = max(self.start_position, other.start_position)
++
++    def extract(self, idx):
++        cache = SlidingWindowKVCache(self.max_size, buffer_size=self.buffer_size)
++        if self.keys is None:
++            return cache
++        padding = max(0, int(self.left_padding[idx].item()))
++        cache.keys = mx.contiguous(self.keys[idx : idx + 1, :, padding : self._idx])
++        cache.values = mx.contiguous(self.values[idx : idx + 1, :, padding : self._idx])
++        cache.offset = int(self.offset[idx].item())
++        cache._idx = cache.keys.shape[2]
++        cache.start_position = max(0, cache.offset - cache._idx)
++        return cache
++
++    @classmethod
++    def merge(cls, caches):
++        max_size = caches[0].max_size
++        if not all(c.max_size == max_size for c in caches):
++            raise ValueError(
++                "BatchSlidingWindowKVCache can only merge caches with the same "
++                "window size"
++            )
++        buffer_size = max(c.buffer_size for c in caches)
++        states = [(None, None) if c.keys is None else c.state for c in caches]
++        lengths = [0 if k is None else int(k.shape[2]) for k, _ in states]
++        max_length = max(lengths)
++        if max_length == 0:
++            return cls(max_size, [0] * len(caches), buffer_size=buffer_size)
++
++        padding = [max_length - length for length in lengths]
++        B = len(caches)
++        H = max(k.shape[1] for k, _ in states if k is not None)
++        Dk = max(k.shape[3] for k, _ in states if k is not None)
++        Dv = max(v.shape[3] for _, v in states if v is not None)
++        dt = next(iter(k.dtype for k, _ in states if k is not None))
++
++        keys = mx.zeros((B, H, max_length, Dk), dtype=dt)
++        values = mx.zeros((B, H, max_length, Dv), dtype=dt)
++        for i, (p, length, (k, v)) in enumerate(zip(padding, lengths, states)):
++            if k is None:
++                continue
++            keys[i : i + 1, :, p : p + length] = k
++            values[i : i + 1, :, p : p + length] = v
++
++        cache = cls(max_size, padding, buffer_size=buffer_size)
++        cache.keys = keys
++        cache.values = values
++        cache.offset = mx.array([int(c.offset) for c in caches])
++        cache._idx = max_length
++        cache.start_position = max(int(c.start_position) for c in caches)
++        return cache
++
++
+ class BatchQuantizedKVCache(_BaseCache):
+     """Batch-aware quantized KV cache for continuous batching.
+ 
+diff --git a/mlx_vlm/tests/test_sliding_window_cache.py b/mlx_vlm/tests/test_sliding_window_cache.py
+new file mode 100644
+index 0000000..c05dcb5
+--- /dev/null
++++ b/mlx_vlm/tests/test_sliding_window_cache.py
+@@ -0,0 +1,244 @@
++"""SlidingWindowKVCache keeps a bounded, temporally ordered window.
++
++The reference is an unbounded ``KVCache`` fed the same tokens: after every
++update the window cache must return a suffix of the reference's keys, at
++least ``max_size - 1`` positions before the new ones, inside a bounded
++buffer. The batch form must match per-row single caches.
++"""
++
++import mlx.core as mx
++import pytest
++
++from mlx_vlm.generate import dispatch
++from mlx_vlm.models.cache import (
++    BatchKVCache,
++    BatchSlidingWindowKVCache,
++    CacheList,
++    KVCache,
++    SlidingWindowKVCache,
++)
++
++H, D = 2, 4
++
++
++def kv(positions, batch=1):
++    """Keys/values whose value encodes the absolute position (and the row)."""
++    positions = list(positions)
++    pos = mx.array(positions, dtype=mx.float32)
++    rows = mx.arange(batch, dtype=mx.float32)[:, None, None, None] * 1000
++    base = mx.broadcast_to(pos[None, None, :, None], (batch, H, len(positions), D))
++    return base + rows, base + rows + 0.5
++
++
++def positions_of(keys):
++    return keys[0, 0, :, 0].tolist()
++
++
++@pytest.mark.parametrize("buffer_size", [0, 3, 64])
++@pytest.mark.parametrize(
++    "schedule", [[1] * 40, [13, 1, 1, 7, 1, 1, 1, 1, 30, 1, 1, 1], [40, 2, 2, 1]]
++)
++def test_window_matches_reference_suffix(buffer_size, schedule):
++    window = 8
++    cache = SlidingWindowKVCache(window, buffer_size=buffer_size)
++    reference = KVCache()
++    pos = 0
++    for L in schedule:
++        k, v = kv(range(pos, pos + L))
++        ref_k, _ = reference.update_and_fetch(k, v)
++        out_k, out_v = cache.update_and_fetch(k, v)
++        pos += L
++        n = out_k.shape[2]
++        assert cache.offset == reference.offset == pos
++        assert positions_of(out_k) == positions_of(ref_k)[-n:]
++        assert mx.array_equal(out_v[..., 0], out_k[..., 0] + 0.5).item()
++        retained = n - L
++        assert retained == min(pos - L, max(window - 1, retained))
++        assert retained <= window - 1 + max(buffer_size, L)
++        assert cache.start_position == pos - n
++        assert cache._idx == n
++        assert cache.keys.shape[2] <= cache._capacity_for(window + max(buffer_size, L))
++
++
++def test_buffer_stays_bounded_over_a_long_decode():
++    cache = SlidingWindowKVCache(512, buffer_size=256)
++    k, v = kv(range(2048))
++    cache.update_and_fetch(k, v)
++    for pos in range(2048, 2048 + 3000):
++        k, v = kv([pos])
++        out_k, _ = cache.update_and_fetch(k, v)
++        assert 512 <= out_k.shape[2] <= 512 + 256
++    assert cache.keys.shape[2] <= 2560  # capacity set by the 2048-token chunk
++    assert cache.nbytes == 2 * cache.keys.nbytes
++
++
++def test_trim_rolls_back_like_the_reference():
++    cache = SlidingWindowKVCache(8, buffer_size=4)
++    reference = KVCache()
++    k, v = kv(range(20))
++    cache.update_and_fetch(k, v)
++    reference.update_and_fetch(k, v)
++    for pos in range(20, 26):
++        cache.update_and_fetch(*kv([pos]))
++        reference.update_and_fetch(*kv([pos]))
++    assert cache.is_trimmable()
++    assert cache.trim(4) == reference.trim(4) == 4
++    assert cache.offset == reference.offset == 22
++    for pos in range(22, 30):
++        out_k, _ = cache.update_and_fetch(*kv([pos + 100]))
++        ref_k, _ = reference.update_and_fetch(*kv([pos + 100]))
++        n = out_k.shape[2]
++        assert positions_of(out_k) == positions_of(ref_k)[-n:]
++
++
++def test_snapshot_round_trips_through_state_and_meta_state():
++    cache = SlidingWindowKVCache(8, buffer_size=4)
++    for pos in range(0, 30, 3):
++        cache.update_and_fetch(*kv(range(pos, pos + 3)))
++    out_k, _ = cache.update_and_fetch(*kv([30]))
++
++    restored = SlidingWindowKVCache.from_state(
++        [mx.array(a) for a in cache.state], cache.meta_state
++    )
++    assert type(restored) is SlidingWindowKVCache
++    assert (restored.offset, restored._idx, restored.start_position) == (
++        cache.offset,
++        cache._idx,
++        cache.start_position,
++    )
++    again = SlidingWindowKVCache(8, buffer_size=4)
++    again.prefix_cache_restore(cache.prefix_cache_snapshot())
++    for c in (cache, restored, again):
++        step_k, _ = c.update_and_fetch(*kv([31]))
++        assert positions_of(step_k) == positions_of(out_k) + [31.0]
++        assert c.offset == 32
++
++
++def test_prefix_reuse_declines_once_the_window_evicted():
++    cache = SlidingWindowKVCache(8, buffer_size=2)
++    cache.update_and_fetch(*kv(range(6)))
++    assert dispatch._prefix_cache_trim_amount([cache], 4) == 2
++    cache.update_and_fetch(*kv(range(6, 30)))
++    assert cache.start_position == 0  # one update keeps its own slack
++    for pos in range(30, 35):
++        cache.update_and_fetch(*kv([pos]))
++    assert cache.start_position > 0
++    assert dispatch._prefix_cache_trim_amount([cache], 10) is None
++
++
++def _single_rows(batch_positions):
++    rows = []
++    for row, positions in enumerate(batch_positions):
++        single = SlidingWindowKVCache(8, buffer_size=4)
++        for chunk in positions:
++            k, v = kv(chunk)
++            single.update_and_fetch(k + row * 1000, v + row * 1000)
++        rows.append(single)
++    return rows
++
++
++def _visible(batch_cache, row):
++    keys = batch_cache.keys[row, 0, : batch_cache._idx, 0]
++    pad = max(0, int(batch_cache.left_padding[row].item()))
++    return keys[pad:].tolist()
++
++
++@pytest.mark.parametrize("buffer_size", [0, 4])
++def test_batch_rows_match_single_caches(buffer_size):
++    prompts = [list(range(11)), list(range(4))]
++    left = [0, 7]
++    batch = BatchSlidingWindowKVCache(8, left, buffer_size=buffer_size)
++    singles = [SlidingWindowKVCache(8, buffer_size=buffer_size) for _ in prompts]
++    # Left-padded prompt: pad columns carry garbage the mask must hide.
++    k, v = kv(range(11), batch=2)
++    k = mx.where(
++        mx.arange(11)[None, None, :, None] >= mx.array(left)[:, None, None, None], k, -1
++    )
++    batch.update_and_fetch(k, v)
++    for row, prompt in enumerate(prompts):
++        singles[row].update_and_fetch(*kv([p + 7 * row for p in prompt]))
++    for step in range(30):
++        pos = 11 + step
++        bk, bv = batch.update_and_fetch(*kv([pos], batch=2))
++        assert bk.shape[2] <= 8 + max(buffer_size, 1)
++        for row in range(2):
++            sk, _ = singles[row].update_and_fetch(*kv([pos]))
++            visible = _visible(batch, row)
++            n = min(len(visible), sk.shape[2])
++            assert visible[-n:] == [x + row * 1000 for x in positions_of(sk)[-n:]]
++            assert len(visible) >= min(8, singles[row].offset)
++        assert batch.offset.tolist() == [pos + 1, pos + 1 - 7]
++    assert batch.start_position > 0
++    assert batch.keys.shape[2] <= 256 + 8 + buffer_size
++
++    # extract() gives back temporally ordered single-row caches.
++    for row in range(2):
++        single = batch.extract(row)
++        assert type(single) is SlidingWindowKVCache
++        assert single.offset == batch.offset[row].item()
++        assert positions_of(single.keys[..., : single._idx, :]) == _visible(batch, row)
++        assert single.start_position == single.offset - single._idx
++
++
++def test_merge_extend_filter_and_trim():
++    # Row 0 decodes one token past a 13-token prompt, which evicts down to
++    # the window; the others never fill it.
++    rows = _single_rows([[list(range(13)), [13]], [list(range(3))], []])
++    assert rows[0].start_position == 6
++    merged = BatchSlidingWindowKVCache.merge(rows)
++    assert type(merged) is BatchSlidingWindowKVCache
++    assert merged.offset.tolist() == [14, 3, 0]
++    assert merged.left_padding.tolist() == [0, 5, 8]
++    assert merged.start_position == 6
++    assert _visible(merged, 0) == [float(p) for p in range(6, 14)]
++    assert _visible(merged, 1) == [1000.0, 1001.0, 1002.0]
++    assert rows[0].prefix_cache_merge(rows, [14, 3, 0]) is not None
++    assert rows[0].prefix_cache_merge(rows, [13, 3, 0]) is None
++    assert rows[0].prefix_cache_merge([rows[0], KVCache()], [14, 0]) is None
++
++    other = BatchSlidingWindowKVCache.merge(_single_rows([[list(range(5))]]))
++    merged.extend(other)
++    assert merged.batch_size == 4
++    assert merged.offset.tolist() == [14, 3, 0, 5]
++    assert _visible(merged, 3) == [float(p) for p in range(5)]
++    merged.filter(mx.array([0, 3]))
++    assert merged.offset.tolist() == [14, 5]
++    assert _visible(merged, 0) == [float(p) for p in range(6, 14)]
++    assert merged.trim(2) == 2
++    assert merged.offset.tolist() == [12, 3]
++    k, _ = merged.update_and_fetch(*kv([99], batch=2))
++    assert _visible(merged, 0) == [float(p) for p in range(6, 12)] + [99.0]
++    assert _visible(merged, 1) == [0.0, 1.0, 2.0, 1099.0]
++
++    with pytest.raises(ValueError):
++        merged.extend(BatchSlidingWindowKVCache(4, [0]))
++
++
++def test_right_padding_is_rolled_before_compaction():
++    batch = BatchSlidingWindowKVCache(8, [0, 0], buffer_size=0)
++    batch.prepare(lengths=[12, 9], right_padding=[0, 3])
++    k, v = kv(range(12), batch=2)
++    batch.update_and_fetch(k, v)
++    assert batch.start_position == 0  # nothing evicted while padding pends
++    batch.finalize()
++    assert batch.left_padding.tolist() == [0, 3]
++    bk, _ = batch.update_and_fetch(*kv([12], batch=2))
++    assert bk.shape[2] <= 9
++    assert _visible(batch, 0) == [float(p) for p in range(5, 13)]
++    # Row 1 (9 real tokens, rolled right by 3) keeps 7 old keys + the new one.
++    assert _visible(batch, 1) == [1000.0 + p for p in range(2, 9)] + [1012.0]
++
++
++def test_to_batch_and_cache_list_plumbing():
++    single = SlidingWindowKVCache(8, buffer_size=4)
++    batch = single.to_batch([0, 3])
++    assert isinstance(batch, BatchSlidingWindowKVCache)
++    assert isinstance(batch, BatchKVCache)
++    assert batch.max_size == 8 and batch.buffer_size == 4
++    assert SlidingWindowKVCache.merge([single, single]).batch_size == 2
++    pair = CacheList(single, KVCache())
++    single.update_and_fetch(*kv(range(20)))
++    clone = CacheList.from_state(pair.state, pair.meta_state)
++    assert isinstance(clone.caches[0], SlidingWindowKVCache)
++    assert clone.caches[0].offset == 20
++    assert isinstance(clone.caches[1], KVCache)

@@ -1,0 +1,177 @@
+commit dc0a8b155540f2a37a9b188999a6b88123a3b2eb
+Author: Nick Alonso <nick@drkm.com>
+Date:   Thu Oct 29 03:26:06 2026 -0400
+
+Inkling: keep the shared experts folded into the routed gather
+
+Measured back to back in one GPU hold on the 2-bit checkpoint (bench/K2
+hold 3, p_short and p_8k, 3 runs each), the dense shared-expert layout of
+the previous commit was 7-13% slower at both prefill and decode than one
+gather_qmm chain over the 258 experts, so the fold stays. The docstring and
+the tests added since are kept.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_lm/models/inkling_mm_model.py | 77 +++++++++++++++------------------------
+ tests/test_inkling.py             | 76 ++++++++++++++++----------------------
+ 2 files changed, 62 insertions(+), 91 deletions(-)
+commit cc6a6fe26fa13b3095fb2b274b5692285be9760f
+Author: Nick Alonso <nick@drkm.com>
+Date:   Thu Oct 29 02:54:57 2026 -0400
+
+Warn when kv_bits cannot apply, CPU exactness test, acknowledgment
+
+maybe_quantize_kv_cache stayed silent when no cache of the model supports
+quantization (CacheList models such as Inkling); it now warns once. The
+Inkling tests gain a CPU-device fp32 check of decode and chunked prefill
+against the full forward at 1e-5 (exact matmuls, no TF32) and a test for the
+warning; the short-conv docstring states that kernel and compiled taps agree
+after rounding to the activation dtype.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ ACKNOWLEDGMENTS.md                |  1 +
+ mlx_lm/generate.py                |  7 +++++++
+ mlx_lm/models/inkling_mm_model.py |  3 ++-
+ tests/test_inkling.py             | 38 ++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 48 insertions(+), 1 deletion(-)
+commit 00cdad12ae3ea24e3fef3f87ef0ff58dc6512ac8
+Author: Nick Alonso <nick@drkm.com>
+Date:   Thu Oct 29 02:21:01 2026 -0400
+
+Inkling: dense shared experts instead of folding them into the routed gather
+
+Back-to-back with mlx-vlm 0.7.11 on the same checkpoint and machine state
+(bench/K2-same-hold-table.md) the fold cost 19-29% of prefill throughput at
+2K-8K tokens: the two always-on experts went through the sorted gather_qmm
+path instead of plain quantized GEMMs. They are now one dense SwiGLU whose
+weights are concatenated at load (exact for quantized tensors), as mlx-vlm
+does; the route kernel emits the routed indices and all eight weights.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_lm/models/inkling_mm_model.py | 76 ++++++++++++++++++++++++---------------
+ tests/test_inkling.py             | 76 ++++++++++++++++++++++-----------------
+ 2 files changed, 91 insertions(+), 61 deletions(-)
+commit cce0834271886a7989d3aa0470513cee11b9bd19
+Author: Nick Alonso <nick@drkm.com>
+Date:   Thu Oct 29 00:06:04 2026 -0400
+
+Inkling: fuse expert selection into one kernel
+
+The routing step (sigmoid + bias, top-k, log-sigmoid softmax with the shared
+sinks) was 5.9 ms of dispatch per token over the 40 MoE layers as a compiled
+chain of small kernels (bench/K2-router-dispatch.log); one Metal kernel with
+a simdgroup per token does it in 1.4 ms, with the lowest expert index on
+ties. The compiled chain stays as the non-Metal path and as the test oracle.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_lm/models/inkling_mm_model.py | 94 ++++++++++++++++++++++++++++++++++++++-
+ tests/test_inkling.py             | 59 +++++++++++++++---------
+ 2 files changed, 130 insertions(+), 23 deletions(-)
+commit 450edaf16154b815d317c5d3a65bf53e4c6213c8
+Author: Nick Alonso <nick@drkm.com>
+Date:   Wed Oct 28 23:14:58 2026 -0400
+
+Inkling: fuse the short convolution of a few tokens into one kernel
+
+At decode the three short convolutions per layer cost more dispatch than the
+rest of the layer (bench/K2-dispatch-profile.log): the concatenation, eight
+slice views and a nine-input compiled call per convolution. One Metal kernel
+now computes the convolution, the residual and the new state for up to 8
+tokens with fp32 accumulation and the same single rounding, so the compiled
+taps serve prefill and non-Metal devices only. The conv mask is only built
+when the cache carries padding.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_lm/models/inkling_mm_model.py | 76 +++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 74 insertions(+), 2 deletions(-)
+commit 60fa608fb8a16bbbf6322a07d3ba8a753b1a240a
+Author: Nick Alonso <nick@drkm.com>
+Date:   Wed Oct 28 23:04:00 2026 -0400
+
+Inkling: use RotatingKVCache for the sliding layers, drop the shifting caches
+
+A decode microbenchmark (bench/K2/cache_bench.py) put the in-place rotating
+cache at or slightly ahead of the shifting designs, so the sliding layers use
+RotatingKVCache and BatchRotatingKVCache. The relative bias of a single
+token is gathered with one slot-to-distance index per forward, provided by
+the new RotatingKVCache.key_distances(); the bias bank is stored reversed so
+the global layers slice it without a flip.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_lm/models/cache.py            | 354 +++-----------------------------------
+ mlx_lm/models/inkling_mm_model.py | 103 +++++++----
+ tests/test_inkling.py             | 119 ++++---------
+ 3 files changed, 122 insertions(+), 454 deletions(-)
+commit 4993a8d99b68bb7a9ab76081b1abbeff34fa1349
+Author: Nick Alonso <nick@drkm.com>
+Date:   Wed Oct 28 22:50:46 2026 -0400
+
+Test Inkling: tiny-config runner, banded mask vs numpy, sconv state, router, sanitize layouts, caches, batched prompts
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ tests/test_inkling.py | 437 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ tests/test_models.py  |  33 ++++
+ 2 files changed, 470 insertions(+)
+commit 6ee2e73b7a34ba35e0df8267ebe81c4b1f37c980
+Author: Nick Alonso <nick@drkm.com>
+Date:   Wed Oct 28 22:50:46 2026 -0400
+
+Add BatchShiftingWindowCache for batched generation with sliding-window layers
+
+Left-padded batches in temporal order with at most max_size - 1 entries;
+right-padded prompts roll their padding to the front so it is evicted first.
+Supports merge, extend, filter, extract, prepare and finalize like
+BatchRotatingKVCache.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_lm/models/cache.py | 216 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 216 insertions(+)
+commit f5413b2e65502dd67782c30046c7b749903fdffc
+Author: Nick Alonso <nick@drkm.com>
+Date:   Wed Oct 28 22:41:46 2026 -0400
+
+Add Inkling (inkling_mm_model): hybrid sliding/global attention with relative bias, short convs and sigmoid-routed MoE
+
+Loads the mlx-community Inkling-Small checkpoints directly (model.llm.* paths)
+and the HF source layout (interleaved w13 de-interleave, conv axis swap). The
+q/k/v/r projections are fused at load, k|v share one short convolution with a
+single cached state, the decode bias is a reversed slice of rel @ proj, prefill
+builds the banded additive mask with a small Metal kernel, and the shared
+experts are appended to the routed ones so one SwitchGLU call serves both.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_lm/models/inkling_mm_model.py | 616 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 616 insertions(+)
+commit db2121e2dac80aa5949c8bfc0bb34a0832bb49f7
+Author: Nick Alonso <nick@drkm.com>
+Date:   Wed Oct 28 22:41:45 2026 -0400
+
+Add ShiftingWindowCache: a trimmable sliding-window KV cache in temporal order
+
+Retains the window - 1 most recent entries in a buffer that is written in
+place and reallocated every `step` tokens, so decode costs one slice update
+per array and a mask that depends on query-key distance can be sliced rather
+than gathered.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_lm/models/cache.py | 117 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 117 insertions(+)

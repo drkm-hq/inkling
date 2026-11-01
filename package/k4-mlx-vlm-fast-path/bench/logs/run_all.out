@@ -1,0 +1,23 @@
+=== 23:25:22 waiting for the GPU: queue [K3 K2 K4 A1 M1 ], lock: 1042 2026-10-28T23:20:20 <workdir>/package/k3-llamacpp-prompt-cache/bench/run_four.sh
+=== 00:00:34 hold acquired by pid 4687 (queue head: K4); budget 2400s
+=== 00:00:34 start before (~/.venvs/inkling-base/bin/python) --prompts p_short,p_2k,p_8k,p_32k --repeats 3 --max-tokens 128
+=== 00:07:35 end before rc=0 (elapsed 421s)
+=== 00:07:35 start after (~/.venvs/inkling/bin/python) --prompts p_short,p_2k,p_8k,p_32k --repeats 3 --max-tokens 128
+=== 00:13:51 end after rc=0 (elapsed 797s)
+=== 00:13:51 start after-eager-load (~/.venvs/inkling/bin/python) --eager-load --prompts p_short --repeats 1 --max-tokens 32
+=== 00:14:29 end after-eager-load rc=0 (elapsed 835s)
+=== 00:14:29 start after-64k (~/.venvs/inkling/bin/python) --prompts p_64k --repeats 2 --max-tokens 128 --warmup-prompt p_short
+=== 00:20:10 end after-64k rc=0 (elapsed 1176s)
+=== 00:20:10 checked out 0abf8bd
+=== 00:20:10 start after-window-only (~/.venvs/inkling/bin/python) --prompts p_short,p_32k --repeats 2 --max-tokens 128
+=== 00:23:46 end after-window-only rc=0 (elapsed 1392s)
+=== 00:23:46 checked out 21e690a
+=== 00:23:46 start after-kernels (~/.venvs/inkling/bin/python) --prompts p_short,p_32k --repeats 2 --max-tokens 128
+=== 00:27:08 end after-kernels rc=0 (elapsed 1594s)
+=== 00:27:08 checked out 355ea6f
+=== 00:27:08 restored branch at 355ea6f (expected 355ea6f)
+=== 00:27:08 start after-kv8 (~/.venvs/inkling/bin/python) --prompts p_short,p_8k --repeats 2 --max-tokens 128 --kv-bits 8 --kv-group-size 64 --quantized-kv-start 0
+=== 00:27:46 end after-kv8 rc=1 (elapsed 1632s)
+=== 00:27:46 all done after 1632s
+=== 00:27:46 lock released
+=== 00:27:46 removed K4 from GPU_QUEUE: now [A1 A3 M1 K2 ]

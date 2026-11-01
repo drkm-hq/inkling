@@ -1,0 +1,7 @@
++./run_all3.sh:6> python sdpa_probe.py
++./run_all3.sh:7> python layer_bench.py --experts-bits 2 --skip-prefill --tag e2_abf16_hbf16_decode2
++./run_all3.sh:8> python layer_bench.py --experts-bits 4 --skip-prefill --tag e4_abf16_hbf16_decode2
++./run_all3.sh:9> python mtp_probe.py 2
++./run_all3.sh:10> python layer_bench.py --experts-bits 2 --attn-bits 8 --head-bits 8 --skip-prefill --tag e2_a8_h8_decode2
++./run_all3.sh:11> python layer_bench.py --experts-bits 4 --attn-bits 4 --head-bits 4 --skip-prefill --tag e4_a4_h4_decode2
++./run_all3.sh:12> echo ALL_DONE3

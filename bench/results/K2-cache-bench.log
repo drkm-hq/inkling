@@ -1,0 +1,12 @@
+context 128 (+1 decode token), window 512
+  shifting  ctx   128: 1.073 ms/step for 35 layers (30.6 us/layer, best 0.866 ms)
+  rotating  ctx   128: 1.281 ms/step for 35 layers (36.6 us/layer, best 0.881 ms)
+  full      ctx   128: 1.198 ms/step for 35 layers (34.2 us/layer, best 0.904 ms)
+context 600 (+1 decode token), window 512
+  shifting  ctx   600: 1.201 ms/step for 35 layers (34.3 us/layer, best 0.963 ms)
+  rotating  ctx   600: 0.957 ms/step for 35 layers (27.3 us/layer, best 0.752 ms)
+  full      ctx   600: 1.285 ms/step for 35 layers (36.7 us/layer, best 1.133 ms)
+context 4096 (+1 decode token), window 512
+  shifting  ctx  4096: 1.081 ms/step for 35 layers (30.9 us/layer, best 0.861 ms)
+  rotating  ctx  4096: 0.915 ms/step for 35 layers (26.1 us/layer, best 0.755 ms)
+  full      ctx  4096: 1.267 ms/step for 35 layers (36.2 us/layer, best 1.048 ms)

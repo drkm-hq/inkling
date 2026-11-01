@@ -1,0 +1,47 @@
+From ee1be2540c9ec3266dabdd86d46764404a8a80e7 Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Thu, 29 Oct 2026 03:19:44 -0400
+Subject: [PATCH 12/12] Inkling: note the in-place query scaling of the
+ quantized SDPA, drop dead extract
+
+quantized_scaled_dot_product_attention scales its queries argument in place
+(an augmented assignment on the shared MLX object); the Inkling call site is
+new and does not read q afterwards, which the comment now states so a later
+reuse of q copies it first. InklingCacheList.extract was unreachable: single
+caches have no extract, and _make_cache rebuilds layer entries as plain
+CacheList for continuous batching.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ mlx_vlm/models/inkling/language.py | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/mlx_vlm/models/inkling/language.py b/mlx_vlm/models/inkling/language.py
+index 16134d7..9444541 100644
+--- a/mlx_vlm/models/inkling/language.py
++++ b/mlx_vlm/models/inkling/language.py
+@@ -408,9 +408,6 @@ class InklingCacheList(CacheList):
+             kv.to_quantized(group_size=group_size, bits=bits), *self.caches[1:]
+         )
+ 
+-    def extract(self, idx):
+-        return InklingCacheList(*(c.extract(idx) for c in self.caches))
+-
+ 
+ class InklingAttention(nn.Module):
+     def __init__(self, config: ModelConfig, layer_idx: int):
+@@ -532,7 +529,10 @@ class InklingAttention(nn.Module):
+ 
+         if quantized and self.n_heads != self.n_kv:
+             # The quantized SDPA scores GQA as [B, n_kv, n_rep, L, S]; the
+-            # per-head mask has to be grouped the same way.
++            # per-head mask has to be grouped the same way. Note that
++            # quantized_scaled_dot_product_attention scales its ``queries``
++            # argument in place (``queries *= scale``); q is not read again
++            # after this call, so no copy is needed here.
+             mask = mask.reshape(B, self.n_kv, self.n_heads // self.n_kv, L, S)
+         out = scaled_dot_product_attention(
+             q, k, v, cache=kv if quantized else None, scale=self.scale, mask=mask
+-- 
+2.55.0
+

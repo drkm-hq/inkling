@@ -1,0 +1,27 @@
+commit 1966960b669913e6b409a624380b147e1c8825a5
+Author: A2 review <nick@drkm.com>
+Date:   Thu Oct 29 03:37:07 2026 -0400
+
+A2 review: pre-commit formatting, drop unused imports
+
+
+ tests/test_inkling_a2.py | 396 ++++++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 324 insertions(+), 72 deletions(-)
+commit e9f13d0a55f9398aec42d7baf044bfb9c6d4c5e3
+Author: A2 review <nick@drkm.com>
+Date:   Thu Oct 29 02:50:41 2026 -0400
+
+A2 review: exercise filter/extract/extend in the BatchGenerator test
+
+
+ tests/test_inkling_a2.py | 26 ++++++++++++++++++++------
+ 1 file changed, 20 insertions(+), 6 deletions(-)
+commit ac6b33b4ecc957e034734f294c25727c4922f6c2
+Author: A2 review <nick@drkm.com>
+Date:   Thu Oct 29 02:48:18 2026 -0400
+
+A2 review: adversarial oracle tests for inkling_mm_model
+
+
+ tests/test_inkling_a2.py | 743 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 743 insertions(+)

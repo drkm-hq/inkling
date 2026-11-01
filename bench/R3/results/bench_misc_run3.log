@@ -1,0 +1,39 @@
+{"section": "lm_head 4096 -> 201024"}
+lm_head bf16 (as shipped in mlx-community checkpoints)     | r1:    3.597 ms (best    3.135)    458 GB/s | r8:    3.294 ms (best    3.099)    500 GB/s
+lm_head 8-bit affine g64                                   | r1:    1.975 ms (best    1.756)    443 GB/s | r8:    2.128 ms (best    1.648)    411 GB/s
+lm_head 6-bit affine g64                                   | r1:    4.600 ms (best    3.057)    145 GB/s | r8:    2.762 ms (best    2.449)    242 GB/s
+lm_head 4-bit affine g64                                   | r1:    1.557 ms (best    1.389)    297 GB/s | r8:    1.442 ms (best    1.231)    321 GB/s
+{"section": "attention projections per layer (q 4096->4096, k/v 4096->1024, r 4096->512, o 4096->4096)"}
+attention 5 projections bf16                               | r1:    0.573 ms (best    0.429)    154 GB/s | r8:    0.282 ms (best    0.223)    313 GB/s
+{"label": "attention projections bf16 x42 layers", "ms_per_token": 11.836}
+attention 5 projections 8                                  | r1:    0.480 ms (best    0.299)     98 GB/s | r8:    0.139 ms (best    0.114)    338 GB/s
+{"label": "attention projections 8 x42 layers", "ms_per_token": 5.821}
+attention 5 projections 4                                  | r1:    0.471 ms (best    0.290)     53 GB/s | r8:    0.113 ms (best    0.092)    219 GB/s
+{"label": "attention projections 4 x42 layers", "ms_per_token": 4.746}
+{"section": "dense MLP layers 0-1"}
+dense GLU 4096->16384->4096 8-bit                          | r1:    0.789 ms (best    0.717)    271 GB/s | r8:    0.436 ms (best    0.403)    491 GB/s
+dense GLU 4096->16384->4096 4-bit                          | r1:    0.591 ms (best    0.418)    192 GB/s | r8:    0.280 ms (best    0.244)    404 GB/s
+{"section": "sconv depthwise conv1d k=4 C=4096"}
+sconv decode T=1 conv1d groups=C padding=0 (+state concat/slice) mlx.core.float32 | r1:    0.337 ms (best    0.216)      1 GB/s | r8:    0.059 ms (best    0.039)      3 GB/s
+sconv decode T=1 elementwise mul+sum mlx.core.float32      | r1:    0.371 ms (best    0.254)      1 GB/s | r8:    0.067 ms (best    0.040)      3 GB/s
+sconv prefill T=2048 conv1d padding=0 after explicit pad (depthwise fast path) mlx.core.float32 | r1:    0.827 ms (best    0.729)     81 GB/s | r4:    0.563 ms (best    0.530)    119 GB/s
+sconv prefill T=2048 conv1d padding=3 (vendored no-cache path) mlx.core.float32 | r1:    2.477 ms (best    2.218)     27 GB/s | r4:    2.294 ms (best    1.996)     29 GB/s
+sconv prefill T=2048 elementwise 4-tap mlx.core.float32    | r1:    1.815 ms (best    1.705)     37 GB/s | r4:    1.767 ms (best    1.458)     38 GB/s
+sconv decode T=1 conv1d groups=C padding=0 (+state concat/slice) mlx.core.bfloat16 | r1:    0.265 ms (best    0.208)      0 GB/s | r8:    0.053 ms (best    0.033)      2 GB/s
+sconv decode T=1 elementwise mul+sum mlx.core.bfloat16     | r1:    0.301 ms (best    0.190)      0 GB/s | r8:    0.068 ms (best    0.036)      1 GB/s
+sconv prefill T=2048 conv1d padding=0 after explicit pad (depthwise fast path) mlx.core.bfloat16 | r1:    0.680 ms (best    0.507)     49 GB/s | r4:    0.408 ms (best    0.363)     82 GB/s
+sconv prefill T=2048 conv1d padding=3 (vendored no-cache path) mlx.core.bfloat16 | r1:    1.987 ms (best    1.700)     17 GB/s | r4:    1.811 ms (best    1.613)     19 GB/s
+sconv prefill T=2048 elementwise 4-tap mlx.core.bfloat16   | r1:    1.016 ms (best    0.847)     33 GB/s | r4:    0.896 ms (best    0.785)     37 GB/s
+{"section": "small per-layer ops"}
+rms_norm 4096 (one call)                                   | r1:    0.273 ms (best    0.150)      0 GB/s | r8:    0.040 ms (best    0.029)      0 GB/s
+rms_norm per-head [1,1,32,128]                             | r1:    0.272 ms (best    0.195)      0 GB/s | r8:    0.042 ms (best    0.027)      0 GB/s
+add residual [1,1,4096]                                    | r1:    0.261 ms (best    0.179)      0 GB/s | r8:    0.036 ms (best    0.028)      1 GB/s
+{"section": "per-op floor: 200 dependent tiny ops in one eval"}
+chain of 200 dependent rms_norm                            | r1:    1.207 ms (best    1.083)
+{"label": "per-op us in chain (rms_norm)", "us": 6.0, "best_us": 5.4}
+chain of 200 dependent matvec 4096x4096 bf16 (32 MB each)  | r1:   10.117 ms (best    9.757)
+{"label": "per-op us in chain (matvec 4096x4096 bf16 (32 MB each))", "us": 50.6, "best_us": 48.8}
+chain of 200 dependent elementwise mul+add                 | r1:    2.326 ms (best    1.908)
+{"label": "per-op us in chain (elementwise mul+add)", "us": 11.6, "best_us": 9.5}
+chain of 200 dependent elementwise mul+add mx.compile      | r1:    0.500 ms (best    0.435)
+{"label": "per-op us in chain (elementwise mul+add mx.compile)", "us": 2.5, "best_us": 2.2}

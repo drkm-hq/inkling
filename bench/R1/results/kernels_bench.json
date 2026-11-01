@@ -1,0 +1,305 @@
+{
+ "decode SWA S=512: banded_mask_v2 [1,32,1,512]": {
+  "ms": 0.10633862530085025,
+  "note": "writes 0.03 MB"
+ },
+ "decode SWA S=512: SDPA with additive mask": {
+  "ms": 0.11931249991903314,
+  "note": "K+V read 2.10 MB"
+ },
+ "decode SWA S=512: SDPA mask=None": {
+  "ms": 0.06356774974847212,
+  "note": ""
+ },
+ "decode SWA S=512: mask_v2 + SDPA (as in InklingAttention)": {
+  "ms": 0.038301999666146,
+  "note": ""
+ },
+ "decode global S=2048: banded_mask_v2 [1,32,1,2048]": {
+  "ms": 0.03712500028996146,
+  "note": "writes 0.13 MB"
+ },
+ "decode global S=2048: SDPA with additive mask": {
+  "ms": 0.04421875019033905,
+  "note": "K+V read 8.39 MB"
+ },
+ "decode global S=2048: SDPA mask=None": {
+  "ms": 0.04038024962937925,
+  "note": ""
+ },
+ "decode global S=2048: mask_v2 + SDPA (as in InklingAttention)": {
+  "ms": 0.055880125273688463,
+  "note": ""
+ },
+ "decode global S=2048: tau where() over the mask (L473)": {
+  "ms": 0.027635374863166362,
+  "note": ""
+ },
+ "decode global S=8192: banded_mask_v2 [1,32,1,8192]": {
+  "ms": 0.056546874930063495,
+  "note": "writes 0.52 MB"
+ },
+ "decode global S=8192: SDPA with additive mask": {
+  "ms": 0.08971874967755866,
+  "note": "K+V read 33.55 MB"
+ },
+ "decode global S=8192: SDPA mask=None": {
+  "ms": 0.0739739998607547,
+  "note": ""
+ },
+ "decode global S=8192: mask_v2 + SDPA (as in InklingAttention)": {
+  "ms": 0.11130199982289923,
+  "note": ""
+ },
+ "decode global S=8192: tau where() over the mask (L473)": {
+  "ms": 0.027567624783841893,
+  "note": ""
+ },
+ "decode global S=32768: banded_mask_v2 [1,32,1,32768]": {
+  "ms": 0.12525525016826577,
+  "note": "writes 2.10 MB"
+ },
+ "decode global S=32768: SDPA with additive mask": {
+  "ms": 0.3149583749291196,
+  "note": "K+V read 134.22 MB"
+ },
+ "decode global S=32768: SDPA mask=None": {
+  "ms": 0.28681250023510074,
+  "note": ""
+ },
+ "decode global S=32768: mask_v2 + SDPA (as in InklingAttention)": {
+  "ms": 0.47041662537594675,
+  "note": ""
+ },
+ "decode global S=32768: tau where() over the mask (L473)": {
+  "ms": 0.033781250294850906,
+  "note": ""
+ },
+ "prefill SWA LQ=2048 S=2048: banded_mask_v2 [1,32,2048,2048]": {
+  "ms": 2.2651250001217704,
+  "note": "writes 0.27 GB"
+ },
+ "prefill SWA LQ=2048 S=2048: SDPA with additive mask": {
+  "ms": 1.857040999311721,
+  "note": ""
+ },
+ "prefill SWA LQ=2048 S=2048: SDPA mask='causal' (no bias; reference)": {
+  "ms": 0.8965829983935691,
+  "note": ""
+ },
+ "prefill SWA LQ=2048 S=2559: banded_mask_v2 [1,32,2048,2559]": {
+  "ms": 2.7025840026908554,
+  "note": "writes 0.34 GB"
+ },
+ "prefill SWA LQ=2048 S=2559: SDPA with additive mask": {
+  "ms": 2.234415998827899,
+  "note": ""
+ },
+ "prefill global LQ=2048 S=2048: banded_mask_v2 [1,32,2048,2048]": {
+  "ms": 2.828500000759959,
+  "note": "writes 0.27 GB"
+ },
+ "prefill global LQ=2048 S=2048: SDPA with additive mask": {
+  "ms": 1.8643340008566156,
+  "note": ""
+ },
+ "prefill global LQ=2048 S=2048: SDPA mask='causal' (no bias; reference)": {
+  "ms": 0.8923749992391095,
+  "note": ""
+ },
+ "prefill global LQ=2048 S=2048: tau where() over the mask (L473)": {
+  "ms": 3.9455419973819517,
+  "note": ""
+ },
+ "prefill global LQ=2048 S=8192: banded_mask_v2 [1,32,2048,8192]": {
+  "ms": 7.348958002694417,
+  "note": "writes 1.07 GB"
+ },
+ "prefill global LQ=2048 S=8192: SDPA with additive mask": {
+  "ms": 7.375166998826899,
+  "note": ""
+ },
+ "prefill global LQ=2048 S=8192: tau where() over the mask (L473)": {
+  "ms": 15.978125000401633,
+  "note": ""
+ },
+ "prefill global LQ=8192 S=8192: banded_mask_v2 [1,32,8192,8192]": {
+  "ms": 28.541790998133365,
+  "note": "writes 4.29 GB"
+ },
+ "prefill global LQ=8192 S=8192: SDPA with additive mask": {
+  "ms": 27.441082998848287,
+  "note": ""
+ },
+ "prefill global LQ=8192 S=8192: SDPA mask='causal' (no bias; reference)": {
+  "ms": 10.593541999696754,
+  "note": ""
+ },
+ "prefill global LQ=8192 S=8192: tau where() over the mask (L473)": {
+  "ms": 62.24083299821359,
+  "note": ""
+ },
+ "sconv decode fused kernel C=1024 (+residual)": {
+  "ms": 0.12892187487523188,
+  "note": ""
+ },
+ "sconv decode UNFUSED path C=1024 (mask forces mx ops)": {
+  "ms": 0.13168237501304247,
+  "note": ""
+ },
+ "sconv prefill T=2048 C=1024 (conv1d path)": {
+  "ms": 0.44625000009546056,
+  "note": ""
+ },
+ "sconv decode fused kernel C=4096 (+residual)": {
+  "ms": 0.02332812482563895,
+  "note": ""
+ },
+ "sconv decode UNFUSED path C=4096 (mask forces mx ops)": {
+  "ms": 0.06852600017737132,
+  "note": ""
+ },
+ "sconv prefill T=2048 C=4096 (conv1d path)": {
+  "ms": 1.490375001594657,
+  "note": ""
+ },
+ "route kernel N=1 (inkling_moe_route)": {
+  "ms": 0.1418329993612133,
+  "note": ""
+ },
+ "route pure-MLX N=1 (L772-793 chain)": {
+  "ms": 0.2337080004508607,
+  "note": ""
+ },
+ "router gemv N=1 (xf @ gate_weight.T, bf16 258x4096)": {
+  "ms": 0.14170799840940163,
+  "note": ""
+ },
+ "route kernel N=8 (inkling_moe_route)": {
+  "ms": 0.14312499843072146,
+  "note": ""
+ },
+ "route pure-MLX N=8 (L772-793 chain)": {
+  "ms": 0.20195800243527628,
+  "note": ""
+ },
+ "router gemv N=8 (xf @ gate_weight.T, bf16 258x4096)": {
+  "ms": 0.15529200027231127,
+  "note": ""
+ },
+ "route kernel N=2048 (inkling_moe_route)": {
+  "ms": 0.1609169994480908,
+  "note": ""
+ },
+ "route pure-MLX N=2048 (L772-793 chain)": {
+  "ms": 0.26124999931198545,
+  "note": ""
+ },
+ "router gemv N=2048 (xf @ gate_weight.T, bf16 258x4096)": {
+  "ms": 0.27262499861535616,
+  "note": ""
+ },
+ "MoE block q4 N=1: default path (down_combine kernel if q4)": {
+  "ms": 0.2820764996916599,
+  "note": ""
+ },
+ "MoE block q4 N=1: gather_qmm down path (_DOWN_COMBINE=False)": {
+  "ms": 0.29919449965139694,
+  "note": ""
+ },
+ "MoE block q4 N=3: default path (down_combine kernel if q4)": {
+  "ms": 0.5317986663915993,
+  "note": ""
+ },
+ "MoE block q4 N=3: gather_qmm down path (_DOWN_COMBINE=False)": {
+  "ms": 0.608534833493953,
+  "note": ""
+ },
+ "MoE block q4 N=8: default path (down_combine kernel if q4)": {
+  "ms": 1.1667430001883379,
+  "note": ""
+ },
+ "MoE block q4 N=8: gather_qmm down path (_DOWN_COMBINE=False)": {
+  "ms": 1.1630763334930332,
+  "note": ""
+ },
+ "MoE block q4 N=2048 (prefill, sorted gather_qmm)": {
+  "ms": 30.521624998073094,
+  "note": ""
+ },
+ "  gather_qmm q4 up_proj N=2048 sorted (x gathered [12288,1,4096])": {
+  "ms": 10.358415998780401,
+  "note": ""
+ },
+ "  gather_qmm q4 up_proj N=2048 UNsorted": {
+  "ms": 567.8464170014195,
+  "note": ""
+ },
+ "  gather_qmm q4 down_proj N=2048 sorted": {
+  "ms": 31.276583998987917,
+  "note": ""
+ },
+ "  reference bf16 GEMM [2048,4096]x[4096,2048] (1/18 of the MoE FLOPs)": {
+  "ms": 1.7425830010324717,
+  "note": ""
+ },
+ "  reference q4 quantized_matmul [2048,4096]x[4096,2048]": {
+  "ms": 3.5613750005722977,
+  "note": ""
+ },
+ "MoE block q2 N=1: default path (down_combine kernel if q4)": {
+  "ms": 0.38779866675516433,
+  "note": ""
+ },
+ "MoE block q2 N=1: gather_qmm down path (_DOWN_COMBINE=False)": {
+  "ms": 0.37245150027350366,
+  "note": ""
+ },
+ "MoE block q2 N=3: default path (down_combine kernel if q4)": {
+  "ms": 0.7109166666244467,
+  "note": ""
+ },
+ "MoE block q2 N=3: gather_qmm down path (_DOWN_COMBINE=False)": {
+  "ms": 0.7486111668792242,
+  "note": ""
+ },
+ "MoE block q2 N=8: default path (down_combine kernel if q4)": {
+  "ms": 1.904277833091328,
+  "note": ""
+ },
+ "MoE block q2 N=8: gather_qmm down path (_DOWN_COMBINE=False)": {
+  "ms": 2.2379166663692254,
+  "note": ""
+ },
+ "MoE block q2 N=2048 (prefill, sorted gather_qmm)": {
+  "ms": 79.50362499832409,
+  "note": ""
+ },
+ "  gather_qmm q2 up_proj N=2048 sorted (x gathered [12288,1,4096])": {
+  "ms": 21.614708999550203,
+  "note": ""
+ },
+ "  gather_qmm q2 up_proj N=2048 UNsorted": {
+  "ms": 172.6263749987993,
+  "note": ""
+ },
+ "  gather_qmm q2 down_proj N=2048 sorted": {
+  "ms": 22.108791999926325,
+  "note": ""
+ },
+ "  reference q2 quantized_matmul [2048,4096]x[4096,2048]": {
+  "ms": 3.0430839979089797,
+  "note": ""
+ },
+ "tiny-shape 3-layer decode step: wall per token (async loop) ~ dispatch floor": {
+  "ms": 0.5638335005642148,
+  "note": "same op graph as the real model, GPU work negligible"
+ },
+ "tiny-shape 3-layer decode step: python graph-build time per token": {
+  "ms": 0.16479199985042214,
+  "note": ""
+ },
+ "tiny_per_layer_floor_ms": {
+  "note": "(wall - head)/3 per layer; x42 = per-token floor"
+ }
+}

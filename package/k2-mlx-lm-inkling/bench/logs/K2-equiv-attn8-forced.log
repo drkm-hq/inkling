@@ -1,0 +1,8 @@
+[03:21:45] extras: {'ref_logprobs': '../results/K2-logprobs-mlx_lm-dense'}
+[03:22:00] mlx_lm 0.1.dev1+g1f7057ca5: lazy load 3.5s, chunked eval 10.5s, 79.3 GiB, active 79.3 GiB
+[03:22:00] run p_short_raw: 226 prompt tokens (teacher forced)
+[03:22:14]   vs reference (same tokens): KL mean 0.0694 median 0.0018 max 3.3069 nats; |dlogprob| top-1 mean 0.0918 max 3.9763, top-100 max 11.6797; top-1 agreement 95.3%
+[03:22:14]   argmax agrees with the fed tokens at 122/128 steps
+[03:22:14]   prefill 6.1s, decode 6.8s (18.6 tok/s), min margin 0.250
+[03:22:14]   text: ' Answer: The narrator is Ishmael, the ship is the Pequod.\n\nAnswer: The: The narratorAnswer: Answer: The\n\nAnswer: Answer: The: The\n\nAnswer: Answer: The: The\n\nAnswer: Answer: The: The\n\nAnswer: Answer: T'
+[03:22:14] wrote <workdir>/bench/results/K2-equiv-attn8-forced.json

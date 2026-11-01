@@ -1,0 +1,78 @@
+Inkling review corrections - 2026-10-31
+
+These are plain unified diffs, intended for git apply, not git am.
+They contain no commits or submission text. No branches were pushed.
+
+The requested directory is an archived review snapshot, not a Git checkout.
+Its original 1,758 manifest-listed files were preserved and all checksums verified.
+The corrections are supplied as follow-up patches so the archived experiments
+and their original branch exports remain distinguishable from today's fixes.
+
+PATCH TARGETS
+
+01-snapshot-fixes.patch
+  Target: the root of inkling-contrib-review-2026-10-29.
+  Fixes benchmark failure propagation and unsupported evidence claims in the
+  package READMEs. Does not modify PR.md fact sheets or historical raw results.
+  Applying this patch changes original files, so the historical MANIFEST.sha256
+  will then report intentional changes to those files. Keep the archive intact
+  and apply it to a working copy if you want the historical hashes preserved.
+
+02-mlx-lm-fixes.patch
+  Target: mlx-lm after inkling-pr f98688c1cc, or inkling dc0a8b1555 (same tree).
+  Fixes training-mode custom-kernel dispatch, the inkling_text loader mapping,
+  and retained-prefix key distances. Includes regression tests.
+
+03-mlx-vlm-cache-fixes.patch
+  Target: mlx-vlm after inkling-fast-path ee1be2540c.
+  Fixes disk restoration of temporal window caches and batched cache state
+  restoration, including pending right padding. Includes regression tests.
+
+04-mlx-vlm-quantization-fix.patch
+  Target: the same mlx-vlm tree, after patch 03.
+  Lets uniform KV quantization reach eligible nested caches after memory/disk
+  prompt-cache restoration or batch-row extraction. Honors explicit conversion
+  hooks and delayed thresholds; nested sliding and auxiliary caches are retained.
+  Includes regression tests covering those actual reuse paths.
+
+APPLICATION
+
+Run both commands from the patch's target directory, using the absolute path
+to the relevant patch in this folder:
+
+  git apply --check /absolute/path/to/patch
+  git apply /absolute/path/to/patch
+
+Only apply patches to their listed target; 01 is for the snapshot, 02 is for
+mlx-lm, and 03 followed by 04 is for mlx-vlm. These source patches
+have been tested on the
+recorded bases, not on a newly fetched upstream tip. Rebase and rerun the
+targeted checks before submitting against a newer tip.
+
+The original K1 package directory includes an archival 0004 patch whose
+tolerance change is already folded into 0002. Apply original patches 0001,
+0002 and 0003 explicitly when reconstructing the complete exported branch;
+do not use package/k1-metal-banded-fa/patches/*.patch. The separate Metal-only
+submission is 0001+0002; 0003 remains the separate q_offset proposal.
+
+VALIDATION
+
+Detailed command records and results are in validation/.
+
+K1: 85/85 Metal banded-op cases; CPU bias checks; benchmark success/failure
+fixtures. Existing compiled final-branch build, not a fresh complete rebuild.
+K2: 15 focused tests; Black, pinned Ruff and whitespace checks.
+K3: 2/2 regression cases passed on the fixed binary and 2/2 on the separately
+prepared master-plus-fix binary. Baseline: the SWA=64 case failed as expected
+with (cached, evaluated)=(0,93), versus required (66,27); SWA=0 passed.
+The copied K3 test used a small local LFM2 fixture and isolated dependencies;
+the fixture path and server port were adapted without changing assertions.
+K4: 437 cache/window tests after the state fixes, plus 573 Inkling/generation
+tests after the quantization fix. The final quantization tests include actual
+memory-cache, disk-cache and extracted-batch-row reuse, delayed conversion and
+explicit conversion-hook preservation. Detailed records are in
+validation/k4-validation.txt; its final addendum resolves the earlier reported
+quantization issue.
+
+No full Inkling weight reruns, new CUDA execution, or quiet-machine speed
+benchmarks were performed. Historical benchmark figures are not new results.

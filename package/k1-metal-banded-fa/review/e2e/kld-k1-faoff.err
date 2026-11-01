@@ -1,0 +1,22 @@
+0.05.546.993 I cmn          init: llama threadpool init, n_threads = 6
+0.05.597.949 I 
+0.05.597.984 I system_info: n_threads = 6 (n_threads_batch = 6) / 18 | MTL : EMBED_LIBRARY = 1 | CPU : NEON = 1 | ARM_FMA = 1 | FP16_VA = 1 | MATMUL_INT8 = 1 | DOTPROD = 1 | SME = 1 | SME2 = 1 | ACCELERATE = 1 | REPACK = 1 | 
+0.05.625.351 I kl_divergence: computing over 4 chunks, n_ctx=2048, batch_size=2048, n_seq=1
+0.13.582.946 I kl_divergence: 7.96 seconds per pass - ETA        38.49 real         9.31 user         7.07 sys
+         99743956992  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+             6092673  page reclaims
+                  15  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                   0  voluntary context switches
+               73608  involuntary context switches
+        130503058321  instructions retired
+         36580211866  cycles elapsed
+          1934596752  peak memory footprint

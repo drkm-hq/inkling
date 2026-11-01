@@ -1,0 +1,7 @@
+[04:53:10Z] extension-2 lock acquired (pid 84390)
+[04:54:21Z] abab round 1 -fa 1 exit=0 at 1 min; load: 31.90 23.39 18.94
+[04:55:25Z] abab round 1 -fa 0 exit=0 at 2 min; load: 28.87 24.53 19.72
+[04:56:23Z] abab round 2 -fa 1 exit=0 at 3 min; load: 25.40 24.05 19.85
+[04:57:16Z] abab round 2 -fa 0 exit=0 at 4 min; load: 17.93 22.25 19.42
+[04:57:16Z] extension-2 done at 4 min
+[04:57:16Z] lock released, queue line removed

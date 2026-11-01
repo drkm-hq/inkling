@@ -1,0 +1,3 @@
+00:30:19 free RAM 104 GiB
+00:30:19 running full suite at eb93183
+00:35:19 done rc=0 : 5157 passed, 16 skipped, 5 warnings, 301 subtests passed in 298.98s (0:04:58)

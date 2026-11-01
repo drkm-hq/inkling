@@ -1,0 +1,78 @@
+commit 7c25a0a9b55bd336e0bf050f11a17c78f9337100
+Author: Nick Alonso <nick@drkm.com>
+Date:   Thu Oct 29 01:13:12 2026 -0400
+
+ggml : q_offset for the banded flash attention (proposal for #25731)
+
+ggml_flash_attn_ext_banded takes the kv index of the first query
+(op_params[5]) instead of deriving it from n_kv - n_q. CPU reads it, the
+CUDA scalar kernel takes it as an argument, the CUDA MMA path carries it in
+its unused m0 slot, Metal reads it. The model passes the cache's 256-padded
+views and the raw KQ mask with q_offset = pos_max + 1 - n_tokens. Tests:
+padded KV and non-tail offsets. CUDA paths verified on an H100.
+
+Assisted-by: Claude Fable 5.1
+
+
+ ggml/include/ggml.h                    |  7 ++--
+ ggml/src/ggml-cpu/ops.cpp              |  7 ++--
+ ggml/src/ggml-cuda/fattn-banded.cu     |  8 +++--
+ ggml/src/ggml-cuda/fattn-common.cuh    | 12 ++++---
+ ggml/src/ggml-cuda/fattn-mma-f16.cuh   | 25 +++++++-------
+ ggml/src/ggml-metal/ggml-metal-ops.cpp |  8 +++--
+ ggml/src/ggml.c                        |  6 +++-
+ src/models/inkling.cpp                 | 26 ++++-----------
+ tests/test-backend-ops.cpp             | 60 ++++++++++++++++++++++++----------
+ tests/test-flash-attn-bias.cpp         |  4 +--
+ 10 files changed, 100 insertions(+), 63 deletions(-)
+commit caad009a453989757968253cd45f6e2b830d1fff
+Author: Nick Alonso <nick@drkm.com>
+Date:   Thu Oct 29 01:10:11 2026 -0400
+
+tests : banded flash attention cases
+
+The helper gains a sliding window independent of the band, a batch
+dimension with a shared or per-batch table, the n_kv_max hint and input
+magnitudes. Cases at the Inkling-Small geometry (32/8 heads x 128, E 1024
+and 512) for every kernel family: block boundaries, band edges, no mask,
+window, heads, KV and table types, batch, strided rows, 1M keys; perf cases
+next to the plain op.
+
+Tolerance: the CUDA MMA kernel accumulates VKQ in f16, so its error grows
+with the visible keys (H100: NMSE 1.1e-6 .. 1.2e-5 for the f16 prefill
+cases up to 8192 keys, 4.2e-5 at 32K); the Metal kernels and the CPU
+reference keep f32 accumulators (observed 1e-13 .. 7e-8 for f16, f32 and
+quantized KV, 2e-5 for bf16 KV, 4e-5 at 1M keys). Bound: 1e-4 up to 8192
+keys, 5e-4 above, 1e-4 for bf16 KV.
+
+Assisted-by: Claude Fable 5.1
+
+
+ tests/test-backend-ops.cpp | 152 ++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 128 insertions(+), 24 deletions(-)
+commit fa06bb2829067070da12901bdc612e971b574b0d
+Author: Nick Alonso <nick@drkm.com>
+Date:   Thu Oct 29 01:10:11 2026 -0400
+
+metal : add GGML_OP_FLASH_ATTN_EXT_BANDED
+
+The banded relative-position bias as a second additive score term in the
+three flash attention kernel families (half8x8, tensor API, vec): one more
+buffer (the bias table), function constants has_rel/rel_type, kargs for the
+table extents and the query offset. Host: dispatch, pipeline getters,
+supports_op, scratch sizing.
+
+Assisted-by: Claude Fable 5.1
+
+
+ ggml/src/ggml-metal/ggml-metal-device.cpp       | 53 +++++++++++++-----
+ ggml/src/ggml-metal/ggml-metal-device.h         | 11 ++--
+ ggml/src/ggml-metal/ggml-metal-device.m         | 22 ++++++++
+ ggml/src/ggml-metal/ggml-metal-impl.h           | 21 +++++++
+ ggml/src/ggml-metal/ggml-metal-ops.cpp          | 73 ++++++++++++++++++++-----
+ ggml/src/ggml-metal/ggml-metal.cpp              |  1 +
+ ggml/src/ggml-metal/kernels/common.h            | 11 ++++
+ ggml/src/ggml-metal/kernels/fa_common.metal     | 36 +++++++++++-
+ ggml/src/ggml-metal/kernels/fa_tensor.metal     | 26 +++++++++
+ ggml/src/ggml-metal/kernels/fa_vec_common.metal | 33 +++++++++++
+ 10 files changed, 253 insertions(+), 34 deletions(-)

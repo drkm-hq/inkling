@@ -1,0 +1,154 @@
+[22:51:28] waiting: GPU_LOCK held by pid 63289
+[22:51:58] waiting: GPU_LOCK held by pid 63289
+[22:52:28] waiting: GPU_LOCK held by pid 82057
+[22:52:58] waiting: GPU_LOCK held by pid 82057
+[22:53:28] waiting: GPU_LOCK held by pid 82057
+[22:53:58] waiting: GPU_LOCK held by pid 82057
+[22:54:28] waiting: GPU_LOCK held by pid 82057
+[22:54:58] waiting: GPU_LOCK held by pid 82057
+[22:55:28] waiting: GPU_LOCK held by pid 82057
+[22:55:59] waiting: GPU_LOCK held by pid 82057
+[22:56:29] waiting: GPU_LOCK held by pid 82057
+[22:56:59] waiting: GPU_LOCK held by pid 82057
+[22:57:29] waiting: GPU_LOCK held by pid 82057
+[22:57:59] waiting: GPU_LOCK held by pid 82057
+[22:58:30] waiting: GPU_LOCK held by pid 82057
+[22:59:00] waiting: GPU_LOCK held by pid 82057
+[22:59:30] waiting: GPU_LOCK held by pid 82057
+[23:00:00] waiting: GPU_LOCK held by pid 82057
+[23:00:31] waiting: GPU_LOCK held by pid 82057
+[23:01:02] waiting: GPU_LOCK held by pid 82057
+[23:01:33] waiting: GPU_LOCK held by pid 82057
+[23:02:03] waiting: GPU_LOCK held by pid 82057
+[23:02:33] waiting: GPU_LOCK held by pid 82057
+[23:03:04] waiting: GPU_LOCK held by pid 82057
+[23:03:35] waiting: GPU_LOCK held by pid 82057
+[23:04:05] waiting: GPU_LOCK held by pid 82057
+[23:04:35] waiting: GPU_LOCK held by pid 82057
+[23:05:05] waiting: GPU_LOCK held by pid 82057
+[23:05:35] waiting: GPU_LOCK held by pid 82057
+[23:06:05] waiting: GPU_LOCK held by pid 82057
+[23:06:35] waiting: GPU_LOCK held by pid 82057
+[23:07:05] waiting: GPU_LOCK held by pid 82057
+[23:07:35] waiting: GPU_LOCK held by pid 82057
+[23:08:05] waiting: GPU_LOCK held by pid 82057
+[23:08:35] waiting: GPU_LOCK held by pid 82057
+[23:09:05] waiting: GPU_LOCK held by pid 82057
+[23:09:35] waiting: GPU_LOCK held by pid 82057
+[23:10:05] waiting: GPU_LOCK held by pid 82057
+[23:10:35] waiting: GPU_LOCK held by pid 82057
+[23:11:05] waiting: GPU_LOCK held by pid 82057
+[23:11:35] waiting: GPU_LOCK held by pid 82057
+[23:12:05] waiting: GPU_LOCK held by pid 82057
+[23:12:35] waiting: GPU_LOCK held by pid 82057
+[23:13:05] waiting: GPU_LOCK held by pid 82057
+[23:13:35] waiting: GPU_LOCK held by pid 82057
+[23:14:05] waiting: big process: 91126 93GiB <workdir>/upstream/llama.cpp-inkling/build/bin/llama-server
+[23:14:35] waiting: big process: 91126 93GiB <workdir>/upstream/llama.cpp-inkling/build/bin/llama-server
+[23:15:05] waiting: GPU_LOCK held by pid 91117
+[23:15:35] waiting: GPU_LOCK held by pid 91117
+[23:16:05] waiting: GPU_LOCK held by pid 91117
+[23:16:35] waiting: GPU_LOCK held by pid 91117
+[23:17:05] waiting: GPU_LOCK held by pid 91117
+[23:17:35] waiting: GPU_LOCK held by pid 91117
+[23:18:05] waiting: GPU_LOCK held by pid 91117
+[23:18:50] NOTE from M1: the wrapper process (pid 84027) was killed by M1 by mistake at 23:18; relaunching run_all.sh identically
+[23:18:50] waiting: GPU_LOCK held by pid 91117
+[23:19:20] waiting: GPU_LOCK held by pid 91117
+[23:19:50] waiting: GPU_LOCK held by pid 148
+[23:20:20] GPU_LOCK acquired by 1042
+95114   0.0    11:30 tail -n 3 -F K2-chain.log K2-equiv-mlx_vlm.log K2-equiv-mlx_lm.log K2-bench-mlxlm-2bit.log K2-make-
+98104   0.0    05:49 tail -n 0 -F mlx-kv8tq.log mlx-kv8h.log mlx-p64k.log mlx-smoke.log mlx-cli-p_short.log mlx-cli-whee
+95114   0.0    11:45 tail -n 3 -F K2-chain.log K2-equiv-mlx_vlm.log K2-equiv-mlx_lm.log K2-bench-mlxlm-2bit.log K2-make-
+98104   0.0    06:04 tail -n 0 -F mlx-kv8tq.log mlx-kv8h.log mlx-p64k.log mlx-smoke.log mlx-cli-p_short.log mlx-cli-whee
+98104   0.0    06:19 tail -n 0 -F mlx-kv8tq.log mlx-kv8h.log mlx-p64k.log mlx-smoke.log mlx-cli-p_short.log mlx-cli-whee
+98104   0.0    06:34 tail -n 0 -F mlx-kv8tq.log mlx-kv8h.log mlx-p64k.log mlx-smoke.log mlx-cli-p_short.log mlx-cli-whee
+ 2411  97.5    00:03 ~/.venvs/inkling-base/bin/python -c import mlx.core as mx, mlx_vlm, sys; print('pyt
+95114   0.0    12:30 tail -n 3 -F K2-chain.log K2-equiv-mlx_vlm.log K2-equiv-mlx_lm.log K2-bench-mlxlm-2bit.log K2-make-
+98104   0.0    06:49 tail -n 0 -F mlx-kv8tq.log mlx-kv8h.log mlx-p64k.log mlx-smoke.log mlx-cli-p_short.log mlx-cli-whee
+98104   0.0    07:04 tail -n 0 -F mlx-kv8tq.log mlx-kv8h.log mlx-p64k.log mlx-smoke.log mlx-cli-p_short.log mlx-cli-whee
+98104   0.0    07:19 tail -n 0 -F mlx-kv8tq.log mlx-kv8h.log mlx-p64k.log mlx-smoke.log mlx-cli-p_short.log mlx-cli-whee
+98104   0.0    07:34 tail -n 0 -F mlx-kv8tq.log mlx-kv8h.log mlx-p64k.log mlx-smoke.log mlx-cli-p_short.log mlx-cli-whee
+98104   0.0    07:49 tail -n 0 -F mlx-kv8tq.log mlx-kv8h.log mlx-p64k.log mlx-smoke.log mlx-cli-p_short.log mlx-cli-whee
+[23:22:35] quiet-wait exhausted; proceeding alongside:  2932  97.5    00:03 python -m pytest -q mlx_vlm/tests/test_inkling_fast_path.py -p no:cacheprovider -k split_key_value 
+95114   0.0    13:45 tail -n 3 -F K2-chain.log K2-equiv-mlx_vlm.log K2-equiv-mlx_lm.log K2-bench-mlxlm-2bit.log K2-make-
+98104   0.0    08:04 tail -n 0 -F mlx-kv8tq.log mlx-kv8h.log mlx-p64k.log mlx-smoke.log mlx-cli-p_short.log mlx-cli-whee
+[23:22:35] competing at start:  2932  97.5    00:03 python -m pytest -q mlx_vlm/tests/test_inkling_fast_path.py -p no:cacheprovider;95114   0.0    13:45 tail -n 3 -F K2-chain.log K2-equiv-mlx_vlm.log K2-equiv-mlx_lm.log K2-bench-mlx;98104   0.0    08:04 tail -n 0 -F mlx-kv8tq.log mlx-kv8h.log mlx-p64k.log mlx-smoke.log mlx-cli-p_sh;
+[23:22:36] starting the runs (lock holder pid 1042)
+[23:22:36] === before ub=512 (build-k3-baseline) 
+[23:22:36] {"kind": "meta", "model": "~/.cache/huggingface/hub/models--unsloth--Inkling-Small-GGUF/snapshots/1a19ef82883cb7b9c581b93c30ea252dabbf658d/UD-IQ3_XXS/Inkling-Small-UD-IQ3_XXS-00001-of-00003.gguf", "commit": "5edd1f152eb468bdf4acb73d64176bf61f04e3c4", "cmd": ["<workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server", "-m", "~/.cache/huggingface/hub/models--unsloth--Inkling-Small-GGUF/snapshots/1a19ef82883cb7b9c581b93c30ea252dabbf658d/UD-IQ3_XXS/Inkling-Small-UD-IQ3_XXS-00001-of-00003.gguf", "-np", "1", "--no-kv-unified", "-ngl", "99", "-fa", "0", "-c", "70000", "--jinja", "--temp", "0", "-ub", "512", "--host", "127.0.0.1", "--port", "18640", "--no-webui", "-to", "3600", "-lv", "4"], "ub": 512, "n_predict": 64, "load1": 6.50146484375, "_t": 1793244156.25054, "tag": "before-ub512"}
+[23:22:36] llama-server pid 2986: <workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server -m ~/.cache/huggingface/hub/models--unsloth--Inkling-Small-GGUF/snapshots/1a19ef82883cb7b9c581b93c30ea252dabbf658d/UD-IQ3_XXS/Inkling-Small-UD-IQ3_XXS-00001-of-00003.gguf -np 1 --no-kv-unified -ngl 99 -fa 0 -c 70000 --jinja --temp 0 -ub 512 --host 127.0.0.1 --port 18640 --no-webui -to 3600 -lv 4
+[23:23:12] {"kind": "load", "load_s": 36.1, "rss_gib": 91.80897521972656, "_t": 1793244192.3790872, "tag": "before-ub512"}
+[23:23:12] {"kind": "prompts", "n_A": 8218, "n_extra": 200, "n_other": 100, "n_p_2k": 2072, "n_short": 226, "_t": 1793244192.434637, "tag": "before-ub512"}
+[23:23:14] {"kind": "completion", "name": "warmup_p_short", "cache_prompt": false, "n_prompt": 226, "prompt_n": 226, "cache_n": 0, "prompt_ms": 603.272, "predicted_n": 16, "predicted_ms": 1857.181, "ttft_s": 0.61, "wall_s": 2.467, "note": "", "_t": 1793244194.903148, "tag": "before-ub512"}
+[23:23:55] {"kind": "completion", "name": "A_ref", "cache_prompt": false, "n_prompt": 8218, "prompt_n": 8218, "cache_n": 0, "prompt_ms": 29861.402, "predicted_n": 64, "predicted_ms": 10864.892, "ttft_s": 29.888, "wall_s": 40.766, "note": "p_8k, no cache", "_t": 1793244235.671571, "tag": "before-ub512"}
+[23:24:36] {"kind": "completion", "name": "B1_ref", "cache_prompt": false, "n_prompt": 8418, "prompt_n": 8418, "cache_n": 0, "prompt_ms": 28316.974, "predicted_n": 64, "predicted_ms": 12017.819, "ttft_s": 28.334, "wall_s": 40.342, "note": "p_8k + 200 tokens, no cache", "_t": 1793244276.0169, "tag": "before-ub512"}
+[23:25:17] {"kind": "completion", "name": "A_cached", "cache_prompt": true, "n_prompt": 8218, "prompt_n": 8218, "cache_n": 0, "prompt_ms": 29490.634, "predicted_n": 64, "predicted_ms": 12158.391, "ttft_s": 29.497, "wall_s": 41.664, "note": "p_8k, cache_prompt=true (prime)", "_t": 1793244317.685416, "tag": "before-ub512"}
+[23:25:34] {"kind": "completion", "name": "B1_cached", "cache_prompt": true, "n_prompt": 8418, "prompt_n": 716, "cache_n": 7702, "prompt_ms": 3603.992, "predicted_n": 64, "predicted_ms": 13465.171, "ttft_s": 3.608, "wall_s": 17.077, "note": "p_8k + 200 tokens, cache_prompt=true", "_t": 1793244334.7696939, "tag": "before-ub512"}
+[23:25:34] {"kind": "compare", "name": "B1_cached_vs_B1_ref", "first_diff": 19, "n_cached": 64, "n_ref": 64, "_t": 1793244334.770279, "tag": "before-ub512"}
+[23:25:54] {"kind": "completion", "name": "A_cached_2", "cache_prompt": true, "n_prompt": 8218, "prompt_n": 516, "cache_n": 7702, "prompt_ms": 2752.316, "predicted_n": 64, "predicted_ms": 17171.04, "ttft_s": 2.791, "wall_s": 19.953, "note": "p_8k, cache_prompt=true (prime for a2)", "_t": 1793244354.728092, "tag": "before-ub512"}
+[23:26:13] {"kind": "completion", "name": "B2_cached", "cache_prompt": true, "n_prompt": 8481, "prompt_n": 779, "cache_n": 7702, "prompt_ms": 4265.504, "predicted_n": 64, "predicted_ms": 14761.841, "ttft_s": 4.274, "wall_s": 19.038, "note": "p_8k + generated + 200 tokens, cache_prompt=true (strict extension)", "_t": 1793244373.770318, "tag": "before-ub512"}
+[23:27:00] {"kind": "completion", "name": "B2_ref", "cache_prompt": false, "n_prompt": 8481, "prompt_n": 8481, "cache_n": 0, "prompt_ms": 32787.647, "predicted_n": 64, "predicted_ms": 14120.365, "ttft_s": 32.83, "wall_s": 46.958, "note": "same prompt, no cache", "_t": 1793244420.692231, "tag": "before-ub512"}
+[23:27:00] {"kind": "compare", "name": "B2_cached_vs_B2_ref", "first_diff": 17, "n_cached": 64, "n_ref": 64, "_t": 1793244420.692765, "tag": "before-ub512"}
+[23:27:44] {"kind": "completion", "name": "A_cached_3", "cache_prompt": true, "n_prompt": 8218, "prompt_n": 8218, "cache_n": 0, "prompt_ms": 30262.619, "predicted_n": 64, "predicted_ms": 13304.943, "ttft_s": 30.275, "wall_s": 43.582, "note": "p_8k, cache_prompt=true (prime for c)", "_t": 1793244464.271862, "tag": "before-ub512"}
+[23:28:29] {"kind": "completion", "name": "C_cached", "cache_prompt": true, "n_prompt": 8218, "prompt_n": 8218, "cache_n": 0, "prompt_ms": 30249.062, "predicted_n": 64, "predicted_ms": 15354.685, "ttft_s": 30.255, "wall_s": 45.618, "note": "p_8k with the last 100 tokens replaced, cache_prompt=true (rewind)", "_t": 1793244509.892739, "tag": "before-ub512"}
+[23:29:14] {"kind": "completion", "name": "C_ref", "cache_prompt": false, "n_prompt": 8218, "prompt_n": 8218, "cache_n": 0, "prompt_ms": 29968.229, "predicted_n": 64, "predicted_ms": 14744.869, "ttft_s": 29.979, "wall_s": 44.723, "note": "same prompt, no cache", "_t": 1793244554.6207721, "tag": "before-ub512"}
+[23:29:14] {"kind": "compare", "name": "C_cached_vs_C_ref", "first_diff": null, "n_cached": 64, "n_ref": 64, "_t": 1793244554.622018, "tag": "before-ub512"}
+[23:29:27] {"kind": "chat", "turn": 1, "prompt_n": 2085, "cache_n": 0, "prompt_ms": 9051.247, "predicted_n": 17, "predicted_ms": 3377.219, "wall_s": 12.679, "usage": {"completion_tokens": 17, "prompt_tokens": 2085, "total_tokens": 2102, "prompt_tokens_details": {"cached_tokens": 0}}, "_t": 1793244567.302096, "tag": "before-ub512"}
+[23:29:42] {"kind": "chat", "turn": 2, "prompt_n": 550, "cache_n": 1569, "prompt_ms": 3103.632, "predicted_n": 54, "predicted_ms": 12458.897, "wall_s": 15.587, "usage": {"completion_tokens": 54, "prompt_tokens": 2119, "total_tokens": 2173, "prompt_tokens_details": {"cached_tokens": 1569}}, "_t": 1793244582.89036, "tag": "before-ub512"}
+[23:29:56] {"kind": "chat", "turn": 3, "prompt_n": 592, "cache_n": 1603, "prompt_ms": 3491.028, "predicted_n": 43, "predicted_ms": 9733.491, "wall_s": 13.27, "usage": {"completion_tokens": 43, "prompt_tokens": 2195, "total_tokens": 2238, "prompt_tokens_details": {"cached_tokens": 1603}}, "_t": 1793244596.161817, "tag": "before-ub512"}
+[23:30:06] {"kind": "chat", "turn": 4, "prompt_n": 574, "cache_n": 1679, "prompt_ms": 3395.266, "predicted_n": 36, "predicted_ms": 6863.454, "wall_s": 10.285, "usage": {"completion_tokens": 36, "prompt_tokens": 2253, "total_tokens": 2289, "prompt_tokens_details": {"cached_tokens": 1679}}, "_t": 1793244606.4483562, "tag": "before-ub512"}
+[23:30:06] {"kind": "done", "rss_gib": 85.83905029296875, "_t": 1793244606.4567208, "tag": "before-ub512"}
+[23:30:06] stopping llama-server
+[23:30:07] llama-server exit code 0
+[23:30:07] elapsed under the lock: 7 min
+[23:30:10] === after ub=512 (build-k3) 
+[23:30:10] {"kind": "meta", "model": "~/.cache/huggingface/hub/models--unsloth--Inkling-Small-GGUF/snapshots/1a19ef82883cb7b9c581b93c30ea252dabbf658d/UD-IQ3_XXS/Inkling-Small-UD-IQ3_XXS-00001-of-00003.gguf", "commit": "5edd1f152eb468bdf4acb73d64176bf61f04e3c4", "cmd": ["<workdir>/upstream/llama.cpp-k3/build-k3/bin/llama-server", "-m", "~/.cache/huggingface/hub/models--unsloth--Inkling-Small-GGUF/snapshots/1a19ef82883cb7b9c581b93c30ea252dabbf658d/UD-IQ3_XXS/Inkling-Small-UD-IQ3_XXS-00001-of-00003.gguf", "-np", "1", "--no-kv-unified", "-ngl", "99", "-fa", "0", "-c", "70000", "--jinja", "--temp", "0", "-ub", "512", "--host", "127.0.0.1", "--port", "18640", "--no-webui", "-to", "3600", "-lv", "4"], "ub": 512, "n_predict": 64, "load1": 17.93115234375, "_t": 1793244610.812098, "tag": "after-ub512"}
+[23:30:10] llama-server pid 7666: <workdir>/upstream/llama.cpp-k3/build-k3/bin/llama-server -m ~/.cache/huggingface/hub/models--unsloth--Inkling-Small-GGUF/snapshots/1a19ef82883cb7b9c581b93c30ea252dabbf658d/UD-IQ3_XXS/Inkling-Small-UD-IQ3_XXS-00001-of-00003.gguf -np 1 --no-kv-unified -ngl 99 -fa 0 -c 70000 --jinja --temp 0 -ub 512 --host 127.0.0.1 --port 18640 --no-webui -to 3600 -lv 4
+[23:30:22] {"kind": "load", "load_s": 12.1, "rss_gib": 93.38726806640625, "_t": 1793244622.872637, "tag": "after-ub512"}
+[23:30:22] {"kind": "prompts", "n_A": 8218, "n_extra": 200, "n_other": 100, "n_p_2k": 2072, "n_short": 226, "_t": 1793244622.9166222, "tag": "after-ub512"}
+[23:30:25] {"kind": "completion", "name": "warmup_p_short", "cache_prompt": false, "n_prompt": 226, "prompt_n": 226, "cache_n": 0, "prompt_ms": 673.803, "predicted_n": 16, "predicted_ms": 2375.328, "ttft_s": 0.676, "wall_s": 3.051, "note": "", "_t": 1793244625.96891, "tag": "after-ub512"}
+[23:31:11] {"kind": "completion", "name": "A_ref", "cache_prompt": false, "n_prompt": 8218, "prompt_n": 8218, "cache_n": 0, "prompt_ms": 34471.687, "predicted_n": 64, "predicted_ms": 11109.747, "ttft_s": 34.495, "wall_s": 45.609, "note": "p_8k, no cache", "_t": 1793244671.579852, "tag": "after-ub512"}
+[23:31:57] {"kind": "completion", "name": "B1_ref", "cache_prompt": false, "n_prompt": 8418, "prompt_n": 8418, "cache_n": 0, "prompt_ms": 33788.422, "predicted_n": 64, "predicted_ms": 12575.306, "ttft_s": 33.792, "wall_s": 46.374, "note": "p_8k + 200 tokens, no cache", "_t": 1793244717.956522, "tag": "after-ub512"}
+[23:32:13] {"kind": "completion", "name": "A_cached", "cache_prompt": true, "n_prompt": 8218, "prompt_n": 316, "cache_n": 7902, "prompt_ms": 1830.071, "predicted_n": 64, "predicted_ms": 13993.246, "ttft_s": 1.862, "wall_s": 15.839, "note": "p_8k, cache_prompt=true (prime)", "_t": 1793244733.810164, "tag": "after-ub512"}
+[23:32:27] {"kind": "completion", "name": "B1_cached", "cache_prompt": true, "n_prompt": 8418, "prompt_n": 204, "cache_n": 8214, "prompt_ms": 1429.061, "predicted_n": 64, "predicted_ms": 12483.233, "ttft_s": 1.432, "wall_s": 13.916, "note": "p_8k + 200 tokens, cache_prompt=true", "_t": 1793244747.7286038, "tag": "after-ub512"}
+[23:32:27] {"kind": "compare", "name": "B1_cached_vs_B1_ref", "first_diff": 5, "n_cached": 64, "n_ref": 64, "at_diff_cached_top": [[12591, -1.5409], [142594, -1.5623], [30846, -1.5989]], "at_diff_ref_top": [[30846, -1.3615], [142594, -1.638], [12591, -1.8135]], "_t": 1793244747.729119, "tag": "after-ub512"}
+[23:32:41] {"kind": "completion", "name": "A_cached_2", "cache_prompt": true, "n_prompt": 8218, "prompt_n": 4, "cache_n": 8214, "prompt_ms": 231.621, "predicted_n": 64, "predicted_ms": 13786.373, "ttft_s": 0.235, "wall_s": 14.024, "note": "p_8k, cache_prompt=true (prime for a2)", "_t": 1793244761.754546, "tag": "after-ub512"}
+[23:32:59] {"kind": "completion", "name": "B2_cached", "cache_prompt": true, "n_prompt": 8481, "prompt_n": 200, "cache_n": 8281, "prompt_ms": 1421.212, "predicted_n": 64, "predicted_ms": 16384.419, "ttft_s": 1.426, "wall_s": 17.824, "note": "p_8k + generated + 200 tokens, cache_prompt=true (strict extension)", "_t": 1793244779.580727, "tag": "after-ub512"}
+[23:33:52] {"kind": "completion", "name": "B2_ref", "cache_prompt": false, "n_prompt": 8481, "prompt_n": 8481, "cache_n": 0, "prompt_ms": 31732.062, "predicted_n": 64, "predicted_ms": 20875.708, "ttft_s": 31.736, "wall_s": 52.625, "note": "same prompt, no cache", "_t": 1793244832.207915, "tag": "after-ub512"}
+[23:33:52] {"kind": "compare", "name": "B2_cached_vs_B2_ref", "first_diff": 9, "n_cached": 64, "n_ref": 64, "at_diff_cached_top": [[16276, -1.4808], [35305, -1.5895], [165711, -2.6581]], "at_diff_ref_top": [[35305, -1.5585], [16276, -1.9146], [165711, -2.4887]], "_t": 1793244832.208686, "tag": "after-ub512"}
+[23:34:10] {"kind": "completion", "name": "A_cached_3", "cache_prompt": true, "n_prompt": 8218, "prompt_n": 253, "cache_n": 7965, "prompt_ms": 1885.517, "predicted_n": 64, "predicted_ms": 16148.896, "ttft_s": 1.89, "wall_s": 18.043, "note": "p_8k, cache_prompt=true (prime for c)", "_t": 1793244850.2555342, "tag": "after-ub512"}
+[23:34:28] {"kind": "completion", "name": "C_cached", "cache_prompt": true, "n_prompt": 8218, "prompt_n": 253, "cache_n": 7965, "prompt_ms": 1898.437, "predicted_n": 64, "predicted_ms": 16811.442, "ttft_s": 1.909, "wall_s": 18.739, "note": "p_8k with the last 100 tokens replaced, cache_prompt=true (rewind)", "_t": 1793244868.9990132, "tag": "after-ub512"}
+[23:35:15] {"kind": "completion", "name": "C_ref", "cache_prompt": false, "n_prompt": 8218, "prompt_n": 8218, "cache_n": 0, "prompt_ms": 31247.207, "predicted_n": 64, "predicted_ms": 15280.369, "ttft_s": 31.255, "wall_s": 46.574, "note": "same prompt, no cache", "_t": 1793244915.57637, "tag": "after-ub512"}
+[23:35:15] {"kind": "compare", "name": "C_cached_vs_C_ref", "first_diff": null, "n_cached": 64, "n_ref": 64, "_t": 1793244915.584527, "tag": "after-ub512"}
+[23:35:29] {"kind": "chat", "turn": 1, "prompt_n": 2085, "cache_n": 0, "prompt_ms": 9243.237, "predicted_n": 17, "predicted_ms": 3735.525, "wall_s": 13.767, "usage": {"completion_tokens": 17, "prompt_tokens": 2085, "total_tokens": 2102, "prompt_tokens_details": {"cached_tokens": 0}}, "_t": 1793244929.360969, "tag": "after-ub512"}
+[23:35:40] {"kind": "chat", "turn": 2, "prompt_n": 18, "cache_n": 2101, "prompt_ms": 832.998, "predicted_n": 49, "predicted_ms": 10367.745, "wall_s": 11.219, "usage": {"completion_tokens": 49, "prompt_tokens": 2119, "total_tokens": 2168, "prompt_tokens_details": {"cached_tokens": 2101}}, "_t": 1793244940.581006, "tag": "after-ub512"}
+[23:35:49] {"kind": "chat", "turn": 3, "prompt_n": 23, "cache_n": 2167, "prompt_ms": 857.339, "predicted_n": 44, "predicted_ms": 8466.216, "wall_s": 9.343, "usage": {"completion_tokens": 44, "prompt_tokens": 2190, "total_tokens": 2234, "prompt_tokens_details": {"cached_tokens": 2167}}, "_t": 1793244949.925401, "tag": "after-ub512"}
+[23:35:56] {"kind": "chat", "turn": 4, "prompt_n": 16, "cache_n": 2233, "prompt_ms": 763.694, "predicted_n": 28, "predicted_ms": 5356.245, "wall_s": 6.139, "usage": {"completion_tokens": 28, "prompt_tokens": 2249, "total_tokens": 2277, "prompt_tokens_details": {"cached_tokens": 2233}}, "_t": 1793244956.065293, "tag": "after-ub512"}
+[23:35:56] {"kind": "done", "rss_gib": 93.85569763183594, "_t": 1793244956.093049, "tag": "after-ub512"}
+[23:35:56] stopping llama-server
+[23:35:57] llama-server exit code 0
+[23:35:57] elapsed under the lock: 13 min
+[23:36:00] === before ub=256 (build-k3-baseline) --quick
+[23:36:00] {"kind": "meta", "model": "~/.cache/huggingface/hub/models--unsloth--Inkling-Small-GGUF/snapshots/1a19ef82883cb7b9c581b93c30ea252dabbf658d/UD-IQ3_XXS/Inkling-Small-UD-IQ3_XXS-00001-of-00003.gguf", "commit": "5edd1f152eb468bdf4acb73d64176bf61f04e3c4", "cmd": ["<workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server", "-m", "~/.cache/huggingface/hub/models--unsloth--Inkling-Small-GGUF/snapshots/1a19ef82883cb7b9c581b93c30ea252dabbf658d/UD-IQ3_XXS/Inkling-Small-UD-IQ3_XXS-00001-of-00003.gguf", "-np", "1", "--no-kv-unified", "-ngl", "99", "-fa", "0", "-c", "70000", "--jinja", "--temp", "0", "-ub", "256", "--host", "127.0.0.1", "--port", "18640", "--no-webui", "-to", "3600", "-lv", "4"], "ub": 256, "n_predict": 64, "load1": 26.69921875, "_t": 1793244960.351865, "tag": "before-ub256"}
+[23:36:00] llama-server pid 13822: <workdir>/upstream/llama.cpp-k3/build-k3-baseline/bin/llama-server -m ~/.cache/huggingface/hub/models--unsloth--Inkling-Small-GGUF/snapshots/1a19ef82883cb7b9c581b93c30ea252dabbf658d/UD-IQ3_XXS/Inkling-Small-UD-IQ3_XXS-00001-of-00003.gguf -np 1 --no-kv-unified -ngl 99 -fa 0 -c 70000 --jinja --temp 0 -ub 256 --host 127.0.0.1 --port 18640 --no-webui -to 3600 -lv 4
+[23:36:06] {"kind": "load", "load_s": 6.0, "rss_gib": 93.3487548828125, "_t": 1793244966.399264, "tag": "before-ub256"}
+[23:36:06] {"kind": "prompts", "n_A": 8218, "n_extra": 200, "n_other": 100, "n_p_2k": 2072, "n_short": 226, "_t": 1793244966.443573, "tag": "before-ub256"}
+[23:36:07] {"kind": "completion", "name": "warmup_p_short", "cache_prompt": false, "n_prompt": 226, "prompt_n": 226, "cache_n": 0, "prompt_ms": 517.582, "predicted_n": 16, "predicted_ms": 467.156, "ttft_s": 0.525, "wall_s": 0.987, "note": "", "_t": 1793244967.431236, "tag": "before-ub256"}
+[23:36:57] {"kind": "completion", "name": "A_cached", "cache_prompt": true, "n_prompt": 8218, "prompt_n": 8218, "cache_n": 0, "prompt_ms": 46506.866, "predicted_n": 64, "predicted_ms": 3053.736, "ttft_s": 46.519, "wall_s": 49.577, "note": "p_8k, cache_prompt=true (prime)", "_t": 1793245017.009022, "tag": "before-ub256"}
+[23:37:42] {"kind": "completion", "name": "B1_cached", "cache_prompt": true, "n_prompt": 8418, "prompt_n": 8418, "cache_n": 0, "prompt_ms": 42303.341, "predicted_n": 64, "predicted_ms": 2929.109, "ttft_s": 42.307, "wall_s": 45.239, "note": "p_8k + 200 tokens, cache_prompt=true", "_t": 1793245062.2503, "tag": "before-ub256"}
+[23:38:21] {"kind": "completion", "name": "A_cached_2", "cache_prompt": true, "n_prompt": 8218, "prompt_n": 8218, "cache_n": 0, "prompt_ms": 35772.793, "predicted_n": 64, "predicted_ms": 3168.852, "ttft_s": 35.777, "wall_s": 38.949, "note": "p_8k, cache_prompt=true (prime for a2)", "_t": 1793245101.2018518, "tag": "before-ub256"}
+[23:39:01] {"kind": "completion", "name": "B2_cached", "cache_prompt": true, "n_prompt": 8481, "prompt_n": 8481, "cache_n": 0, "prompt_ms": 35365.263, "predicted_n": 64, "predicted_ms": 4513.517, "ttft_s": 35.379, "wall_s": 39.89, "note": "p_8k + generated + 200 tokens, cache_prompt=true (strict extension)", "_t": 1793245141.0944052, "tag": "before-ub256"}
+[23:39:37] {"kind": "completion", "name": "A_cached_3", "cache_prompt": true, "n_prompt": 8218, "prompt_n": 8218, "cache_n": 0, "prompt_ms": 33312.234, "predicted_n": 64, "predicted_ms": 3445.117, "ttft_s": 33.323, "wall_s": 36.77, "note": "p_8k, cache_prompt=true (prime for c)", "_t": 1793245177.8693178, "tag": "before-ub256"}
+[23:40:18] {"kind": "completion", "name": "C_cached", "cache_prompt": true, "n_prompt": 8218, "prompt_n": 8218, "cache_n": 0, "prompt_ms": 35139.534, "predicted_n": 64, "predicted_ms": 5565.302, "ttft_s": 35.151, "wall_s": 40.714, "note": "p_8k with the last 100 tokens replaced, cache_prompt=true (rewind)", "_t": 1793245218.588021, "tag": "before-ub256"}
+[23:40:28] {"kind": "chat", "turn": 1, "prompt_n": 2085, "cache_n": 0, "prompt_ms": 8275.177, "predicted_n": 17, "predicted_ms": 1038.003, "wall_s": 9.875, "usage": {"completion_tokens": 17, "prompt_tokens": 2085, "total_tokens": 2102, "prompt_tokens_details": {"cached_tokens": 0}}, "_t": 1793245228.464588, "tag": "before-ub256"}
+[23:40:38] {"kind": "chat", "turn": 2, "prompt_n": 2110, "cache_n": 9, "prompt_ms": 8380.544, "predicted_n": 31, "predicted_ms": 1647.498, "wall_s": 10.053, "usage": {"completion_tokens": 31, "prompt_tokens": 2119, "total_tokens": 2150, "prompt_tokens_details": {"cached_tokens": 9}}, "_t": 1793245238.519281, "tag": "before-ub256"}
+[23:40:49] {"kind": "chat", "turn": 3, "prompt_n": 2163, "cache_n": 9, "prompt_ms": 8597.225, "predicted_n": 39, "predicted_ms": 2297.895, "wall_s": 10.929, "usage": {"completion_tokens": 39, "prompt_tokens": 2172, "total_tokens": 2211, "prompt_tokens_details": {"cached_tokens": 9}}, "_t": 1793245249.448778, "tag": "before-ub256"}
+[23:41:00] {"kind": "chat", "turn": 4, "prompt_n": 2217, "cache_n": 9, "prompt_ms": 8708.801, "predicted_n": 42, "predicted_ms": 2446.022, "wall_s": 11.192, "usage": {"completion_tokens": 42, "prompt_tokens": 2226, "total_tokens": 2268, "prompt_tokens_details": {"cached_tokens": 9}}, "_t": 1793245260.641352, "tag": "before-ub256"}
+[23:41:00] {"kind": "done", "rss_gib": 94.13522338867188, "_t": 1793245260.830428, "tag": "before-ub256"}
+[23:41:00] stopping llama-server
+[23:41:02] llama-server exit code 0
+[23:41:02] elapsed under the lock: 18 min
+[23:41:05] all runs done
+[23:41:05] K3 removed from GPU_QUEUE
+[23:41:05] GPU_LOCK released

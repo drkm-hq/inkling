@@ -1,0 +1,308 @@
+commit ee1be2540c9ec3266dabdd86d46764404a8a80e7
+Author: Nick Alonso <nick@drkm.com>
+Date:   Thu Oct 29 03:19:44 2026 -0400
+
+Inkling: note the in-place query scaling of the quantized SDPA, drop dead extract
+
+quantized_scaled_dot_product_attention scales its queries argument in place
+(an augmented assignment on the shared MLX object); the Inkling call site is
+new and does not read q afterwards, which the comment now states so a later
+reuse of q copies it first. InklingCacheList.extract was unreachable: single
+caches have no extract, and _make_cache rebuilds layer entries as plain
+CacheList for continuous batching.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_vlm/models/inkling/language.py | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+commit 968125af28d8b81c3fb24e41fb139a7e89e183f4
+Author: Nick Alonso <nick@drkm.com>
+Date:   Thu Oct 29 03:22:12 2026 -0400
+
+Inkling: test the split key/value kv quantization policy
+
+A non-homogeneous key/value policy (uniform keys, TurboQuant values)
+descends into the layer entry and installs HybridQuantKVCache on the global
+layer, which hands dequantized floats back; the attention must take it as a
+float cache and keep the window caches on the sliding layers.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_vlm/tests/test_inkling_fast_path.py | 35 +++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+commit aca5359f26f0370d5af0e7ce07ac18eac3499ea8
+Author: Nick Alonso <nick@drkm.com>
+Date:   Wed Oct 28 22:57:04 2026 -0400
+
+Inkling: quantized KV cache for the global layers
+
+--kv-bits did nothing for Inkling under the default uniform scheme (the
+per-layer CacheList has neither offset nor to_quantized, so
+maybe_quantize_kv_cache skipped every layer) and broke under TurboQuant
+(update_and_fetch returned state proxies the attention read .shape on).
+Layers now use InklingCacheList, a CacheList that exposes the kv cache's
+offset and a to_quantized that converts a global layer's full KVCache to a
+QuantizedKVCache and leaves a sliding layer's window cache in floats (it
+holds at most window + slack keys; there is nothing to save). The attention
+accepts the (packed, scales, biases) tuples, applies the sliding slice to
+each tensor, builds the mask from the packed shape, groups the per-head
+mask as [B, n_kv, n_rep, L, S] the way the quantized GQA scores are laid
+out, and routes through the base SDPA wrapper with cache=kv so the
+quantized matmuls run; TurboQuant and other proxy-returning caches raise a
+NotImplementedError naming the supported scheme. Continuous batching with
+kv-bits keeps the generic refusal for model-specific caches. Tests check
+that only the global layer is quantized, that 8-bit prefill and decode stay
+close to the float path, that speculative snapshot/rollback restores the
+quantized cache's position, and the clear failures.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_vlm/models/inkling/language.py      | 57 ++++++++++++++++++++++++++----
+ mlx_vlm/tests/test_inkling_fast_path.py | 62 ++++++++++++++++++++++++++++++++-
+ 2 files changed, 111 insertions(+), 8 deletions(-)
+commit fc5504f0f9de6dcf2c9dd529453f413f34ccf7d3
+Author: Nick Alonso <nick@drkm.com>
+Date:   Wed Oct 28 22:55:17 2026 -0400
+
+Inkling: keep the dense MLP output scale in the activation dtype
+
+InklingDenseMLP multiplied its output by global_scale as stored. The
+reference checkpoint keeps that scalar in float32, and MLX type promotion
+then lifts the layer output, the residual stream, and every later layer to
+float32: each bf16 weight (attention, lm_head) is upcast per call and the
+step runs about five times slower (measured 4.4 -> 23.7 ms per token on a
+three-layer model). The mlx-community conversions happen to store the
+scalar in bf16, which is why this was latent. The scale is now cast to the
+activation dtype when the two differ, which is free when they match. The
+MTP drafter's dense blocks reuse this class. The test checks the output
+dtype with an fp32 scale in bf16 and fp16, equality with a native-dtype
+scale, and that the whole model keeps its dtype end to end.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_vlm/models/inkling/language.py      |  7 ++++++-
+ mlx_vlm/tests/test_inkling_fast_path.py | 27 +++++++++++++++++++++++++++
+ 2 files changed, 33 insertions(+), 1 deletion(-)
+commit d0ea67cdf817727d4d8708786a3aa662590ff8eb
+Author: Nick Alonso <nick@drkm.com>
+Date:   Wed Oct 28 22:54:54 2026 -0400
+
+Inkling: honor logits_to_keep
+
+LanguageModel.__call__ ignored logits_to_keep, so every multi-token step
+ran the 201024-wide lm_head over the whole input: generate_step passes
+logits_to_keep=1 for its prompt step and the batch generator asks for the
+trailing rows it needs, but Inkling materialized [T, vocab] regardless (an
+unchunked prompt with a drafter, or the server's prompt processing, is
+0.8 GB of logits and 3.4 TFLOP per 2048 tokens before the last row is
+sliced out). The head now sees only the trailing logits_to_keep rows of the
+normalized hidden state; hidden states returned for speculative drafters
+stay whole, and an absent, zero, or oversized value keeps every row as
+before. The test checks the kept rows equal the trailing rows of the full
+head, that hidden states keep their length, and the pass-through cases.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_vlm/models/inkling/language.py      | 14 +++++++++++---
+ mlx_vlm/tests/test_inkling_fast_path.py | 24 ++++++++++++++++++++++++
+ 2 files changed, 35 insertions(+), 3 deletions(-)
+commit 982cc5a83171925fb4bd6a118b8417f7cc3b04e9
+Author: Nick Alonso <nick@drkm.com>
+Date:   Wed Oct 28 22:52:17 2026 -0400
+
+Inkling: strided short-conv kernel and no log-scaling passes below the floor
+
+Two decode-time kernel reductions per layer, both bit-exact. The fused
+short-convolution kernel kept metal_kernel's default ensure_row_contiguous,
+so the k and v streams, which are column slices of the fused qkvr
+projection, were copied to contiguous buffers before every call (two extra
+kernels per layer per token, 84 per Inkling-Small token). The kernel now
+reads x, the conv state, the weight and the residual through their
+injected strides, which also removes the reshape of the [C, K, 1] weight;
+the arithmetic is unchanged and the output was checked equal to the
+previous kernel's on strided inputs at the production shapes. On global
+layers the log-scaling factor tau is exactly 1 for every query position up
+to log_scaling_n_floor (128000 for the real checkpoints): the branch built
+tau from the positions, multiplied q, and ran a compare, a multiply and a
+where over the full [B, H, L, S] mask anyway, about a dozen kernels per
+global layer per token and three mask-sized passes per prefill chunk
+(12.9 GB of temporaries for an 8192-token chunk). It is now skipped while
+offset + L <= floor and runs unchanged as soon as a position crosses it.
+Tests check the kernel on strided views, strided conv state and the
+checkpoint's transposed weight against contiguous copies (exact) and the
+unfused path (1 ulp), and that tau is neither computed nor applied below
+the floor while rows past it are scaled by the closed form.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_vlm/models/inkling/language.py      |  39 ++++++----
+ mlx_vlm/tests/test_inkling_fast_path.py | 124 ++++++++++++++++++++++++++++++++
+ 2 files changed, 151 insertions(+), 12 deletions(-)
+commit a26146496a23a6332c2a29bb9bbb2a30e2e17f3f
+Author: Nick Alonso <nick@drkm.com>
+Date:   Thu Oct 29 03:19:44 2026 -0400
+
+Refuse window-cache trims that would rewind past the compaction slack
+
+SlidingWindowKVCache.trim rolled the offset back by any amount while
+is_trimmable() stayed True, so a trim deeper than the keys compaction had
+already dropped would leave the next query fewer than max_size - 1 old keys
+and silently narrow the window (today only dispatch._cache_fully_retained
+keeps callers away from that case). trim now raises ValueError when the
+cache has evicted and n exceeds the retained slack (_idx - (max_size - 1)),
+and the batch form does the same on its shared column timeline; a cache that
+never evicted can still be trimmed to any depth. The batch class docstring
+also states that during a right-padded prompt the whole prompt is kept and
+the window bound applies from the first update after finalize(). Tests assert
+window coverage after an in-slack trim, the refusal past the slack for both
+forms, and the unevicted case.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_vlm/models/cache.py                    | 30 +++++++++++++++++-
+ mlx_vlm/tests/test_sliding_window_cache.py | 51 ++++++++++++++++++++++++++----
+ 2 files changed, 73 insertions(+), 8 deletions(-)
+commit d13d4c4a5ead3217df89ecbd4da07cb91964249d
+Author: Nick Alonso <nick@drkm.com>
+Date:   Thu Oct 29 03:21:33 2026 -0400
+
+Window caches in the cache contract test and under continuous batching
+
+test_model_cache_contract discovers every cache class a model's make_cache
+uses and builds a sample of each through a table of constructors; classes
+that take a window size need an entry, as RotatingKVCache has. Add
+SlidingWindowKVCache with the same seeding (keys, values, offset and the
+write index) so the Inkling layer contract (ArraysCache + KVCache +
+SlidingWindowKVCache) is checked for prefix-cache planning, cloning,
+memory accounting, exact-cache store/lookup and row merging. Also add an
+end-to-end continuous-batching test on the tiny Inkling model: two
+right-padded prompts (600 and 591 tokens) go through PromptProcessingBatch
+with a 157-token prefill step, which cuts chunks at the shorter row's end
+and keeps its last real logits, and GenerationBatch then decodes thirty
+greedy tokens on the batched window caches; every row must reproduce the
+tokens of its single-sequence run.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_vlm/tests/test_cache.py             |  3 +-
+ mlx_vlm/tests/test_inkling_fast_path.py | 52 +++++++++++++++++++++++++++++++++
+ 2 files changed, 54 insertions(+), 1 deletion(-)
+commit f5f4543d0a4b6dc290c493b43f00c96bc6bb9bc3
+Author: Nick Alonso <nick@drkm.com>
+Date:   Wed Oct 28 22:48:47 2026 -0400
+
+Inkling: bounded window caches for the sliding-window layers
+
+make_cache gave every layer an unbounded KVCache although the 35 sliding
+layers of Inkling-Small slice their keys to the last sliding_window_size - 1
+positions before the mask and attention (the distance bias and the window
+cap never reach further). That cost 4 KB per token per layer for keys no
+layer could read: 4.7 GB at 32K context and 18.8 GB at 128K on top of the
+weights, and a 256-step reallocation of the whole buffer. Sliding layers
+now get a SlidingWindowKVCache sized to the window; global layers keep the
+full KVCache. The attention code is unchanged: the window cache returns the
+newest keys in temporal order, so the existing slice to L + window - 1 keys
+and the mask offset S - L produce the same mask and the same scores. The
+speculative snapshot used by speculative_verify_hidden/rollback now carries
+meta_state next to state so a windowed (or quantized) cache restores its
+absolute position; the batch path converts through to_batch into
+BatchSlidingWindowKVCache (left padding handled as before).
+
+Tests compare the bounded caches against the previous layout on a
+600-token chunked prefill followed by hundreds of greedy decode steps (for
+8- and 512-token windows, with several compactions), check the additive mask
+on the bounded cache equals both the all-keys mask and the closed form
+r . proj[:, distance], check speculative verify/rollback matches a replay,
+and check a left-padded batch matches its rows run alone.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_vlm/models/inkling/language.py      |  26 +++-
+ mlx_vlm/tests/test_inkling_fast_path.py | 224 ++++++++++++++++++++++++++++++++
+ 2 files changed, 246 insertions(+), 4 deletions(-)
+commit 4a951b5b6180d55fc81bc3069b7edec678d2839c
+Author: Nick Alonso <nick@drkm.com>
+Date:   Wed Oct 28 22:48:33 2026 -0400
+
+Inkling: index router logits directly in the route kernel
+
+mx.fast.metal_kernel binds inputs smaller than 32 bytes in constant memory,
+and the route kernel took a device pointer into its logits input, so any
+configuration whose per-token router row is under 32 bytes (the tiny MoE
+configs unit tests use: a handful of experts in float32) failed to compile
+the Metal library. The real checkpoints are far above the threshold, which
+is why generation never hit it. Index the logits array directly, which
+compiles in either address space and generates the same code for the
+production shapes.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_vlm/models/inkling/language.py | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+commit 71eab0ae038f7b05b4f91c4b197961f0ab410933
+Author: Nick Alonso <nick@drkm.com>
+Date:   Wed Oct 28 22:45:25 2026 -0400
+
+Add bounded, temporally ordered sliding-window KV caches
+
+SlidingWindowKVCache keeps the last max_size - 1 keys of a sliding-window
+layer plus a slack buffer, in temporal order, and compacts in place every
+buffer_size tokens; the update returns one contiguous view the model can
+slice to its exact window. RotatingKVCache cannot serve layers that build
+their own attention bias from query/key distance because it returns the
+ring out of temporal order once it wraps, and the unbounded KVCache that
+such layers use today grows with the whole context although only the window
+is ever read. The cache is trimmable for speculative rollback, snapshots
+through state/meta_state (prefix cache, from_state), reports a windowed
+memory profile, and converts to BatchSlidingWindowKVCache for continuous
+batching: the batched form shares BatchKVCache's left-padded column layout,
+drops the leading columns no row can see any more (shifting left_padding
+with them), defers compaction while right padding is pending so finalize()
+can roll rows first, and supports extract/merge/extend/filter/trim.
+BufferedRotatingKVCache's state setter no longer requires offset to exist,
+which from_state() violated by assigning state before meta_state. Tests
+check the window against an unbounded reference over several update
+schedules, the memory bound over a long decode, trim, snapshot round trips,
+prefix-reuse refusal after eviction, and per-row equality of the batched
+cache with single-row caches including right-padded prompts.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_vlm/models/cache.py                    | 188 +++++++++++++++++++++-
+ mlx_vlm/tests/test_sliding_window_cache.py | 244 +++++++++++++++++++++++++++++
+ 2 files changed, 431 insertions(+), 1 deletion(-)
+commit d6b2552a9987ccfe205b7e69c68fb7eb45795e6a
+Author: Nick Alonso <nick@drkm.com>
+Date:   Wed Oct 28 22:37:58 2026 -0400
+
+Evaluate eagerly loaded parameters in bounded chunks
+
+load_model_weights evaluated every parameter of an eagerly loaded model in
+one mx.eval, which runs as a single Metal command buffer. For an 80+ GB
+checkpoint (Inkling-Small 2-bit is 82 GiB) that command buffer exceeds the
+GPU watchdog budget on a 128 GB M5 Max and the load aborts with
+"GPU Timeout" from inside load_model_weights. The new eval_parameters helper
+walks the parameter tree and evaluates at most EVAL_CHUNK_BYTES (4 GiB) per
+mx.eval; the end state is identical, and any model smaller than the chunk
+still takes exactly one eval. Tests spy on mx.eval to check that every
+parameter array is evaluated exactly once under small chunk bounds, that an
+eager load_model_weights covers all loaded parameters, and that lazy loads
+still evaluate nothing.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ mlx_vlm/tests/test_load_eval_chunks.py | 84 ++++++++++++++++++++++++++++++++++
+ mlx_vlm/utils.py                       | 30 +++++++++++-
+ 2 files changed, 113 insertions(+), 1 deletion(-)

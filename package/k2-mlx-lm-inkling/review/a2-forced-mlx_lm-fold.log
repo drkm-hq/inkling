@@ -1,0 +1,9 @@
+[04:03:51] mlx_lm 0.1.dev8+gcce083427 (<workdir>/upstream/mlx-lm-a2-fold/mlx_lm/__init__.py, head cce0834 Inkling: fuse expert selection into one kernel): lazy load 2.5s, chunked eval 6.9s, 82.4 GiB, active 82.4 GiB
+[04:03:51] run p_2k_raw: 2072 prompt tokens, teacher forced on the mlx-vlm 0.7.11 tokens of hold 2
+[04:03:58]   dumped step 45 (fed token 25 at position 2117) -> mlx_lm_p_2k_raw_step045.npz
+[04:03:59]   dumped step 46 (fed token 623 at position 2118) -> mlx_lm_p_2k_raw_step046.npz
+[04:03:59]   dumped step 47 (fed token 101829 at position 2119) -> mlx_lm_p_2k_raw_step047.npz
+[04:03:59]   dumped step 48 (fed token 382 at position 2120) -> mlx_lm_p_2k_raw_step048.npz
+[04:04:03]   vs reference logprobs (K2-logprobs-mlx_vlm): KL mean 0.0876 median 0.0076 max 5.1338 (step 47); |dlogprob| top-1 mean 0.1234 max 5.2431; top-1 agreement 91.4%
+[04:04:03]   argmax agrees with the fed tokens at 117/128 steps; prefill 5.2s, decode 6.6s (19.2 tok/s), min margin 0.000
+[04:04:03] wrote <workdir>/package/k2-mlx-lm-inkling/review/a2-forced-mlx_lm-fold.json

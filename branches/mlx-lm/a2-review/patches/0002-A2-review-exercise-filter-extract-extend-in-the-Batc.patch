@@ -1,0 +1,70 @@
+From e9f13d0a55f9398aec42d7baf044bfb9c6d4c5e3 Mon Sep 17 00:00:00 2001
+From: A2 review <nick@drkm.com>
+Date: Thu, 29 Oct 2026 02:50:41 -0400
+Subject: [PATCH 2/3] A2 review: exercise filter/extract/extend in the
+ BatchGenerator test
+
+---
+ tests/test_inkling_a2.py | 26 ++++++++++++++++++++------
+ 1 file changed, 20 insertions(+), 6 deletions(-)
+
+diff --git a/tests/test_inkling_a2.py b/tests/test_inkling_a2.py
+index c68662e..e5b0d3a 100644
+--- a/tests/test_inkling_a2.py
++++ b/tests/test_inkling_a2.py
+@@ -506,35 +506,49 @@ class TestInklingA2(unittest.TestCase):
+                     self.assertEqual(toks[t], int(top[0]), f"step {t}")
+ 
+     def test_batch_generator(self):
++        # Continuous batching: three prompts of different lengths with different
++        # max_tokens (sequences leave the batch at different steps: filter /
++        # extract), and a fourth prompt inserted while the others are already
++        # rotated (prompt batch -> extend into the generation batch).
+         prompts = [IDS40[0, :9].tolist(), IDS40[1, :4].tolist(), IDS40[1, :13].tolist()]
+-        n = 6
++        late = IDS40[0, 20:27].tolist()
++        n_tokens = [6, 3, 5]
+         for dev in self.devices():
+             model = build_model()
+-            gen = BatchGenerator(model, max_tokens=n, prefill_step_size=5, prefill_batch_size=8, completion_batch_size=8)
++            gen = BatchGenerator(model, max_tokens=6, prefill_step_size=5, prefill_batch_size=8, completion_batch_size=8)
+             try:
+-                uids = gen.insert(prompts, max_tokens=[n] * len(prompts))
++                uids = gen.insert(prompts, max_tokens=n_tokens)
+                 toks = {u: [] for u in uids}
+                 lps = {u: [] for u in uids}
+                 done = set()
++                steps = 0
+                 for _ in range(1000):
+                     _, responses = gen.next()
++                    if responses:
++                        steps += 1
++                    if steps == 2 and len(uids) == 3:
++                        (u4,) = gen.insert([late], max_tokens=[4])
++                        uids.append(u4)
++                        prompts.append(late)
++                        n_tokens.append(4)
++                        toks[u4], lps[u4] = [], []
+                     for r in responses:
+                         toks[r.uid].append(int(r.token))
+                         lps[r.uid].append(np.array(r.logprobs, np.float64))
+                         if r.finish_reason is not None:
+                             done.add(r.uid)
+-                    if len(done) == len(uids):
++                    if len(done) == len(uids) and len(uids) == 4:
+                         break
+             finally:
+                 gen.close()
+-            for u, p in zip(uids, prompts):
++            for u, p, n in zip(uids, prompts, n_tokens):
+                 self.assertEqual(len(toks[u]), n, u)
+                 seq = np.array(p + toks[u])[None]
+                 ref = oracle_forward(seq)[0]
+                 ref = ref - np.log(np.exp(ref - ref.max(-1, keepdims=True)).sum(-1, keepdims=True)) - ref.max(-1, keepdims=True)
+                 for t in range(n):
+                     pos = len(p) - 1 + t
+-                    self.check(f"{dev}: BatchGenerator seq {u} (prompt {len(p)}) logprobs step {t}", lps[u][t], ref[pos], 1e-4)
++                    self.check(f"{dev}: BatchGenerator seq {u} (prompt {len(p)}, {n} tokens) logprobs step {t}", lps[u][t], ref[pos], 1e-4)
+                     top = np.argsort(-ref[pos])[:2]
+                     if ref[pos][top[0]] - ref[pos][top[1]] > 1e-3:
+                         self.assertEqual(toks[u][t], int(top[0]), f"seq {u} step {t}")

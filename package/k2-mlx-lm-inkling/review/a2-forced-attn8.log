@@ -1,0 +1,5 @@
+[03:32:43] mlx_lm 0.1.dev8+gcce083427 (<workdir>/upstream/mlx-lm-a2/mlx_lm/__init__.py, head 963f755 A2 review: exercise filter/extract/extend in the BatchGenerator test): lazy load 2.0s, chunked eval 9.3s, 79.3 GiB, active 79.3 GiB
+[03:32:43] run p_short_raw: 226 prompt tokens, teacher forced on the mlx-vlm 0.7.11 tokens of hold 2
+[03:32:52]   vs reference logprobs (a2-logprobs-mlx_lm): KL mean 0.0280 median 0.0033 max 0.4784 (step 12); |dlogprob| top-1 mean 0.0746 max 0.9468; top-1 agreement 95.3%
+[03:32:52]   argmax agrees with the fed tokens at 122/128 steps; prefill 4.3s, decode 4.6s (27.4 tok/s), min margin 0.000
+[03:32:52] wrote <workdir>/package/k2-mlx-lm-inkling/review/a2-forced-attn8.json

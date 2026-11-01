@@ -1,0 +1,28 @@
+W1028 22:00:13.481000 33819 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+bf16_scale {
+ "residual_dtype": "mlx.core.bfloat16",
+ "layer0_out_dtype": "mlx.core.bfloat16",
+ "full_model_ms": 5.238915997324511,
+ "model_no_head_ms": 1.9625830027507618,
+ "head_on_pre_ms": 3.49975000062841,
+ "head_on_bf16_ms": 3.4864170011132956,
+ "loop": {
+  "async_ms": 4.384750000099302,
+  "graph_build_ms": 0.5479789997480111,
+  "sync_ms": 5.04285400165827
+ }
+}
+fp32_scale {
+ "residual_dtype": "mlx.core.float32",
+ "layer0_out_dtype": "mlx.core.float32",
+ "full_model_ms": 24.65416600171011,
+ "model_no_head_ms": 8.037125000555534,
+ "head_on_pre_ms": 16.296542002237402,
+ "head_on_bf16_ms": 3.2344170031137764,
+ "loop": {
+  "async_ms": 23.717604501143796,
+  "graph_build_ms": 0.9422709990758449,
+  "sync_ms": 29.48110400029691
+ }
+}
+wrote diag_loop.json

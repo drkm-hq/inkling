@@ -1,0 +1,151 @@
+{"_sysinfo": {"mlx": "0.32.4", "device": "Apple M5 Max", "arch": "applegpu_g17s", "load1": 90.5, "load5": 37.0}, "_t": 1793239015.448649}
+{"section": "lm_head 4096 -> 201024"}
+{"label": "lm_head bf16 (as shipped in mlx-community checkpoints)", "med_ms_r1": 3.1596, "best_ms_r1": 3.086, "gbps_r1": 521.2, "med_ms_r8": 2.9589, "best_ms_r8": 2.8631, "gbps_r8": 556.6, "nbytes": 1646788608}
+{"label": "lm_head 8-bit affine g64", "bits": 8, "med_ms_r1": 1.8828, "best_ms_r1": 1.7612, "gbps_r1": 464.6, "med_ms_r8": 1.6406, "best_ms_r8": 1.5235, "gbps_r8": 533.2, "nbytes": 874856448}
+{"label": "lm_head 6-bit affine g64", "bits": 6, "med_ms_r1": 8.1923, "best_ms_r1": 3.2216, "gbps_r1": 81.7, "med_ms_r8": 3.1658, "best_ms_r8": 2.5186, "gbps_r8": 211.3, "nbytes": 669007872}
+{"label": "lm_head 4-bit affine g64", "bits": 4, "med_ms_r1": 1.7524, "best_ms_r1": 1.4747, "gbps_r1": 264.3, "med_ms_r8": 1.3227, "best_ms_r8": 0.9479, "gbps_r8": 350.2, "nbytes": 463159296}
+{"section": "attention projections per layer (q 4096->4096, k/v 4096->1024, r 4096->512, o 4096->4096)"}
+{"label": "attention 5 projections bf16", "kind": "bf16", "med_ms_r1": 0.5792, "best_ms_r1": 0.5017, "gbps_r1": 152.1, "med_ms_r8": 0.2622, "best_ms_r8": 0.2334, "gbps_r8": 336.0, "nbytes": 88080384}
+{"label": "attention projections bf16 x42 layers", "ms_per_token": 11.012}
+{"label": "attention 5 projections 8", "kind": "8", "med_ms_r1": 0.9401, "best_ms_r1": 0.4417, "gbps_r1": 49.8, "med_ms_r8": 0.2053, "best_ms_r8": 0.1169, "gbps_r8": 228.0, "nbytes": 46792704}
+{"label": "attention projections 8 x42 layers", "ms_per_token": 8.623}
+{"label": "attention 5 projections 4", "kind": "4", "med_ms_r1": 0.9074, "best_ms_r1": 0.3779, "gbps_r1": 27.3, "med_ms_r8": 0.2813, "best_ms_r8": 0.1361, "gbps_r8": 88.1, "nbytes": 24772608}
+{"label": "attention projections 4 x42 layers", "ms_per_token": 11.815}
+{"section": "dense MLP layers 0-1"}
+{"label": "dense GLU 4096->16384->4096 8-bit", "bits": 8, "med_ms_r1": 1.1444, "best_ms_r1": 0.9802, "gbps_r1": 186.9, "med_ms_r8": 0.4418, "best_ms_r8": 0.4198, "gbps_r8": 484.2, "nbytes": 213909504}
+{"label": "dense GLU 4096->16384->4096 4-bit", "bits": 4, "med_ms_r1": 0.661, "best_ms_r1": 0.5341, "gbps_r1": 171.3, "med_ms_r8": 0.4509, "best_ms_r8": 0.1933, "gbps_r8": 251.1, "nbytes": 113246208}
+{"section": "sconv depthwise conv1d k=4 C=4096"}
+{"label": "sconv decode T=1 conv1d groups=C padding=0 (+state concat/slice) mlx.core.float32", "med_ms_r1": 0.4586, "best_ms_r1": 0.2411, "gbps_r1": 0.4, "med_ms_r8": 0.0626, "best_ms_r8": 0.0421, "gbps_r8": 3.1, "nbytes": 196608}
+{"label": "sconv decode T=1 elementwise mul+sum mlx.core.float32", "med_ms_r1": 0.4098, "best_ms_r1": 0.2367, "gbps_r1": 0.5, "med_ms_r8": 0.1696, "best_ms_r8": 0.0554, "gbps_r8": 1.2, "nbytes": 196608}
+{"label": "sconv prefill T=2048 conv1d padding=0 after explicit pad (depthwise fast path) mlx.core.float32", "med_ms_r1": 2.3076, "best_ms_r1": 1.2129, "gbps_r1": 29.1, "med_ms_r4": 0.9225, "best_ms_r4": 0.6169, "gbps_r4": 72.7, "nbytes": 67108864}
+{"label": "sconv prefill T=2048 conv1d padding=3 (vendored no-cache path) mlx.core.float32", "med_ms_r1": 2.0801, "best_ms_r1": 1.9731, "gbps_r1": 32.3, "med_ms_r4": 1.1706, "best_ms_r4": 1.0313, "gbps_r4": 57.3, "nbytes": 67108864}
+{"label": "sconv prefill T=2048 elementwise 4-tap mlx.core.float32", "med_ms_r1": 1.6818, "best_ms_r1": 1.5505, "gbps_r1": 39.9, "med_ms_r4": 1.5864, "best_ms_r4": 1.505, "gbps_r4": 42.3, "nbytes": 67108864}
+{"label": "sconv decode T=1 conv1d groups=C padding=0 (+state concat/slice) mlx.core.bfloat16", "med_ms_r1": 0.7148, "best_ms_r1": 0.2467, "gbps_r1": 0.1, "med_ms_r8": 0.0559, "best_ms_r8": 0.0392, "gbps_r8": 1.8, "nbytes": 98304}
+{"label": "sconv decode T=1 elementwise mul+sum mlx.core.bfloat16", "med_ms_r1": 0.2788, "best_ms_r1": 0.2305, "gbps_r1": 0.4, "med_ms_r8": 0.0614, "best_ms_r8": 0.0411, "gbps_r8": 1.6, "nbytes": 98304}
+{"label": "sconv prefill T=2048 conv1d padding=0 after explicit pad (depthwise fast path) mlx.core.bfloat16", "med_ms_r1": 0.5706, "best_ms_r1": 0.4134, "gbps_r1": 58.8, "med_ms_r4": 0.2998, "best_ms_r4": 0.2777, "gbps_r4": 111.9, "nbytes": 33554432}
+{"label": "sconv prefill T=2048 conv1d padding=3 (vendored no-cache path) mlx.core.bfloat16", "med_ms_r1": 1.3185, "best_ms_r1": 1.1378, "gbps_r1": 25.4, "med_ms_r4": 1.073, "best_ms_r4": 0.9429, "gbps_r4": 31.3, "nbytes": 33554432}
+{"label": "sconv prefill T=2048 elementwise 4-tap mlx.core.bfloat16", "med_ms_r1": 1.5733, "best_ms_r1": 0.9612, "gbps_r1": 21.3, "med_ms_r4": 0.761, "best_ms_r4": 0.7424, "gbps_r4": 44.1, "nbytes": 33554432}
+{"section": "small per-layer ops"}
+{"label": "rms_norm 4096 (one call)", "med_ms_r1": 0.2041, "best_ms_r1": 0.1756, "gbps_r1": 0.1, "med_ms_r8": 0.0285, "best_ms_r8": 0.025, "gbps_r8": 0.6, "nbytes": 16384}
+{"label": "rms_norm per-head [1,1,32,128]", "med_ms_r1": 0.1781, "best_ms_r1": 0.1514, "gbps_r1": 0.1, "med_ms_r8": 0.0268, "best_ms_r8": 0.0237, "gbps_r8": 0.6, "nbytes": 16384}
+{"label": "add residual [1,1,4096]", "med_ms_r1": 0.1716, "best_ms_r1": 0.1528, "gbps_r1": 0.1, "med_ms_r8": 0.0261, "best_ms_r8": 0.0227, "gbps_r8": 0.9, "nbytes": 24576}
+{"_sysinfo": {"mlx": "0.32.4", "device": "Apple M5 Max", "arch": "applegpu_g17s", "load1": 9.1, "load5": 15.6}, "_t": 1793239841.060738}
+{"section": "lm_head 4096 -> 201024"}
+{"label": "lm_head bf16 (as shipped in mlx-community checkpoints)", "med_ms_r1": 4.1907, "best_ms_r1": 3.4739, "gbps_r1": 393.0, "med_ms_r8": 5.9664, "best_ms_r8": 3.6283, "gbps_r8": 276.0, "nbytes": 1646788608}
+{"label": "lm_head 8-bit affine g64", "bits": 8, "med_ms_r1": 8.0548, "best_ms_r1": 2.6608, "gbps_r1": 108.6, "med_ms_r8": 2.0905, "best_ms_r8": 1.6752, "gbps_r8": 418.5, "nbytes": 874856448}
+{"label": "lm_head 6-bit affine g64", "bits": 6, "med_ms_r1": 2.2351, "best_ms_r1": 1.5792, "gbps_r1": 299.3, "med_ms_r8": 1.5437, "best_ms_r8": 1.2809, "gbps_r8": 433.4, "nbytes": 669007872}
+{"label": "lm_head 4-bit affine g64", "bits": 4, "med_ms_r1": 1.3224, "best_ms_r1": 1.167, "gbps_r1": 350.2, "med_ms_r8": 1.1231, "best_ms_r8": 0.9096, "gbps_r8": 412.4, "nbytes": 463159296}
+{"section": "attention projections per layer (q 4096->4096, k/v 4096->1024, r 4096->512, o 4096->4096)"}
+{"label": "attention 5 projections bf16", "kind": "bf16", "med_ms_r1": 0.7259, "best_ms_r1": 0.4811, "gbps_r1": 121.3, "med_ms_r8": 0.3692, "best_ms_r8": 0.2328, "gbps_r8": 238.6, "nbytes": 88080384}
+{"label": "attention projections bf16 x42 layers", "ms_per_token": 15.506}
+{"label": "attention 5 projections 8", "kind": "8", "med_ms_r1": 0.6292, "best_ms_r1": 0.342, "gbps_r1": 74.4, "med_ms_r8": 0.1734, "best_ms_r8": 0.1026, "gbps_r8": 269.9, "nbytes": 46792704}
+{"label": "attention projections 8 x42 layers", "ms_per_token": 7.283}
+{"label": "attention 5 projections 4", "kind": "4", "med_ms_r1": 0.4478, "best_ms_r1": 0.3081, "gbps_r1": 55.3, "med_ms_r8": 0.1353, "best_ms_r8": 0.0864, "gbps_r8": 183.2, "nbytes": 24772608}
+{"label": "attention projections 4 x42 layers", "ms_per_token": 5.683}
+{"section": "dense MLP layers 0-1"}
+{"label": "dense GLU 4096->16384->4096 8-bit", "bits": 8, "med_ms_r1": 1.9305, "best_ms_r1": 1.066, "gbps_r1": 110.8, "med_ms_r8": 0.542, "best_ms_r8": 0.433, "gbps_r8": 394.7, "nbytes": 213909504}
+{"label": "dense GLU 4096->16384->4096 4-bit", "bits": 4, "med_ms_r1": 0.8464, "best_ms_r1": 0.5128, "gbps_r1": 133.8, "med_ms_r8": 0.4733, "best_ms_r8": 0.2312, "gbps_r8": 239.3, "nbytes": 113246208}
+{"section": "sconv depthwise conv1d k=4 C=4096"}
+{"label": "sconv decode T=1 conv1d groups=C padding=0 (+state concat/slice) mlx.core.float32", "med_ms_r1": 0.3278, "best_ms_r1": 0.1718, "gbps_r1": 0.6, "med_ms_r8": 0.1087, "best_ms_r8": 0.0393, "gbps_r8": 1.8, "nbytes": 196608}
+{"label": "sconv decode T=1 elementwise mul+sum mlx.core.float32", "med_ms_r1": 0.7141, "best_ms_r1": 0.251, "gbps_r1": 0.3, "med_ms_r8": 0.1293, "best_ms_r8": 0.0549, "gbps_r8": 1.5, "nbytes": 196608}
+{"label": "sconv prefill T=2048 conv1d padding=0 after explicit pad (depthwise fast path) mlx.core.float32", "med_ms_r1": 0.9649, "best_ms_r1": 0.7528, "gbps_r1": 69.5, "med_ms_r4": 0.8391, "best_ms_r4": 0.6352, "gbps_r4": 80.0, "nbytes": 67108864}
+{"label": "sconv prefill T=2048 conv1d padding=3 (vendored no-cache path) mlx.core.float32", "med_ms_r1": 2.6549, "best_ms_r1": 1.9095, "gbps_r1": 25.3, "med_ms_r4": 2.4671, "best_ms_r4": 1.6056, "gbps_r4": 27.2, "nbytes": 67108864}
+{"label": "sconv prefill T=2048 elementwise 4-tap mlx.core.float32", "med_ms_r1": 3.032, "best_ms_r1": 2.5399, "gbps_r1": 22.1, "med_ms_r4": 1.926, "best_ms_r4": 1.6314, "gbps_r4": 34.8, "nbytes": 67108864}
+{"label": "sconv decode T=1 conv1d groups=C padding=0 (+state concat/slice) mlx.core.bfloat16", "med_ms_r1": 0.395, "best_ms_r1": 0.2147, "gbps_r1": 0.2, "med_ms_r8": 0.0715, "best_ms_r8": 0.0448, "gbps_r8": 1.4, "nbytes": 98304}
+{"label": "sconv decode T=1 elementwise mul+sum mlx.core.bfloat16", "med_ms_r1": 0.3366, "best_ms_r1": 0.1494, "gbps_r1": 0.3, "med_ms_r8": 0.0725, "best_ms_r8": 0.0456, "gbps_r8": 1.4, "nbytes": 98304}
+{"label": "sconv prefill T=2048 conv1d padding=0 after explicit pad (depthwise fast path) mlx.core.bfloat16", "med_ms_r1": 1.0493, "best_ms_r1": 0.4772, "gbps_r1": 32.0, "med_ms_r4": 0.7337, "best_ms_r4": 0.401, "gbps_r4": 45.7, "nbytes": 33554432}
+{"label": "sconv prefill T=2048 conv1d padding=3 (vendored no-cache path) mlx.core.bfloat16", "med_ms_r1": 1.809, "best_ms_r1": 1.4667, "gbps_r1": 18.5, "med_ms_r4": 1.8085, "best_ms_r4": 1.5405, "gbps_r4": 18.6, "nbytes": 33554432}
+{"label": "sconv prefill T=2048 elementwise 4-tap mlx.core.bfloat16", "med_ms_r1": 1.7656, "best_ms_r1": 1.0301, "gbps_r1": 19.0, "med_ms_r4": 1.5501, "best_ms_r4": 1.3089, "gbps_r4": 21.6, "nbytes": 33554432}
+{"section": "small per-layer ops"}
+{"label": "rms_norm 4096 (one call)", "med_ms_r1": 0.3212, "best_ms_r1": 0.1866, "gbps_r1": 0.1, "med_ms_r8": 0.0576, "best_ms_r8": 0.0334, "gbps_r8": 0.3, "nbytes": 16384}
+{"label": "rms_norm per-head [1,1,32,128]", "med_ms_r1": 0.3512, "best_ms_r1": 0.2122, "gbps_r1": 0.0, "med_ms_r8": 0.0983, "best_ms_r8": 0.0353, "gbps_r8": 0.2, "nbytes": 16384}
+{"label": "add residual [1,1,4096]", "med_ms_r1": 0.418, "best_ms_r1": 0.2326, "gbps_r1": 0.1, "med_ms_r8": 0.0496, "best_ms_r8": 0.0327, "gbps_r8": 0.5, "nbytes": 24576}
+{"section": "per-op floor: 200 dependent tiny ops in one eval"}
+{"label": "chain of 200 dependent rms_norm", "med_ms_r1": 4.885, "best_ms_r1": 1.3759}
+{"label": "per-op us in chain (rms_norm)", "us": 24.4, "best_us": 6.9}
+{"label": "chain of 200 dependent matvec 4096x4096 bf16 (32 MB each)", "med_ms_r1": 10.0186, "best_ms_r1": 9.2025}
+{"label": "per-op us in chain (matvec 4096x4096 bf16 (32 MB each))", "us": 50.1, "best_us": 46.0}
+{"label": "chain of 200 dependent elementwise mul+add", "med_ms_r1": 3.1102, "best_ms_r1": 2.4272}
+{"label": "per-op us in chain (elementwise mul+add)", "us": 15.6, "best_us": 12.1}
+{"label": "chain of 200 dependent elementwise mul+add mx.compile", "med_ms_r1": 1.4987, "best_ms_r1": 0.404}
+{"label": "per-op us in chain (elementwise mul+add mx.compile)", "us": 7.5, "best_us": 2.0}
+{"_sysinfo": {"mlx": "0.32.4", "device": "Apple M5 Max", "arch": "applegpu_g17s", "load1": 10.0, "load5": 15.7}, "_t": 1793239850.0433788}
+{"section": "lm_head 4096 -> 201024"}
+{"label": "lm_head bf16 (as shipped in mlx-community checkpoints)", "med_ms_r1": 5.4422, "best_ms_r1": 4.0564, "gbps_r1": 302.6, "med_ms_r8": 4.4267, "best_ms_r8": 3.9467, "gbps_r8": 372.0, "nbytes": 1646788608}
+{"label": "lm_head 8-bit affine g64", "bits": 8, "med_ms_r1": 4.9286, "best_ms_r1": 2.8204, "gbps_r1": 177.5, "med_ms_r8": 3.2782, "best_ms_r8": 2.3522, "gbps_r8": 266.9, "nbytes": 874856448}
+{"label": "lm_head 6-bit affine g64", "bits": 6, "med_ms_r1": 6.6876, "best_ms_r1": 3.3162, "gbps_r1": 100.0, "med_ms_r8": 3.5015, "best_ms_r8": 1.7004, "gbps_r8": 191.1, "nbytes": 669007872}
+{"label": "lm_head 4-bit affine g64", "bits": 4, "med_ms_r1": 2.3942, "best_ms_r1": 1.8387, "gbps_r1": 193.4, "med_ms_r8": 2.9108, "best_ms_r8": 1.9242, "gbps_r8": 159.1, "nbytes": 463159296}
+{"section": "attention projections per layer (q 4096->4096, k/v 4096->1024, r 4096->512, o 4096->4096)"}
+{"label": "attention 5 projections bf16", "kind": "bf16", "med_ms_r1": 1.0146, "best_ms_r1": 0.8044, "gbps_r1": 86.8, "med_ms_r8": 0.4851, "best_ms_r8": 0.2926, "gbps_r8": 181.6, "nbytes": 88080384}
+{"label": "attention projections bf16 x42 layers", "ms_per_token": 20.374}
+{"label": "attention 5 projections 8", "kind": "8", "med_ms_r1": 0.9856, "best_ms_r1": 0.7569, "gbps_r1": 47.5, "med_ms_r8": 0.4642, "best_ms_r8": 0.2172, "gbps_r8": 100.8, "nbytes": 46792704}
+{"label": "attention projections 8 x42 layers", "ms_per_token": 19.496}
+{"label": "attention 5 projections 4", "kind": "4", "med_ms_r1": 1.0007, "best_ms_r1": 0.6666, "gbps_r1": 24.8, "med_ms_r8": 0.4906, "best_ms_r8": 0.1869, "gbps_r8": 50.5, "nbytes": 24772608}
+{"label": "attention projections 4 x42 layers", "ms_per_token": 20.605}
+{"section": "dense MLP layers 0-1"}
+{"label": "dense GLU 4096->16384->4096 8-bit", "bits": 8, "med_ms_r1": 2.3089, "best_ms_r1": 0.9195, "gbps_r1": 92.6, "med_ms_r8": 0.9916, "best_ms_r8": 0.7006, "gbps_r8": 215.7, "nbytes": 213909504}
+{"label": "dense GLU 4096->16384->4096 4-bit", "bits": 4, "med_ms_r1": 2.0698, "best_ms_r1": 0.8459, "gbps_r1": 54.7, "med_ms_r8": 0.8567, "best_ms_r8": 0.33, "gbps_r8": 132.2, "nbytes": 113246208}
+{"section": "sconv depthwise conv1d k=4 C=4096"}
+{"label": "sconv decode T=1 conv1d groups=C padding=0 (+state concat/slice) mlx.core.float32", "med_ms_r1": 1.4681, "best_ms_r1": 0.5172, "gbps_r1": 0.1, "med_ms_r8": 0.1334, "best_ms_r8": 0.0791, "gbps_r8": 1.5, "nbytes": 196608}
+{"label": "sconv decode T=1 elementwise mul+sum mlx.core.float32", "med_ms_r1": 1.599, "best_ms_r1": 0.4419, "gbps_r1": 0.1, "med_ms_r8": 0.2303, "best_ms_r8": 0.1199, "gbps_r8": 0.9, "nbytes": 196608}
+{"label": "sconv prefill T=2048 conv1d padding=0 after explicit pad (depthwise fast path) mlx.core.float32", "med_ms_r1": 6.6194, "best_ms_r1": 2.0522, "gbps_r1": 10.1, "med_ms_r4": 3.8345, "best_ms_r4": 1.9359, "gbps_r4": 17.5, "nbytes": 67108864}
+{"label": "sconv prefill T=2048 conv1d padding=3 (vendored no-cache path) mlx.core.float32", "med_ms_r1": 17.5459, "best_ms_r1": 9.2554, "gbps_r1": 3.8, "med_ms_r4": 8.6989, "best_ms_r4": 3.9348, "gbps_r4": 7.7, "nbytes": 67108864}
+{"label": "sconv prefill T=2048 elementwise 4-tap mlx.core.float32", "med_ms_r1": 1.8578, "best_ms_r1": 1.7462, "gbps_r1": 36.1, "med_ms_r4": 1.954, "best_ms_r4": 1.7047, "gbps_r4": 34.3, "nbytes": 67108864}
+{"label": "sconv decode T=1 conv1d groups=C padding=0 (+state concat/slice) mlx.core.bfloat16", "med_ms_r1": 0.3143, "best_ms_r1": 0.1853, "gbps_r1": 0.3, "med_ms_r8": 0.0598, "best_ms_r8": 0.0298, "gbps_r8": 1.6, "nbytes": 98304}
+{"label": "sconv decode T=1 elementwise mul+sum mlx.core.bfloat16", "med_ms_r1": 0.3464, "best_ms_r1": 0.2016, "gbps_r1": 0.3, "med_ms_r8": 0.068, "best_ms_r8": 0.0484, "gbps_r8": 1.4, "nbytes": 98304}
+{"label": "sconv prefill T=2048 conv1d padding=0 after explicit pad (depthwise fast path) mlx.core.bfloat16", "med_ms_r1": 0.9406, "best_ms_r1": 0.7551, "gbps_r1": 35.7, "med_ms_r4": 0.5318, "best_ms_r4": 0.3737, "gbps_r4": 63.1, "nbytes": 33554432}
+{"label": "sconv prefill T=2048 conv1d padding=3 (vendored no-cache path) mlx.core.bfloat16", "med_ms_r1": 1.6392, "best_ms_r1": 1.5269, "gbps_r1": 20.5, "med_ms_r4": 1.5422, "best_ms_r4": 1.3624, "gbps_r4": 21.8, "nbytes": 33554432}
+{"label": "sconv prefill T=2048 elementwise 4-tap mlx.core.bfloat16", "med_ms_r1": 5.641, "best_ms_r1": 1.2758, "gbps_r1": 5.9, "med_ms_r4": 7.7362, "best_ms_r4": 5.3297, "gbps_r4": 4.3, "nbytes": 33554432}
+{"section": "small per-layer ops"}
+{"label": "rms_norm 4096 (one call)", "med_ms_r1": 0.7733, "best_ms_r1": 0.2344, "gbps_r1": 0.0, "med_ms_r8": 0.1219, "best_ms_r8": 0.0391, "gbps_r8": 0.1, "nbytes": 16384}
+{"label": "rms_norm per-head [1,1,32,128]", "med_ms_r1": 0.946, "best_ms_r1": 0.3094, "gbps_r1": 0.0, "med_ms_r8": 0.1194, "best_ms_r8": 0.0465, "gbps_r8": 0.1, "nbytes": 16384}
+{"label": "add residual [1,1,4096]", "med_ms_r1": 0.6789, "best_ms_r1": 0.1584, "gbps_r1": 0.0, "med_ms_r8": 0.1116, "best_ms_r8": 0.0306, "gbps_r8": 0.2, "nbytes": 24576}
+{"section": "per-op floor: 200 dependent tiny ops in one eval"}
+{"label": "chain of 200 dependent rms_norm", "med_ms_r1": 19.1735, "best_ms_r1": 13.4658}
+{"label": "per-op us in chain (rms_norm)", "us": 95.9, "best_us": 67.3}
+{"label": "chain of 200 dependent matvec 4096x4096 bf16 (32 MB each)", "med_ms_r1": 39.6142, "best_ms_r1": 26.9862}
+{"label": "per-op us in chain (matvec 4096x4096 bf16 (32 MB each))", "us": 198.1, "best_us": 134.9}
+{"label": "chain of 200 dependent elementwise mul+add", "med_ms_r1": 22.3762, "best_ms_r1": 17.9858}
+{"label": "per-op us in chain (elementwise mul+add)", "us": 111.9, "best_us": 89.9}
+{"label": "chain of 200 dependent elementwise mul+add mx.compile", "med_ms_r1": 1.8922, "best_ms_r1": 0.8298}
+{"label": "per-op us in chain (elementwise mul+add mx.compile)", "us": 9.5, "best_us": 4.1}
+{"_sysinfo": {"mlx": "0.32.4", "device": "Apple M5 Max", "arch": "applegpu_g17s", "load1": 9.2, "load5": 16.2}, "_t": 1793240247.082947}
+{"section": "lm_head 4096 -> 201024"}
+{"label": "lm_head bf16 (as shipped in mlx-community checkpoints)", "med_ms_r1": 3.5966, "best_ms_r1": 3.1353, "gbps_r1": 457.9, "med_ms_r8": 3.2945, "best_ms_r8": 3.0992, "gbps_r8": 499.9, "nbytes": 1646788608}
+{"label": "lm_head 8-bit affine g64", "bits": 8, "med_ms_r1": 1.9753, "best_ms_r1": 1.7564, "gbps_r1": 442.9, "med_ms_r8": 2.128, "best_ms_r8": 1.648, "gbps_r8": 411.1, "nbytes": 874856448}
+{"label": "lm_head 6-bit affine g64", "bits": 6, "med_ms_r1": 4.6001, "best_ms_r1": 3.0567, "gbps_r1": 145.4, "med_ms_r8": 2.762, "best_ms_r8": 2.4485, "gbps_r8": 242.2, "nbytes": 669007872}
+{"label": "lm_head 4-bit affine g64", "bits": 4, "med_ms_r1": 1.5569, "best_ms_r1": 1.3893, "gbps_r1": 297.5, "med_ms_r8": 1.4419, "best_ms_r8": 1.2313, "gbps_r8": 321.2, "nbytes": 463159296}
+{"section": "attention projections per layer (q 4096->4096, k/v 4096->1024, r 4096->512, o 4096->4096)"}
+{"label": "attention 5 projections bf16", "kind": "bf16", "med_ms_r1": 0.5734, "best_ms_r1": 0.4288, "gbps_r1": 153.6, "med_ms_r8": 0.2818, "best_ms_r8": 0.223, "gbps_r8": 312.5, "nbytes": 88080384}
+{"label": "attention projections bf16 x42 layers", "ms_per_token": 11.836}
+{"label": "attention 5 projections 8", "kind": "8", "med_ms_r1": 0.4795, "best_ms_r1": 0.2992, "gbps_r1": 97.6, "med_ms_r8": 0.1386, "best_ms_r8": 0.1143, "gbps_r8": 337.6, "nbytes": 46792704}
+{"label": "attention projections 8 x42 layers", "ms_per_token": 5.821}
+{"label": "attention 5 projections 4", "kind": "4", "med_ms_r1": 0.4715, "best_ms_r1": 0.2904, "gbps_r1": 52.5, "med_ms_r8": 0.113, "best_ms_r8": 0.0925, "gbps_r8": 219.2, "nbytes": 24772608}
+{"label": "attention projections 4 x42 layers", "ms_per_token": 4.746}
+{"section": "dense MLP layers 0-1"}
+{"label": "dense GLU 4096->16384->4096 8-bit", "bits": 8, "med_ms_r1": 0.7894, "best_ms_r1": 0.7166, "gbps_r1": 271.0, "med_ms_r8": 0.4358, "best_ms_r8": 0.4034, "gbps_r8": 490.8, "nbytes": 213909504}
+{"label": "dense GLU 4096->16384->4096 4-bit", "bits": 4, "med_ms_r1": 0.5908, "best_ms_r1": 0.418, "gbps_r1": 191.7, "med_ms_r8": 0.2802, "best_ms_r8": 0.2438, "gbps_r8": 404.1, "nbytes": 113246208}
+{"section": "sconv depthwise conv1d k=4 C=4096"}
+{"label": "sconv decode T=1 conv1d groups=C padding=0 (+state concat/slice) mlx.core.float32", "med_ms_r1": 0.3371, "best_ms_r1": 0.2158, "gbps_r1": 0.6, "med_ms_r8": 0.0585, "best_ms_r8": 0.0392, "gbps_r8": 3.4, "nbytes": 196608}
+{"label": "sconv decode T=1 elementwise mul+sum mlx.core.float32", "med_ms_r1": 0.3712, "best_ms_r1": 0.2536, "gbps_r1": 0.5, "med_ms_r8": 0.0669, "best_ms_r8": 0.0405, "gbps_r8": 2.9, "nbytes": 196608}
+{"label": "sconv prefill T=2048 conv1d padding=0 after explicit pad (depthwise fast path) mlx.core.float32", "med_ms_r1": 0.8272, "best_ms_r1": 0.7289, "gbps_r1": 81.1, "med_ms_r4": 0.5628, "best_ms_r4": 0.5299, "gbps_r4": 119.2, "nbytes": 67108864}
+{"label": "sconv prefill T=2048 conv1d padding=3 (vendored no-cache path) mlx.core.float32", "med_ms_r1": 2.4771, "best_ms_r1": 2.218, "gbps_r1": 27.1, "med_ms_r4": 2.2943, "best_ms_r4": 1.9957, "gbps_r4": 29.3, "nbytes": 67108864}
+{"label": "sconv prefill T=2048 elementwise 4-tap mlx.core.float32", "med_ms_r1": 1.8152, "best_ms_r1": 1.705, "gbps_r1": 37.0, "med_ms_r4": 1.7665, "best_ms_r4": 1.4578, "gbps_r4": 38.0, "nbytes": 67108864}
+{"label": "sconv decode T=1 conv1d groups=C padding=0 (+state concat/slice) mlx.core.bfloat16", "med_ms_r1": 0.2651, "best_ms_r1": 0.2077, "gbps_r1": 0.4, "med_ms_r8": 0.0528, "best_ms_r8": 0.033, "gbps_r8": 1.9, "nbytes": 98304}
+{"label": "sconv decode T=1 elementwise mul+sum mlx.core.bfloat16", "med_ms_r1": 0.3009, "best_ms_r1": 0.1899, "gbps_r1": 0.3, "med_ms_r8": 0.0684, "best_ms_r8": 0.0364, "gbps_r8": 1.4, "nbytes": 98304}
+{"label": "sconv prefill T=2048 conv1d padding=0 after explicit pad (depthwise fast path) mlx.core.bfloat16", "med_ms_r1": 0.6795, "best_ms_r1": 0.507, "gbps_r1": 49.4, "med_ms_r4": 0.4082, "best_ms_r4": 0.3632, "gbps_r4": 82.2, "nbytes": 33554432}
+{"label": "sconv prefill T=2048 conv1d padding=3 (vendored no-cache path) mlx.core.bfloat16", "med_ms_r1": 1.9875, "best_ms_r1": 1.6998, "gbps_r1": 16.9, "med_ms_r4": 1.8106, "best_ms_r4": 1.613, "gbps_r4": 18.5, "nbytes": 33554432}
+{"label": "sconv prefill T=2048 elementwise 4-tap mlx.core.bfloat16", "med_ms_r1": 1.0161, "best_ms_r1": 0.8465, "gbps_r1": 33.0, "med_ms_r4": 0.8957, "best_ms_r4": 0.7855, "gbps_r4": 37.5, "nbytes": 33554432}
+{"section": "small per-layer ops"}
+{"label": "rms_norm 4096 (one call)", "med_ms_r1": 0.2733, "best_ms_r1": 0.1498, "gbps_r1": 0.1, "med_ms_r8": 0.04, "best_ms_r8": 0.0291, "gbps_r8": 0.4, "nbytes": 16384}
+{"label": "rms_norm per-head [1,1,32,128]", "med_ms_r1": 0.2716, "best_ms_r1": 0.1947, "gbps_r1": 0.1, "med_ms_r8": 0.0423, "best_ms_r8": 0.0272, "gbps_r8": 0.4, "nbytes": 16384}
+{"label": "add residual [1,1,4096]", "med_ms_r1": 0.261, "best_ms_r1": 0.1792, "gbps_r1": 0.1, "med_ms_r8": 0.0356, "best_ms_r8": 0.0281, "gbps_r8": 0.7, "nbytes": 24576}
+{"section": "per-op floor: 200 dependent tiny ops in one eval"}
+{"label": "chain of 200 dependent rms_norm", "med_ms_r1": 1.2065, "best_ms_r1": 1.0832}
+{"label": "per-op us in chain (rms_norm)", "us": 6.0, "best_us": 5.4}
+{"label": "chain of 200 dependent matvec 4096x4096 bf16 (32 MB each)", "med_ms_r1": 10.1175, "best_ms_r1": 9.7574}
+{"label": "per-op us in chain (matvec 4096x4096 bf16 (32 MB each))", "us": 50.6, "best_us": 48.8}
+{"label": "chain of 200 dependent elementwise mul+add", "med_ms_r1": 2.3262, "best_ms_r1": 1.9076}
+{"label": "per-op us in chain (elementwise mul+add)", "us": 11.6, "best_us": 9.5}
+{"label": "chain of 200 dependent elementwise mul+add mx.compile", "med_ms_r1": 0.5005, "best_ms_r1": 0.4353}
+{"label": "per-op us in chain (elementwise mul+add mx.compile)", "us": 2.5, "best_us": 2.2}

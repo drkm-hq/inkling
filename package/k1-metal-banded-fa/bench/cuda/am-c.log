@@ -1,0 +1,11 @@
+$ git am /patches/0003-ggml-q_offset-for-the-banded-flash-attention-proposa.patch
+Applying: ggml : q_offset for the banded flash attention (proposal for #25731)
+
+[rc=0]
+$ git log --oneline -4
+64947e81 ggml : q_offset for the banded flash attention (proposal for #25731)
+0092a566 tests : banded flash attention cases
+18264258 metal : add GGML_OP_FLASH_ATTN_EXT_BANDED
+3582c5ee Fix merge conflicts
+
+[rc=0]

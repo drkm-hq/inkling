@@ -1,0 +1,120 @@
+commit 90290efad5f558ecaef4fcfbf8f38fed89749203
+Author: Nick Alonso <nick@drkm.com>
+Date:   Wed Oct 28 23:21:46 2026 -0400
+
+metal : one bias-table row pointer per threadgroup in the banded kernels
+
+The half8x8 and tensor kernels kept one bias row pointer per query row
+(NQ pointers live across the whole KV loop); keep the head/batch base
+pointer only and add the query row where the bias is read, as the vec
+kernel does. Fewer live registers, 6 lines shorter per kernel.
+
+Measured back to back in the same window (test-backend-ops perf, Inkling
+geometry, GPU shared with other jobs): 512 x 2K/8K prefill 1.80 -> 1.69 ms
+and 15.4 -> 11.8 ms, decode 1 x 2K/8K 63 -> 53 us and 200 -> 175 us, 32K
+within noise. test-backend-ops: 26/26 banded cases OK against the CPU
+reference.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ ggml/src/ggml-metal/kernels/fa_common.metal | 16 +++++++---------
+ ggml/src/ggml-metal/kernels/fa_tensor.metal | 12 ++++--------
+ 2 files changed, 11 insertions(+), 17 deletions(-)
+commit 97ba1bf480fb8a6c55f7e6e849fb93231170b231
+Author: Nick Alonso <nick@drkm.com>
+Date:   Wed Oct 28 22:38:53 2026 -0400
+
+ggml : explicit q_offset for the banded flash attention
+
+The banded op derived the position of the queries from n_kv - n_q, which
+forced the model to pass K/V/mask views of exactly pos_max + 1 rows. Those
+views are rarely aligned to the kernel block sizes, so on Metal the
+prefill ubatches fell off the tensor-API kernel onto the half8x8 kernel
+plus a pad pass (1.5x the time at 8K, measured in test-backend-ops), and
+the mask had to be re-copied per layer.
+
+ggml_flash_attn_ext_banded now takes q_offset (op_params[5]), the kv index
+of the first query: rel_dist = q_idx + q_offset - kv_idx. Honoured by the
+CPU op, the CUDA scalar kernel (kernel argument), the CUDA MMA path (the
+banded ABI carries it in the unused m0 slope, exact below 2^24) and Metal.
+
+The model passes the cache's own 256-padded n_kv views and the KQ mask as
+they are (the padded cells are masked) with q_offset = n_kv_flash -
+n_tokens, so every prefill ubatch takes the aligned kernel and the
+per-layer ggml_cont of the mask view is gone.
+
+test-backend-ops gains a kv_pad parameter for the banded cases: masked rows
+past the logical n_kv with the band anchored by q_offset.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ ggml/include/ggml.h                    |  7 ++++--
+ ggml/src/ggml-cpu/ops.cpp              |  7 ++++--
+ ggml/src/ggml-cuda/fattn-banded.cu     |  8 +++++--
+ ggml/src/ggml-cuda/fattn-common.cuh    | 12 ++++++----
+ ggml/src/ggml-cuda/fattn-mma-f16.cuh   | 25 +++++++++++---------
+ ggml/src/ggml-metal/ggml-metal-ops.cpp |  8 +++++--
+ ggml/src/ggml.c                        |  6 ++++-
+ src/models/inkling.cpp                 | 26 ++++++---------------
+ tests/test-backend-ops.cpp             | 42 ++++++++++++++++++++++------------
+ tests/test-flash-attn-bias.cpp         |  4 ++--
+ 10 files changed, 85 insertions(+), 60 deletions(-)
+commit 4ddc6ed6d554c0f5b9ca27c2b95c841f3142cc5c
+Author: Nick Alonso <nick@drkm.com>
+Date:   Wed Oct 28 22:32:07 2026 -0400
+
+tests : banded flash attention cases at the Inkling-Small geometry
+
+Eval: 32 q heads / 8 kv heads x 128 with the first ubatch (n_kv == n_q), the
+band edge and the band start inside the KV, no mask, the SWA layers (window
+mask, E = 512), a KV unaligned to the kernel block sizes, decode, a small
+batch and a q8_0 KV, for both the prefill ubatch (512) and decode (1).
+
+Perf: the banded op next to the plain op at the same geometry (the ceiling)
+for 2K/8K/32K and an unaligned 8209.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ tests/test-backend-ops.cpp | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+commit 500978ac8388b4d69310cb7123ab09373847ca5d
+Author: Nick Alonso <nick@drkm.com>
+Date:   Wed Oct 28 22:28:16 2026 -0400
+
+metal : add GGML_OP_FLASH_ATTN_EXT_BANDED
+
+Run the banded (relative-position bias) flash attention of the TML Inkling
+models on the GPU instead of falling back to the CPU scalar path.
+
+The bias is a second additive score term next to the KQ mask, so the three
+existing flash attention kernel families (half8x8 simdgroup, Metal 4 tensor
+API, vec) gain one buffer (the bias table), one function constant pair
+(has_rel, rel_type: F32/F16/BF16 read as raw bits) and the kargs needed to
+address the table: for a query row iq and key ik the term is
+rel[iq + q_off - ik] when 0 <= dist < rel_extent and zero otherwise, with
+q_off = n_kv - n_q as the op defines it. Blocks outside the band skip the
+gather with a uniform test, the kv-pad path keeps the absolute key index,
+and the sparse vec path uses the gathered key index.
+
+The host side reuses everything else: the dequant-to-F16 pre-pass for
+quantized KV, the pad/blk/reduce auxiliaries and the scratch sizing
+(ggml_backend_metal_buffer_type_get_alloc_size now covers the banded op).
+supports_op mirrors the plain op plus the bias table checks.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ ggml/src/ggml-metal/ggml-metal-device.cpp       | 53 +++++++++++++-----
+ ggml/src/ggml-metal/ggml-metal-device.h         | 11 ++--
+ ggml/src/ggml-metal/ggml-metal-device.m         | 22 ++++++++
+ ggml/src/ggml-metal/ggml-metal-impl.h           | 21 +++++++
+ ggml/src/ggml-metal/ggml-metal-ops.cpp          | 73 ++++++++++++++++++++-----
+ ggml/src/ggml-metal/ggml-metal.cpp              |  1 +
+ ggml/src/ggml-metal/kernels/common.h            | 11 ++++
+ ggml/src/ggml-metal/kernels/fa_common.metal     | 38 ++++++++++++-
+ ggml/src/ggml-metal/kernels/fa_tensor.metal     | 30 ++++++++++
+ ggml/src/ggml-metal/kernels/fa_vec_common.metal | 33 +++++++++++
+ 10 files changed, 259 insertions(+), 34 deletions(-)

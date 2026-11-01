@@ -1,0 +1,5 @@
+exit=23
+[18:07:19Z] lock acquired (pid 16226), build fixture, reps 1, depths 0
+[18:07:19Z] round 1 -fa 1 start, load1 0.10
+[18:07:20Z] round 1 -fa 1 failed (exit=23); see <workdir>
+[18:07:20Z] lock released

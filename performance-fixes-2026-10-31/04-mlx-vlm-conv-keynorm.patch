@@ -1,0 +1,254 @@
+diff --git a/mlx_vlm/models/inkling/language.py b/mlx_vlm/models/inkling/language.py
+--- a/mlx_vlm/models/inkling/language.py
++++ b/mlx_vlm/models/inkling/language.py
+@@ -1,4 +1,4 @@
+-from functools import partial
++from functools import lru_cache, partial
+ from typing import Optional
+ 
+ import mlx.core as mx
+@@ -468,6 +468,124 @@
+     return k_conv(k, cache=cache, mask=mask), v_conv(v, cache=cache, mask=mask)
+ 
+ 
++_SCONV_KVN_SRC = r"""
++    const uint lane = thread_index_in_simdgroup;
++    const uint row = threadgroup_position_in_grid.y;
++    const bool is_k = row < C / 128;
++    const uint head = is_k ? row : row - C / 128;
++    float values[4];
++    float norm_sum = 0.0f;
++    const uint count = is_k ? 4 : 1;
++    for (uint i = 0; i < count; ++i) {
++        const uint c = is_k ? head * 128 + lane * 4 + i : head * 32 + lane;
++        float x0, s0, s1, s2, w0, w1, w2, w3;
++        if (is_k) {
++            const size_t xb = (size_t)c * xk_strides[2];
++            const size_t sb = (size_t)c * sk_strides[2];
++            const size_t ss = sk_strides[1];
++            const size_t wb = (size_t)c * wk_strides[0];
++            const size_t ws = wk_strides[1];
++            x0 = (float)xk[xb];
++            s0 = sk[sb]; s1 = sk[sb + ss]; s2 = sk[sb + 2 * ss];
++            w0 = (float)wk[wb]; w1 = (float)wk[wb + ws];
++            w2 = (float)wk[wb + 2 * ws]; w3 = (float)wk[wb + 3 * ws];
++            nsk[c] = s1; nsk[C + c] = s2; nsk[2 * C + c] = x0;
++        } else {
++            const size_t xb = (size_t)c * xv_strides[2];
++            const size_t sb = (size_t)c * sv_strides[2];
++            const size_t ss = sv_strides[1];
++            const size_t wb = (size_t)c * wv_strides[0];
++            const size_t ws = wv_strides[1];
++            x0 = (float)xv[xb];
++            s0 = sv[sb]; s1 = sv[sb + ss]; s2 = sv[sb + 2 * ss];
++            w0 = (float)wv[wb]; w1 = (float)wv[wb + ws];
++            w2 = (float)wv[wb + 2 * ws]; w3 = (float)wv[wb + 3 * ws];
++            nsv[c] = s1; nsv[C + c] = s2; nsv[2 * C + c] = x0;
++        }
++        float acc = 0.0f;
++        acc += w0 * s0;
++        acc += w1 * s1;
++        acc += w2 * s2;
++        acc += w3 * x0;
++        T value = (T)((float)((T)acc) + x0);
++        if (is_k) {
++            values[i] = (float)value;
++            norm_sum += values[i] * values[i];
++        } else {
++            outv[c] = value;
++        }
++    }
++    if (is_k) {
++        norm_sum = simd_sum(norm_sum);
++        float inv = metal::precise::rsqrt(norm_sum / 128.0f + eps[0]);
++        for (uint i = 0; i < 4; ++i) {
++            const uint col = lane * 4 + i;
++            const uint c = head * 128 + col;
++            outk[c] = wn[col * wn_strides[0]] * (T)(values[i] * inv);
++        }
++    }
++"""
++_sconv_kvn_kernel = mx.fast.metal_kernel(
++    name="inkling_sconv_kv_norm_decode",
++    input_names=["xk", "xv", "sk", "sv", "wk", "wv", "wn", "eps"],
++    output_names=["outk", "outv", "nsk", "nsv"],
++    source=_SCONV_KVN_SRC,
++    ensure_row_contiguous=False,
++)
++
++
++@lru_cache(maxsize=8)
++def _sconv_norm_eps(eps):
++    return mx.array([eps], dtype=mx.float32)
++
++
++def _sconv_kv_norm(k_conv, v_conv, norm, k, v, cache, mask=None):
++    """Pair K/V convolution and normalize each 128-wide key head."""
++    D = norm.weight.shape[0]
++    if (
++        cache is not None
++        and mask is None
++        and not k_conv.training
++        and not v_conv.training
++        and not norm.training
++        and k_conv.kernel_size == v_conv.kernel_size == 4
++        and k.shape == v.shape
++        and k.shape[:2] == (1, 1)
++        and D == 128
++        and k.shape[-1] % 128 == 0
++        and k.dtype == v.dtype == norm.weight.dtype
++        and mx.default_device() == mx.gpu
++        and mx.metal.is_available()
++    ):
++        C = k.shape[-1]
++        sk, sv = cache[k_conv.conv_idx], cache[v_conv.conv_idx]
++        if sk is None:
++            sk = mx.zeros((1, 3, C), dtype=mx.float32)
++        if sv is None:
++            sv = mx.zeros((1, 3, C), dtype=mx.float32)
++        k, v, sk, sv = _sconv_kvn_kernel(
++            inputs=[
++                k,
++                v,
++                sk,
++                sv,
++                k_conv.conv.weight,
++                v_conv.conv.weight,
++                norm.weight,
++                _sconv_norm_eps(norm.eps),
++            ],
++            template=[("T", k.dtype), ("C", C)],
++            grid=(32, C // 128 + C // 32, 1),
++            threadgroup=(32, 1, 1),
++            output_shapes=[(1, 1, C), (1, 1, C), (1, 3, C), (1, 3, C)],
++            output_dtypes=[k.dtype, k.dtype, mx.float32, mx.float32],
++        )
++        cache[k_conv.conv_idx], cache[v_conv.conv_idx] = sk, sv
++        return k, v
++    k, v = _sconv_kv(k_conv, v_conv, k, v, cache, mask)
++    return norm(k.reshape(*k.shape[:2], -1, D)).reshape(k.shape), v
++
++
+ # Escape hatch: skip the sliding-layer out-of-window K/V slicing.
+ _SLIDING_KV_SLICE = True
+ 
+@@ -545,16 +663,17 @@
+ 
+         qkvr = self.qkvr_proj(x)
+         dq, dk, dv, _ = self.qkvr_dims
+-        k, v = _sconv_kv(
++        k, v = _sconv_kv_norm(
+             self.k_sconv,
+             self.v_sconv,
++            self.k_norm,
+             qkvr[..., dq : dq + dk],
+             qkvr[..., dq + dk : dq + dk + dv],
+             conv,
+             conv_mask,
+         )
+ 
+-        k = self.k_norm(k.reshape(B, L, self.n_kv, self.head_dim)).transpose(0, 2, 1, 3)
++        k = k.reshape(B, L, self.n_kv, self.head_dim).transpose(0, 2, 1, 3)
+         v = v.reshape(B, L, self.n_kv, self.head_dim).transpose(0, 2, 1, 3)
+ 
+         if kv is not None:
+diff --git a/mlx_vlm/tests/test_inkling_convnorm.py b/mlx_vlm/tests/test_inkling_convnorm.py
+new file mode 100644
+--- /dev/null
++++ b/mlx_vlm/tests/test_inkling_convnorm.py
+@@ -0,0 +1,95 @@
++import mlx.core as mx
++import mlx.nn as nn
++import pytest
++
++from mlx_vlm.models.inkling import language as lang
++from mlx_vlm.tests.test_inkling_fast_path import tiny_model, tokens
++
++
++def reference(kc, vc, norm, k, v, cache, mask=None):
++    k, v = lang._sconv_kv(kc, vc, k, v, cache, mask)
++    return norm(k.reshape(*k.shape[:2], -1, norm.weight.shape[0])).reshape(k.shape), v
++
++
++@pytest.mark.parametrize("dtype", [mx.float32, mx.bfloat16, mx.float16])
++@pytest.mark.parametrize("channels", [128, 1024])
++@pytest.mark.parametrize("warm", [False, True])
++def test_convnorm_exact_outputs_and_states(dtype, channels, warm):
++    mx.random.seed(71)
++    kc = lang.InklingShortConvolution(channels, 4, 0)
++    vc = lang.InklingShortConvolution(channels, 4, 1)
++    norm = nn.RMSNorm(128, eps=1e-6)
++    norm.weight = mx.random.normal((256,)).astype(dtype)[::2]
++    norm.eval()
++    for conv in (kc, vc):
++        conv.conv.weight = (
++            mx.random.normal((channels, 1, 4)).transpose(0, 2, 1).astype(dtype)
++        )
++        conv.eval()
++    states = [None] * 4
++    if warm:
++        states[:2] = [
++            mx.random.normal((1, 3, channels * 2))[..., ::2] for _ in range(2)
++        ]
++    fused, baseline = list(states), list(states)
++    for _ in range(12):
++        projection = mx.random.normal((1, 1, channels * 3 + 16)).astype(dtype)
++        k = projection[..., 8 : 8 + channels]
++        v = projection[..., channels + 12 : 2 * channels + 12]
++        actual = lang._sconv_kv_norm(kc, vc, norm, k, v, fused)
++        expected = reference(kc, vc, norm, k, v, baseline)
++        mx.eval(actual, expected, fused[:2], baseline[:2])
++        for a, b in zip((*actual, *fused[:2]), (*expected, *baseline[:2])):
++            assert mx.array_equal(a, b).item(), float(
++                mx.max(mx.abs(a.astype(mx.float32) - b.astype(mx.float32))).item()
++            )
++
++
++@pytest.mark.parametrize("dtype", [mx.float32, mx.bfloat16])
++def test_convnorm_model_exact_decode(dtype, monkeypatch):
++    model = tiny_model(head_dim=128, swa_head_dim=128)
++    model.set_dtype(dtype)
++    cache = model.make_cache()
++    reference_cache = model.make_cache()
++    for entries in (cache, reference_cache):
++        for entry in entries:
++            if hasattr(entry[0], "buffer_size"):
++                entry[0].buffer_size = 0
++    model(tokens(11), cache=cache)
++    model(tokens(11), cache=reference_cache)
++    impl = lang._sconv_kv_norm
++    for _ in range(30):
++        ids = tokens(1, seed=7)
++        monkeypatch.setattr(lang, "_sconv_kv_norm", impl)
++        actual = model(ids, cache=cache).logits
++        monkeypatch.setattr(lang, "_sconv_kv_norm", reference)
++        expected = model(ids, cache=reference_cache).logits
++        assert mx.array_equal(actual, expected).item()
++
++
++@pytest.mark.parametrize(
++    "case", ["batch", "multitoken", "training", "mask", "no-cache", "head-dim"]
++)
++def test_convnorm_falls_back(case, monkeypatch):
++    B, L = (2, 1) if case == "batch" else (1, 5) if case == "multitoken" else (1, 1)
++    D = 64 if case == "head-dim" else 128
++    C = 256
++    kc = lang.InklingShortConvolution(C, 4, 0)
++    vc = lang.InklingShortConvolution(C, 4, 1)
++    norm = nn.RMSNorm(D)
++    for module in (kc, vc, norm):
++        module.eval()
++    if case == "training":
++        kc.train()
++
++    def forbidden(**kwargs):
++        raise AssertionError("fused convnorm called outside its decode gate")
++
++    monkeypatch.setattr(lang, "_sconv_kvn_kernel", forbidden)
++    k, v = mx.random.normal((B, L, C)), mx.random.normal((B, L, C))
++    cache = None if case == "no-cache" else [None] * 4
++    baseline = None if cache is None else list(cache)
++    mask = mx.ones((B, L), dtype=mx.bool_) if case == "mask" else None
++    actual = lang._sconv_kv_norm(kc, vc, norm, k, v, cache, mask)
++    expected = reference(kc, vc, norm, k, v, baseline, mask)
++    assert all(mx.array_equal(a, b).item() for a, b in zip(actual, expected))

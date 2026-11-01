@@ -1,0 +1,8 @@
+Waiting for GPU benchmark lock: pid=35519
+Acquired GPU benchmark lock: pid=35519 time=1793471211.518222
+..................
+----------------------------------------------------------------------
+Ran 18 tests in 0.542s
+
+OK
+Released GPU benchmark lock: pid=35519

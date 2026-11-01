@@ -1,0 +1,29 @@
+[  0%] Building CXX object common/CMakeFiles/llama-common-base.dir/build-info.cpp.o
+[  0%] Built target cpp-httplib
+[  5%] Built target ggml-base
+[  7%] Built target ggml-blas
+[ 47%] Built target ggml-cpu
+[ 52%] Built target ggml-metal
+[ 52%] Built target ggml
+[ 55%] Linking CXX static library libllama-common-base.a
+[ 55%] Built target llama-common-base
+[ 55%] Building CXX object src/CMakeFiles/llama.dir/llama.cpp.o
+[ 55%] Linking CXX shared library ../bin/libllama.dylib
+[ 75%] Built target llama
+[ 75%] Linking CXX shared library ../bin/libllama-common.dylib
+[100%] Built target llama-common
+[100%] Building CXX object examples/eval-callback/CMakeFiles/llama-eval-callback.dir/eval-callback.cpp.o
+[100%] Linking CXX executable ../../bin/llama-eval-callback
+[100%] Built target llama-eval-callback
+[  0%] Built target llama-common-base
+[  0%] Built target cpp-httplib
+[  3%] Built target ggml-base
+[  5%] Built target ggml-blas
+[ 42%] Built target ggml-metal
+[ 50%] Built target ggml-cpu
+[ 51%] Built target ggml
+[ 71%] Built target llama
+[ 98%] Built target llama-common
+[ 98%] Building CXX object examples/eval-callback/CMakeFiles/llama-eval-callback.dir/eval-callback.cpp.o
+[100%] Linking CXX executable ../../bin/llama-eval-callback
+[100%] Built target llama-eval-callback

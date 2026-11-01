@@ -1,0 +1,14 @@
+{
+  "arch": "90",
+  "expected_head": "3582c5ee05115892e4e96520be0026c3ceb9f829",
+  "shards": {
+    "Inkling-Small-UD-IQ3_XXS-00001-of-00003.gguf": 12986592,
+    "Inkling-Small-UD-IQ3_XXS-00002-of-00003.gguf": 49408950848,
+    "Inkling-Small-UD-IQ3_XXS-00003-of-00003.gguf": 48508980416
+  },
+  "model_copy_s": 89.1,
+  "build_before_s": 115.9,
+  "t_before_done_s": 285.5,
+  "build_after_s": 12.9,
+  "elapsed_s": 361.4
+}

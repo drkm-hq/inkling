@@ -1,0 +1,87 @@
+# meta
+- a4-after-32k: <workdir>/upstream/mlx-vlm-a4/mlx_vlm/__init__.py git=026dd58 load1@start=4.2 tf32=None
+- a4-after-eager: <workdir>/upstream/mlx-vlm-a4/mlx_vlm/__init__.py git=026dd58 load1@start=6.1 tf32=None
+- a4-after-gen: <workdir>/upstream/mlx-vlm-a4/mlx_vlm/__init__.py git=026dd58 load1@start=6.1 tf32=None
+- a4-after-gen2k: <workdir>/upstream/mlx-vlm-a4/mlx_vlm/__init__.py git=026dd58 load1@start=4.5 tf32=None
+- a4-after-kv8: <workdir>/upstream/mlx-vlm-a4/mlx_vlm/__init__.py git=026dd58 load1@start=4.1 tf32=None
+- a4-before-32k: ~/.venvs/inkling-base/lib/python3.12/site-packages/mlx_vlm/__init__.py git=None load1@start=3.5 tf32=None
+- a4-before-gen: ~/.venvs/inkling-base/lib/python3.12/site-packages/mlx_vlm/__init__.py git=None load1@start=8.1 tf32=None
+- a4-tf-after-2048: <workdir>/upstream/mlx-vlm-a4/mlx_vlm/__init__.py git=026dd58 load1@start=4.5 tf32=None
+- a4-tf-after-kv8: <workdir>/upstream/mlx-vlm-a4/mlx_vlm/__init__.py git=026dd58 load1@start=5.5 tf32=None
+- a4-tf-before-2048: ~/.venvs/inkling-base/lib/python3.12/site-packages/mlx_vlm/__init__.py git=None load1@start=5.7 tf32=None
+- a4-tf-before-512: ~/.venvs/inkling-base/lib/python3.12/site-packages/mlx_vlm/__init__.py git=None load1@start=4.5 tf32=None
+- load a4-after-32k: eager=False load_s=0.7 eval_s=10.1 params=82.3 GiB peak=82.4 GiB
+- load a4-after-eager: eager=True load_s=11.7 eval_s=0.0 params=82.3 GiB peak=82.4 GiB
+- load a4-after-gen: eager=False load_s=0.7 eval_s=10.2 params=82.3 GiB peak=82.4 GiB
+- load a4-after-gen2k: eager=False load_s=0.7 eval_s=11.1 params=82.3 GiB peak=82.4 GiB
+- load a4-after-kv8: eager=False load_s=0.7 eval_s=10.4 params=82.3 GiB peak=82.4 GiB
+- load a4-before-32k: eager=False load_s=0.7 eval_s=10.2 params=82.3 GiB peak=82.4 GiB
+- load a4-before-gen: eager=False load_s=0.7 eval_s=11.9 params=82.3 GiB peak=82.4 GiB
+- load a4-tf-after-2048: eager=False load_s=0.7 eval_s=10.2 params=82.3 GiB peak=82.4 GiB
+- load a4-tf-after-kv8: eager=False load_s=0.7 eval_s=10.8 params=82.3 GiB peak=82.4 GiB
+- load a4-tf-before-2048: eager=False load_s=0.7 eval_s=10.5 params=82.3 GiB peak=82.4 GiB
+- load a4-tf-before-512: eager=False load_s=0.6 eval_s=10.5 params=82.3 GiB peak=82.4 GiB
+- cache kinds a4-after-32k: ['KVCache', 'SlidingWindowKVCache']
+- cache kinds a4-after-eager: ['KVCache', 'SlidingWindowKVCache']
+- cache kinds a4-after-gen: ['KVCache', 'SlidingWindowKVCache']
+- cache kinds a4-after-gen2k: ['KVCache', 'SlidingWindowKVCache']
+- cache kinds a4-after-kv8: ['KVCache', 'SlidingWindowKVCache']
+- cache kinds a4-before-32k: ['KVCache']
+- cache kinds a4-before-gen: ['KVCache']
+- cache kinds a4-tf-after-2048: ['KVCache', 'SlidingWindowKVCache']
+- cache kinds a4-tf-after-kv8: ['KVCache', 'SlidingWindowKVCache']
+- cache kinds a4-tf-before-2048: ['KVCache']
+- cache kinds a4-tf-before-512: ['KVCache']
+
+# generation runs (per rep: prefill tok/s | TTFT s | decode tok/s | peak GiB | load1)
+- a4-after-32k     p_32k    n=3 gen=64 367|89.55|17.1|95.3|3 ; 374|87.86|19.2|95.3|4 ; 395|83.10|19.9|95.3|3
+- a4-after-eager   p_short  n=1 gen=16 150|1.60|22.8|83.3|6
+- a4-after-gen     p_8k     n=3 gen=64 374|22.03|19.6|91.7|5 ; 375|21.96|19.5|91.7|4 ; 393|20.95|20.9|91.7|4
+- a4-after-gen     p_short  n=3 gen=64 151|1.59|20.1|83.3|6 ; 160|1.50|24.0|83.3|6 ; 169|1.42|24.0|83.3|6
+- a4-after-gen2k   p_short  n=1 gen=2048 184|1.30|22.7|83.3|6
+- a4-after-kv8     p_8k     n=1 gen=64 353|23.36|19.5|92.1|5
+- a4-after-kv8     p_short  n=1 gen=64 170|1.41|22.3|83.3|6
+- a4-before-32k    p_32k    n=3 gen=64 326|100.60|19.1|105.1|4 ; 332|98.89|19.3|105.1|4 ; 333|98.47|20.8|105.1|4
+- a4-before-gen    p_8k     n=3 gen=64 317|25.96|17.6|93.5|6 ; 323|25.49|16.7|93.5|6 ; 336|24.54|18.5|93.5|6
+- a4-before-gen    p_short  n=3 gen=64 149|1.61|18.8|83.2|7 ; 159|1.51|21.1|83.2|6 ; 164|1.46|21.2|83.2|6
+
+| run | prompt | n | prefill tok/s best / median | TTFT s best / median | decode tok/s best / median | peak GiB | load1 range |
+|---|---|---|---|---|---|---|---|
+| a4-after-32k | p_32k | 3 | 395 / 374 | 83.10 / 87.86 | 19.9 / 19.2 | 95.3 | 3-4 |
+| a4-after-eager | p_short | 1 | 150 / 150 | 1.60 / 1.60 | 22.8 / 22.8 | 83.3 | 6-6 |
+| a4-after-gen | p_8k | 3 | 393 / 375 | 20.95 / 21.96 | 20.9 / 19.6 | 91.7 | 4-5 |
+| a4-after-gen | p_short | 3 | 169 / 160 | 1.42 / 1.50 | 24.0 / 24.0 | 83.3 | 6-6 |
+| a4-after-gen2k | p_short | 1 | 184 / 184 | 1.30 / 1.30 | 22.7 / 22.7 | 83.3 | 6-6 |
+| a4-after-kv8 | p_8k | 1 | 353 / 353 | 23.36 / 23.36 | 19.5 / 19.5 | 92.1 | 5-5 |
+| a4-after-kv8 | p_short | 1 | 170 / 170 | 1.41 / 1.41 | 22.3 / 22.3 | 83.3 | 6-6 |
+| a4-before-32k | p_32k | 3 | 333 / 332 | 98.47 / 98.89 | 20.8 / 19.3 | 105.1 | 4-4 |
+| a4-before-gen | p_8k | 3 | 336 / 323 | 24.54 / 25.49 | 18.5 / 17.6 | 93.5 | 6-6 |
+| a4-before-gen | p_short | 3 | 164 / 159 | 1.46 / 1.51 | 21.2 / 21.1 | 83.2 | 6-7 |
+
+# token identity (first n-1 entries; the last entry is the stream's closing duplicate)
+- a4-after-32k     p_32k    vs a4-before-32k: ids identical=True (n=64, first diff None) margins identical=True reps self-identical=True text64='<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|'
+- a4-after-eager   p_short  vs a4-before-gen: ids identical=True (n=16, first diff None) margins identical=True reps self-identical=True text64='<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|'
+- a4-after-gen     p_8k     vs a4-before-gen: ids identical=True (n=64, first diff None) margins identical=True reps self-identical=True text64='<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|'
+- a4-after-gen     p_short  vs a4-before-gen: ids identical=True (n=64, first diff None) margins identical=True reps self-identical=True text64='<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|'
+- a4-after-gen2k   p_short  vs a4-before-gen: ids identical=True (n=64, first diff None) margins identical=True reps self-identical=True text64='<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|'
+- a4-after-kv8     p_8k     vs a4-before-gen: ids identical=False (n=64, first diff 17) margins identical=False reps self-identical=True text64='<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|'
+- a4-after-kv8     p_short  vs a4-before-gen: ids identical=False (n=64, first diff 17) margins identical=False reps self-identical=True text64='<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|'
+- a4-before-32k    p_32k    reps self-identical=True text64='<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|conte'
+- a4-before-gen    p_8k     reps self-identical=True text64='<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|conte'
+- a4-before-gen    p_short  reps self-identical=True text64='<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|conte'
+
+# teacher-forced (64 teacher tokens from a4-before-gen)
+- a4-tf-after-2048   p_short  chunk=2048 kv_bits=None prompt_tok=239 teacher-top1=63/64 md5=b1903252c46d peak=83.3 GiB
+    vs a4-tf-before-2048: identical=True KL mean=0.000e+00 max=0.000e+00 (step 0) |dlogprob| mean=0.000e+00 max=0.000e+00 top-1 agree=64/64
+- a4-tf-after-2048   p_8k     chunk=2048 kv_bits=None prompt_tok=8231 teacher-top1=63/64 md5=a57301af01f9 peak=91.7 GiB
+    vs a4-tf-before-2048: identical=True KL mean=0.000e+00 max=0.000e+00 (step 0) |dlogprob| mean=0.000e+00 max=0.000e+00 top-1 agree=64/64
+- a4-tf-after-kv8    p_short  chunk=2048 kv_bits=8.0 prompt_tok=239 teacher-top1=62/64 md5=bfb75461172a peak=83.3 GiB
+    vs a4-tf-before-2048: identical=False KL mean=4.050e-02 max=1.885e+00 (step 46) |dlogprob| mean=4.359e-02 max=4.325e-01 top-1 agree=63/64
+- a4-tf-after-kv8    p_8k     chunk=2048 kv_bits=8.0 prompt_tok=8231 teacher-top1=62/64 md5=dafb94fcedf2 peak=92.1 GiB
+    vs a4-tf-before-2048: identical=False KL mean=1.278e-02 max=2.401e-01 (step 20) |dlogprob| mean=4.019e-02 max=7.967e-01 top-1 agree=63/64
+- a4-tf-before-2048  p_short  chunk=2048 kv_bits=None prompt_tok=239 teacher-top1=63/64 md5=b1903252c46d peak=83.2 GiB
+- a4-tf-before-2048  p_8k     chunk=2048 kv_bits=None prompt_tok=8231 teacher-top1=63/64 md5=a57301af01f9 peak=93.5 GiB
+- a4-tf-before-512   p_short  chunk=512 kv_bits=None prompt_tok=239 teacher-top1=63/64 md5=b1903252c46d peak=83.2 GiB
+    vs a4-tf-before-2048: identical=True KL mean=0.000e+00 max=0.000e+00 (step 0) |dlogprob| mean=0.000e+00 max=0.000e+00 top-1 agree=64/64
+- a4-tf-before-512   p_8k     chunk=512 kv_bits=None prompt_tok=8231 teacher-top1=61/64 md5=170c6898057d peak=86.8 GiB
+    vs a4-tf-before-2048: identical=False KL mean=2.504e-02 max=7.285e-01 (step 18) |dlogprob| mean=7.755e-02 max=1.474e+00 top-1 agree=62/64

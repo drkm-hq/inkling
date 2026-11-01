@@ -1,0 +1,19 @@
+exit=0
+[18:07:19Z] lock acquired (pid 16116), build fixture, reps 1, depths 0
+[18:07:19Z] round 1 -fa 1 start, load1 0.10
+[18:07:19Z] round 1 -fa 1 exit=23, load1 now 0.10
+[18:07:19Z] round 1 -fa 0 start, load1 0.10
+[18:07:19Z] round 1 -fa 0 exit=23, load1 now 0.10
+[18:07:19Z] round 2 -fa 0 start, load1 0.10
+[18:07:19Z] round 2 -fa 0 exit=23, load1 now 0.10
+[18:07:19Z] round 2 -fa 1 start, load1 0.10
+[18:07:19Z] round 2 -fa 1 exit=23, load1 now 0.10
+[18:07:19Z] round 3 -fa 1 start, load1 0.10
+[18:07:19Z] round 3 -fa 1 exit=23, load1 now 0.10
+[18:07:19Z] round 3 -fa 0 start, load1 0.10
+[18:07:19Z] round 3 -fa 0 exit=23, load1 now 0.10
+| test | depth | -fa 1 min / median (n) | -fa 0 min / median (n) | min ratio fa1/fa0 |
+|---|---:|---:|---:|---:|
+
+note: 'min' time = max tok/s over all runs of the rounds (contention only lowers tok/s)
+[18:07:19Z] lock released

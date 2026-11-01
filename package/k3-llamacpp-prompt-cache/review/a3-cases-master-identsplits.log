@@ -1,0 +1,11 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.14, pytest-8.3.5, pluggy-1.7.0 -- <scratch>
+rootdir: <workdir>/upstream/llama.cpp-a3/tools/server/tests
+configfile: pytest.ini
+plugins: xdist-3.8.0, anyio-4.15.1
+collecting ... collected 22 items / 20 deselected / 2 selected
+
+unit/test_a3_hybrid_cache.py::test_a3_identical_splits_exact[0] PASSED   [ 50%]
+unit/test_a3_hybrid_cache.py::test_a3_identical_splits_exact[64] PASSED  [100%]
+
+====================== 2 passed, 20 deselected in 18.91s =======================

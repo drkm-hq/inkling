@@ -1,0 +1,55 @@
+suite rc=0
+=== 23:10:43 start before (~/.venvs/inkling-base/bin/python) --prompts p_short,p_2k,p_8k,p_32k --repeats 3 --max-tokens 128
+=== 23:13:58 start before (~/.venvs/inkling-base/bin/python) --prompts p_short,p_2k,p_8k,p_32k --repeats 3 --max-tokens 128
+=== 23:17:25 end before rc=0
+=== 23:17:25 start after (~/.venvs/inkling/bin/python) --prompts p_short,p_2k,p_8k,p_32k --repeats 3 --max-tokens 128
+=== 23:18:18 RESTART: previous chain killed (queue protocol); 'before' partial results discarded
+=== 23:18:18 waiting for the GPU: queue [K3 K2 K4 M1 ], lock: 91117 2026-10-29T03:14:59Z k1-metal-banded-fa (greedy check, orchestrator was killed)
+=== 23:19:02 waiting for the GPU: queue [K3 K2 K4 M1 ], lock: 91117 2026-10-29T03:14:59Z k1-metal-banded-fa (greedy check, orchestrator was killed)
+=== 23:25:22 waiting for the GPU: queue [K3 K2 K4 A1 M1 ], lock: 1042 2026-10-28T23:20:20 <workdir>/package/k3-llamacpp-prompt-cache/bench/run_four.sh
+=== 00:00:34 hold acquired by pid 4687 (queue head: K4); budget 2400s
+=== 00:00:34 start before (~/.venvs/inkling-base/bin/python) --prompts p_short,p_2k,p_8k,p_32k --repeats 3 --max-tokens 128
+=== 00:07:35 end before rc=0 (elapsed 421s)
+=== 00:07:35 start after (~/.venvs/inkling/bin/python) --prompts p_short,p_2k,p_8k,p_32k --repeats 3 --max-tokens 128
+=== 00:13:51 end after rc=0 (elapsed 797s)
+=== 00:13:51 start after-eager-load (~/.venvs/inkling/bin/python) --eager-load --prompts p_short --repeats 1 --max-tokens 32
+=== 00:14:29 end after-eager-load rc=0 (elapsed 835s)
+=== 00:14:29 start after-64k (~/.venvs/inkling/bin/python) --prompts p_64k --repeats 2 --max-tokens 128 --warmup-prompt p_short
+=== 00:20:10 end after-64k rc=0 (elapsed 1176s)
+=== 00:20:10 checked out 0abf8bd
+=== 00:20:10 start after-window-only (~/.venvs/inkling/bin/python) --prompts p_short,p_32k --repeats 2 --max-tokens 128
+=== 00:23:46 end after-window-only rc=0 (elapsed 1392s)
+=== 00:23:46 checked out 21e690a
+=== 00:23:46 start after-kernels (~/.venvs/inkling/bin/python) --prompts p_short,p_32k --repeats 2 --max-tokens 128
+=== 00:27:08 end after-kernels rc=0 (elapsed 1594s)
+=== 00:27:08 checked out 355ea6f
+=== 00:27:08 restored branch at 355ea6f (expected 355ea6f)
+=== 00:27:08 start after-kv8 (~/.venvs/inkling/bin/python) --prompts p_short,p_8k --repeats 2 --max-tokens 128 --kv-bits 8 --kv-group-size 64 --quantized-kv-start 0
+=== 00:27:46 end after-kv8 rc=1 (elapsed 1632s)
+=== 00:27:46 all done after 1632s
+=== 00:27:46 lock released
+=== 00:27:46 removed K4 from GPU_QUEUE: now [A1 A3 M1 K2 ]
+=== 00:29:00 [ab] waiting for the GPU: queue [A1 A3 M1 K2 K4 ], lock: none
+=== 01:06:59 [ab] waiting for the GPU: queue [M1 K2 K4 A4 A3 ], lock: 5195 2026-10-29T05:06:40Z M1 llama
+=== 02:16:05 [ab] hold acquired by pid 2298 (queue head: K4); budget 2100s
+=== 02:16:05 [ab] start tf-before-2048 (~/.venvs/inkling-base/bin/python) --teacher-forced <workdir>/package/k4-mlx-vlm-fast-path/bench/results/before.jsonl --prefill-step-size 2048 --max-tokens 128
+=== 02:19:01 [ab] end tf-before-2048 rc=0 (elapsed 176s)
+=== 02:19:01 [ab] start tf-after (~/.venvs/inkling/bin/python) --teacher-forced <workdir>/package/k4-mlx-vlm-fast-path/bench/results/before.jsonl --prefill-step-size 2048 --max-tokens 128 --tf-reference tf-before-2048
+=== 02:21:54 [ab] end tf-after rc=0 (elapsed 349s)
+=== 02:21:54 [ab] start tf-before-512 (~/.venvs/inkling-base/bin/python) --teacher-forced <workdir>/package/k4-mlx-vlm-fast-path/bench/results/before.jsonl --prefill-step-size 512 --max-tokens 128 --tf-reference tf-before-2048
+=== 02:26:50 [ab] end tf-before-512 rc=0 (elapsed 645s)
+=== 02:26:50 [ab] start tf-after-kv8 (~/.venvs/inkling/bin/python) --teacher-forced <workdir>/package/k4-mlx-vlm-fast-path/bench/results/before.jsonl --prefill-step-size 2048 --max-tokens 128 --tf-reference tf-before-2048 --kv-bits 8 --kv-group-size 64 --quantized-kv-start 0
+=== 02:29:45 [ab] end tf-after-kv8 rc=0 (elapsed 820s)
+=== 02:29:45 [ab] start ab-before-1 (~/.venvs/inkling-base/bin/python) --prompts p_short,p_32k --repeats 2 --max-tokens 128
+=== 02:33:22 [ab] end ab-before-1 rc=0 (elapsed 1037s)
+=== 02:33:22 [ab] start ab-after-1 (~/.venvs/inkling/bin/python) --prompts p_short,p_32k --repeats 2 --max-tokens 128
+=== 02:36:34 [ab] end ab-after-1 rc=0 (elapsed 1229s)
+=== 02:36:34 [ab] start after-kv8 (~/.venvs/inkling/bin/python) --prompts p_short,p_8k --repeats 2 --max-tokens 128 --kv-bits 8 --kv-group-size 64 --quantized-kv-start 0
+=== 02:38:04 [ab] end after-kv8 rc=0 (elapsed 1319s)
+=== 02:38:04 [ab] start ab-before-2 (~/.venvs/inkling-base/bin/python) --prompts p_short,p_32k --repeats 2 --max-tokens 128
+=== 02:43:51 [ab] end ab-before-2 rc=0 (elapsed 1666s)
+=== 02:43:51 [ab] start ab-after-2 (~/.venvs/inkling/bin/python) --prompts p_short,p_32k --repeats 2 --max-tokens 128
+=== 02:50:01 [ab] end ab-after-2 rc=0 (elapsed 2036s)
+=== 02:50:01 [ab] A/B done after 2036s
+=== 02:50:01 [ab] lock released
+=== 02:50:01 [ab] removed K4 from GPU_QUEUE: now [A4 K2 A2 M1 A3 ]

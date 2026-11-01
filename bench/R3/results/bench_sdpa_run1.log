@@ -1,0 +1,33 @@
+{"section": "decode T=512"}
+decode T=512 mask=None                                     | r1:    0.186 ms (best    0.136)     11 GB/s | r8:    0.031 ms (best    0.028)     68 GB/s
+decode T=512 mask=additive bf16 [1,32,1,T]                 | r1:    0.180 ms (best    0.134)     12 GB/s | r8:    0.032 ms (best    0.028)     66 GB/s
+decode T=512 mask=bool [1,1,1,T] (window)                  | r1:    0.191 ms (best    0.150)     11 GB/s | r8:    0.035 ms (best    0.030)     61 GB/s
+decode T=512 mask=additive bf16 [1,1,1,T] broadcast        | r1:    0.208 ms (best    0.160)     10 GB/s | r8:    0.039 ms (best    0.030)     54 GB/s
+decode T=512 rel-bias build (vendored style) + sdpa        | r1:    0.312 ms (best    0.247)      7 GB/s | r8:    0.096 ms (best    0.088)     22 GB/s
+decode T=512 UNFUSED matmul+softmax+matmul (additive mask) | r1:    0.269 ms (best    0.248)      8 GB/s | r8:    0.070 ms (best    0.062)     30 GB/s
+{"section": "decode T=4096"}
+decode T=4096 mask=None                                    | r1:    0.310 ms (best    0.275)     54 GB/s | r8:    0.163 ms (best    0.085)    103 GB/s
+decode T=4096 mask=additive bf16 [1,32,1,T]                | r1:    0.254 ms (best    0.180)     67 GB/s | r8:    0.113 ms (best    0.093)    151 GB/s
+decode T=4096 mask=bool [1,1,1,T] (window)                 | r1:    0.208 ms (best    0.183)     81 GB/s | r8:    0.058 ms (best    0.053)    290 GB/s
+decode T=4096 mask=additive bf16 [1,1,1,T] broadcast       | r1:    0.224 ms (best    0.196)     75 GB/s | r8:    0.084 ms (best    0.082)    199 GB/s
+decode T=4096 rel-bias build (vendored style) + sdpa       | r1:    0.301 ms (best    0.239)     57 GB/s | r8:    0.111 ms (best    0.103)    154 GB/s
+decode T=4096 UNFUSED matmul+softmax+matmul (additive mask) | r1:    0.291 ms (best    0.275)     58 GB/s | r8:    0.105 ms (best    0.092)    160 GB/s
+{"section": "decode T=32768"}
+decode T=32768 mask=None                                   | r1:    0.495 ms (best    0.427)    271 GB/s | r8:    0.286 ms (best    0.276)    470 GB/s
+decode T=32768 mask=additive bf16 [1,32,1,T]               | r1:    0.519 ms (best    0.461)    262 GB/s | r8:    0.326 ms (best    0.303)    418 GB/s
+decode T=32768 mask=bool [1,1,1,T] (window)                | r1:    0.409 ms (best    0.381)    328 GB/s | r8:    0.196 ms (best    0.179)    684 GB/s
+decode T=32768 mask=additive bf16 [1,1,1,T] broadcast      | r1:    0.581 ms (best    0.544)    231 GB/s | r8:    0.389 ms (best    0.376)    345 GB/s
+decode T=32768 rel-bias build (vendored style) + sdpa      | r1:    0.648 ms (best    0.591)    210 GB/s | r8:    0.491 ms (best    0.473)    278 GB/s
+decode T=32768 UNFUSED matmul+softmax+matmul (additive mask) | r1:    1.597 ms (best    1.396)     84 GB/s | r8:    1.173 ms (best    0.984)    114 GB/s
+{"label": "42-layer attention per token at ctx 4096", "ms_swa35_at512_nomask": 1.075, "ms_global7_add_mask": 0.787, "ms_global7_bias_build": 0.776, "total_ms_add": 1.862, "total_ms_bias": 1.851}
+{"label": "42-layer attention per token at ctx 32768", "ms_swa35_at512_nomask": 1.075, "ms_global7_add_mask": 2.283, "ms_global7_bias_build": 3.435, "total_ms_add": 3.357, "total_ms_bias": 4.509}
+{"section": "prefill T=2048"}
+prefill T=2048 mask='causal'                               | r1:    2.256 ms (best    2.052) | r4:    2.170 ms (best    2.062)
+{"label": "prefill T=2048 'causal' dense-TFLOPS", "tflops": 31.68}
+prefill T=2048 mask=bool causal array                      | r1:    3.573 ms (best    3.187) | r4:    4.052 ms (best    3.437)
+{"label": "prefill T=2048 bool causal array dense-TFLOPS", "tflops": 16.96}
+prefill T=2048 mask=bool window512 array                   | r1:    5.278 ms (best    4.976) | r4:    5.364 ms (best    4.802)
+{"label": "prefill T=2048 bool window512 array dense-TFLOPS", "tflops": 12.81}
+prefill T=2048 mask=additive bf16 [1,32,T,T]               | r1:    5.172 ms (best    4.690) | r4:    4.917 ms (best    4.747)
+{"label": "prefill T=2048 additive bf16 [1,32,T,T] dense-TFLOPS", "tflops": 13.98}
+prefill T=2048 rel-bias build only [1,32,T,T] (vendored style) | r1:    7.500 ms (best    7.326) | r4:    7.433 ms (best    7.158)

@@ -1,0 +1,55 @@
+Candidate: fuse K RMSNorm into paired K/V convolution, 2026-10-31.
+Baseline: frozen work/perf/k4 (paired convolution only).
+Patch: conv-keynorm.patch, applied after paired-kv-conv.patch.
+No mask code changed. Original snapshot/upstream left untouched.
+
+Arithmetic: four convolution taps retain their fp32 accumulation order and
+activation cast before the residual add. K norm consumes the rounded convolution
+output, uses native128-wide four-values-per-lane accumulation, precise rsqrt,
+and casts the normalized activation before multiplying by the norm weight.
+Convolution state stays fp32. K work uses4channels/lane; V uses1channel/lane.
+
+All GPU tests/timings use work/perf/with_gpu_lock.py with the shared fcntl lock.
+Interpreter: ~/.venvs/inkling/bin/python.
+Environment: PYTHONDONTWRITEBYTECODE=1.
+Working directory: work/perf/k4-convnorm.
+
+1. Exactness:
+python ../with_gpu_lock.py python -m pytest -q mlx_vlm/tests/test_inkling_convnorm.py -p no:cacheprovider
+14 passed in5.80s: fp32/bf16/fp16; C128/C1024; cold/warm and strided states;
+strided inputs and norm weights; repeated updates; tiny-model128-wide decode.
+
+2. Initial three-way benchmark:
+python ../with_gpu_lock.py python bench_convnorm.py
+Four rounds of separate/paired/fused/fused/paired/separate,256ops/sample,
+bf16 B=L=1,C1024,projection width6656. Pipeline warmups excluded.
+Raw convnorm-benchmark.json.
+Median wallus: separate23.6261, paired14.5024, fused14.0881.
+The incremental3% fused gain was inconclusive because individual rows were noisy.
+
+3. Longer independent incremental probe:
+python ../with_gpu_lock.py python bench_convnorm_holdout.py
+ABBA x8,2048ops/sample; same shapes,dtype and inputs;16samples per side.
+Raw convnorm-holdout.json. Median wallus: paired14.3057,fused11.7102 (1.22165x).
+Buildus:4.9807 ->5.0722. Evaluationus:9.2774 ->6.7725 (1.36987x).
+Every ABBA round's median favored the fused implementation.
+Longer chains were used to amortize the scheduling noise seen in the first probe.
+These are microbenchmarks, not full-model throughput; the additional42-layer
+saving of about0.11ms is only an extrapolation. Root owns real-weight AB checks.
+
+4. Final focused regressions (includes fallback tests):
+python ../with_gpu_lock.py python -m pytest -q mlx_vlm/tests/test_inkling_convnorm.py mlx_vlm/tests/test_inkling_sconv_pair.py mlx_vlm/tests/test_inkling_fast_path.py mlx_vlm/tests/test_inkling_kernel_gates.py -p no:cacheprovider
+74 passed in5.89s. Fallbacks include batch,multitoken,training,mask,no-cache,
+and non128 head dimensions.
+
+5. Formatting: black source and new test; passed.
+Patch applicability: git apply --check conv-keynorm.patch in work/perf/k4
+returned0 with no output.
+
+Runtime comparison hook:
+_sconv_kv_norm(k_conv,v_conv,norm,k,v,cache,mask=None).
+Baseline implementation calls _sconv_kv(k_conv,v_conv,k,v,cache,mask), then returns
+norm(k.reshape(*k.shape[:2],-1,norm.weight.shape[0])).reshape(k.shape), v.
+
+Rejected alternative: standalone paired Q/K RMSNorm in work/perf/k4-norm is
+bit-exact but slower (3.56us native versus6.22us custom), and is not included.

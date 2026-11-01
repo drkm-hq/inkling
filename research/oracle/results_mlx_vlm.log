@@ -1,0 +1,35 @@
+
+[gpu] mlx-vlm LanguageModel float32 vs oracle float64 (B=2, L=12)
+  gpu: full forward logits                                               max_abs=9.176e-03  max_rel=5.602e-03
+  gpu: embedding + embed_norm                                            max_abs=3.708e-07  max_rel=9.348e-08
+  gpu: layer 0 output (hybrid_sliding, dense)                            max_abs=1.647e-02  max_rel=2.560e-03
+  gpu: layer 1 output (hybrid, sparse)                                   max_abs=4.837e-02  max_rel=2.007e-03
+  gpu: layer 2 output (hybrid_sliding, sparse)                           max_abs=9.740e-02  max_rel=2.837e-03
+  gpu: cached decode (7 + 5x1) logits                                    max_abs=9.927e-03  max_rel=6.060e-03
+  gpu: chunked prefill (5,3,1,1,1,1) logits                              max_abs=9.231e-03  max_rel=5.635e-03
+
+[cpu] mlx-vlm LanguageModel float32 vs oracle float64 (B=2, L=12)
+  cpu: full forward logits                                               max_abs=1.355e-06  max_rel=8.270e-07
+  cpu: embedding + embed_norm                                            max_abs=4.068e-07  max_rel=1.026e-07
+  cpu: layer 0 output (hybrid_sliding, dense)                            max_abs=2.362e-06  max_rel=3.671e-07
+  cpu: layer 1 output (hybrid, sparse)                                   max_abs=1.283e-05  max_rel=5.324e-07
+  cpu: layer 2 output (hybrid_sliding, sparse)                           max_abs=2.238e-05  max_rel=6.520e-07
+  cpu: cached decode (7 + 5x1) logits                                    max_abs=1.153e-06  max_rel=7.038e-07
+  cpu: chunked prefill (5,3,1,1,1,1) logits                              max_abs=1.519e-06  max_rel=9.270e-07
+
+[cpu] mlx-vlm InklingMTPDraftModel vs mtp_step_ref variants
+  cpu: mlx drafter chain hidden vs oracle variant=mlx (pre-norm hidden, raw embed) max_abs=3.285e-06  max_rel=3.869e-07
+  cpu: mlx drafter logits vs oracle variant=mlx (final_norm before head) max_abs=9.150e-07  max_rel=4.178e-07
+  cpu: mlx drafter logits vs oracle variant=transformers (post-norm hidden, raw embed, no head norm) max_abs=2.744e+00  max_rel=6.875e-01
+  cpu: mlx drafter logits vs oracle variant=vllm (post-norm hidden, backbone embed_norm, no head norm) max_abs=2.521e+00  max_rel=6.690e-01
+  greedy-token agreement of the mlx drafter with: mlx-semantics 1.00 | transformers-semantics 0.67 | vllm-semantics 0.54
+
+[gpu] mlx-vlm InklingMTPDraftModel vs mtp_step_ref variants
+  gpu: mlx drafter chain hidden vs oracle variant=mlx (pre-norm hidden, raw embed) max_abs=1.793e-02  max_rel=2.111e-03
+  gpu: mlx drafter logits vs oracle variant=mlx (final_norm before head) max_abs=2.669e-03  max_rel=1.219e-03
+  gpu: mlx drafter logits vs oracle variant=transformers (post-norm hidden, raw embed, no head norm) max_abs=2.745e+00  max_rel=6.877e-01
+  gpu: mlx drafter logits vs oracle variant=vllm (post-norm hidden, backbone embed_norm, no head norm) max_abs=2.522e+00  max_rel=6.692e-01
+  greedy-token agreement of the mlx drafter with: mlx-semantics 0.96 | transformers-semantics 0.67 | vllm-semantics 0.58
+  (vllm vs transformers semantics greedy agreement on the same inputs: 0.75)
+
+DONE

@@ -1,0 +1,8 @@
+$ ./build/bin/test-flash-attn-bias cuda hard
+ggml_cuda_init: found 1 CUDA devices (Total VRAM: 81071 MiB):
+  Device 0: NVIDIA H100 80GB HBM3, compute capability 9.0, VMM: yes, VRAM: 81071 MiB
+overflow_check offset=137438953468 (>INT32_MAX) large_T=1099511627776 rel_dist=1023 PASS
+backend=cuda suite=hard device=NVIDIA H100 80GB HBM3
+heads64_gqa type=f16 D=64 nq=1024 nkv=1024 hq=64 hkv=8 E=512 mask=1 sliding=0 batch=1 rel_batch=1 strided_rel=0 dense_max_abs=0.00016592443 dense_mean_abs=3.15818102e-06 dense_max_rel=4.90280981 dense_mean_rel=0.0156620257 dense_rmse=5.17712443e-06 naive_max_abs=0.000106558204 naive_mean_abs=2.15699617e-06 naive_max_rel=3.11811582 naive_mean_rel=0.0107324701 naive_rmse=3.55295299e-06 flash_ms=0.4820 dense_ms=1.6940 speedup=3.5145 flash_bytes=171966464 dense_bytes=1531969536 memory_ratio=8.9085 PASS
+
+[rc=0]

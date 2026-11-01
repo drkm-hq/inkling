@@ -1,0 +1,67 @@
+{"_sysinfo": {"mlx": "0.32.4", "device": "Apple M5 Max", "arch": "applegpu_g17s", "load1": 19.3, "load5": 31.0}, "_t": 1793239226.1750689}
+{"section": "layer emulation experts=3b attn=8"}
+{"label": "weight bytes read per decoded token (est.)", "gb": 6.54, "experts": 3, "attn": "8"}
+{"label": "decode 42 layers + head experts=3b attn=8 mask=vendored compile=False ctx=1024", "experts": 3, "attn": "8", "mask": "vendored", "compile": false, "med_ms_r1": 124.4204, "best_ms_r1": 123.6519, "gbps_r1": 52.6, "nbytes": 6539526144}
+{"label": "tok/s", "value": 8.0, "best": 8.1, "experts": 3, "attn": "8", "mask": "vendored", "compile": false}
+{"label": "decode 42 layers + head experts=3b attn=8 mask=vendored compile=True ctx=1024", "experts": 3, "attn": "8", "mask": "vendored", "compile": true, "med_ms_r1": 127.2333, "best_ms_r1": 125.8433, "gbps_r1": 51.4, "nbytes": 6539526144}
+{"label": "tok/s", "value": 7.9, "best": 7.9, "experts": 3, "attn": "8", "mask": "vendored", "compile": true}
+{"label": "decode 42 layers + head experts=3b attn=8 mask=cheap compile=False ctx=1024", "experts": 3, "attn": "8", "mask": "cheap", "compile": false, "med_ms_r1": 175.9429, "best_ms_r1": 135.795, "gbps_r1": 37.2, "nbytes": 6539526144}
+{"label": "tok/s", "value": 5.7, "best": 7.4, "experts": 3, "attn": "8", "mask": "cheap", "compile": false}
+{"label": "decode 42 layers + head experts=3b attn=8 mask=cheap compile=True ctx=1024", "experts": 3, "attn": "8", "mask": "cheap", "compile": true, "med_ms_r1": 174.4733, "best_ms_r1": 169.5656, "gbps_r1": 37.5, "nbytes": 6539526144}
+{"label": "tok/s", "value": 5.7, "best": 5.9, "experts": 3, "attn": "8", "mask": "cheap", "compile": true}
+{"label": "decode one sliding layer experts=3b attn=8", "med_ms_r1": 4.2736, "best_ms_r1": 3.8749, "med_ms_r8": 7.1074, "best_ms_r8": 6.2268}
+{"label": "decode one global layer ctx=1024 experts=3b attn=8", "med_ms_r1": 8.5115, "best_ms_r1": 6.6694, "med_ms_r8": 4.3066, "best_ms_r8": 3.8795}
+{"label": "prefill one sliding layer T=256 experts=3b attn=8 (vendored mask)", "med_ms_r1": 26.6698, "best_ms_r1": 25.9962}
+{"label": "prefill one global layer T=256 experts=3b attn=8 (vendored mask)", "med_ms_r1": 43.4587, "best_ms_r1": 36.9442}
+{"label": "prefill 42-layer estimate T=256", "ms": 1237.7, "tok_per_s": 207.0, "experts": 3, "attn": "8"}
+{"_sysinfo": {"mlx": "0.32.4", "device": "Apple M5 Max", "arch": "applegpu_g17s", "load1": 9.8, "load5": 15.1}, "_t": 1793239875.978289}
+{"section": "layer emulation experts=3b attn=bf16"}
+{"label": "weight bytes read per decoded token (est.)", "gb": 9.05, "experts": 3, "attn": "bf16"}
+{"_sysinfo": {"mlx": "0.32.4", "device": "Apple M5 Max", "arch": "applegpu_g17s", "load1": 11.0, "load5": 15.2}, "_t": 1793239886.214315}
+{"section": "layer emulation experts=3b attn=bf16"}
+{"label": "weight bytes read per decoded token (est.)", "gb": 9.05, "experts": 3, "attn": "bf16"}
+{"label": "decode 42 layers + head experts=3b attn=bf16 mask=vendored compile=False ctx=4096", "experts": 3, "attn": "bf16", "mask": "vendored", "compile": false, "med_ms_r1": 358.9771, "best_ms_r1": 251.0664, "gbps_r1": 25.2, "nbytes": 9045540864}
+{"label": "tok/s", "value": 2.8, "best": 4.0, "experts": 3, "attn": "bf16", "mask": "vendored", "compile": false}
+{"label": "decode 42 layers + head experts=3b attn=bf16 mask=vendored compile=False ctx=4096", "experts": 3, "attn": "bf16", "mask": "vendored", "compile": false, "med_ms_r1": 501.1372, "best_ms_r1": 428.8565, "gbps_r1": 18.1, "nbytes": 9045540864}
+{"label": "tok/s", "value": 2.0, "best": 2.3, "experts": 3, "attn": "bf16", "mask": "vendored", "compile": false}
+{"label": "decode 42 layers + head experts=3b attn=bf16 mask=vendored compile=True ctx=4096", "experts": 3, "attn": "bf16", "mask": "vendored", "compile": true, "med_ms_r1": 458.994, "best_ms_r1": 335.2941, "gbps_r1": 19.7, "nbytes": 9045540864}
+{"label": "tok/s", "value": 2.2, "best": 3.0, "experts": 3, "attn": "bf16", "mask": "vendored", "compile": true}
+{"label": "decode 42 layers + head experts=3b attn=bf16 mask=cheap compile=False ctx=4096", "experts": 3, "attn": "bf16", "mask": "cheap", "compile": false, "med_ms_r1": 301.6487, "best_ms_r1": 242.5544, "gbps_r1": 30.0, "nbytes": 9045540864}
+{"label": "tok/s", "value": 3.3, "best": 4.1, "experts": 3, "attn": "bf16", "mask": "cheap", "compile": false}
+{"label": "decode 42 layers + head experts=3b attn=bf16 mask=cheap compile=True ctx=4096", "experts": 3, "attn": "bf16", "mask": "cheap", "compile": true, "med_ms_r1": 432.3584, "best_ms_r1": 192.4394, "gbps_r1": 20.9, "nbytes": 9045540864}
+{"label": "tok/s", "value": 2.3, "best": 5.2, "experts": 3, "attn": "bf16", "mask": "cheap", "compile": true}
+{"label": "decode one sliding layer experts=3b attn=bf16", "med_ms_r1": 12.4022, "best_ms_r1": 10.44, "med_ms_r8": 10.681, "best_ms_r8": 8.5717}
+{"label": "decode 42 layers + head experts=3b attn=bf16 mask=vendored compile=True ctx=4096", "experts": 3, "attn": "bf16", "mask": "vendored", "compile": true, "med_ms_r1": 446.5678, "best_ms_r1": 409.9819, "gbps_r1": 20.3, "nbytes": 9045540864}
+{"label": "tok/s", "value": 2.2, "best": 2.4, "experts": 3, "attn": "bf16", "mask": "vendored", "compile": true}
+{"label": "decode one global layer ctx=4096 experts=3b attn=bf16", "med_ms_r1": 14.1057, "best_ms_r1": 8.987, "med_ms_r8": 12.2922, "best_ms_r8": 9.1802}
+{"_sysinfo": {"mlx": "0.32.4", "device": "Apple M5 Max", "arch": "applegpu_g17s", "load1": 8.8, "load5": 15.7}, "_t": 1793240267.974538}
+{"section": "layer emulation experts=3b attn=bf16"}
+{"label": "weight bytes read per decoded token (est.)", "gb": 9.05, "experts": 3, "attn": "bf16"}
+{"label": "decode 42 layers + head experts=3b attn=bf16 mask=vendored compile=False ctx=4096", "experts": 3, "attn": "bf16", "mask": "vendored", "compile": false, "med_ms_r1": 213.7876, "best_ms_r1": 188.321, "gbps_r1": 42.3, "nbytes": 9045540864}
+{"label": "tok/s", "value": 4.7, "best": 5.3, "experts": 3, "attn": "bf16", "mask": "vendored", "compile": false}
+{"label": "decode 42 layers + head experts=3b attn=bf16 mask=vendored compile=True ctx=4096", "experts": 3, "attn": "bf16", "mask": "vendored", "compile": true, "med_ms_r1": 238.47, "best_ms_r1": 232.9475, "gbps_r1": 37.9, "nbytes": 9045540864}
+{"label": "tok/s", "value": 4.2, "best": 4.3, "experts": 3, "attn": "bf16", "mask": "vendored", "compile": true}
+{"label": "decode 42 layers + head experts=3b attn=bf16 mask=cheap compile=False ctx=4096", "experts": 3, "attn": "bf16", "mask": "cheap", "compile": false, "med_ms_r1": 231.1414, "best_ms_r1": 227.5417, "gbps_r1": 39.1, "nbytes": 9045540864}
+{"label": "tok/s", "value": 4.3, "best": 4.4, "experts": 3, "attn": "bf16", "mask": "cheap", "compile": false}
+{"label": "decode 42 layers + head experts=3b attn=bf16 mask=cheap compile=True ctx=4096", "experts": 3, "attn": "bf16", "mask": "cheap", "compile": true, "med_ms_r1": 237.5841, "best_ms_r1": 224.0419, "gbps_r1": 38.1, "nbytes": 9045540864}
+{"label": "tok/s", "value": 4.2, "best": 4.5, "experts": 3, "attn": "bf16", "mask": "cheap", "compile": true}
+{"label": "decode one sliding layer experts=3b attn=bf16", "med_ms_r1": 6.4302, "best_ms_r1": 4.6775, "med_ms_r8": 4.3773, "best_ms_r8": 4.1671}
+{"label": "decode one global layer ctx=4096 experts=3b attn=bf16", "med_ms_r1": 5.1059, "best_ms_r1": 4.5768, "med_ms_r8": 4.7319, "best_ms_r8": 4.415}
+{"label": "prefill one sliding layer T=2048 experts=3b attn=bf16 (vendored mask)", "med_ms_r1": 265.578, "best_ms_r1": 245.2762}
+{"label": "prefill one global layer T=2048 experts=3b attn=bf16 (vendored mask)", "med_ms_r1": 252.9748, "best_ms_r1": 243.4052}
+{"label": "prefill 42-layer estimate T=2048", "ms": 11066.1, "tok_per_s": 185.0, "experts": 3, "attn": "bf16"}
+{"section": "layer emulation experts=3b attn=8"}
+{"label": "weight bytes read per decoded token (est.)", "gb": 6.54, "experts": 3, "attn": "8"}
+{"label": "decode 42 layers + head experts=3b attn=8 mask=vendored compile=False ctx=4096", "experts": 3, "attn": "8", "mask": "vendored", "compile": false, "med_ms_r1": 153.6699, "best_ms_r1": 139.5594, "gbps_r1": 42.6, "nbytes": 6539526144}
+{"label": "tok/s", "value": 6.5, "best": 7.2, "experts": 3, "attn": "8", "mask": "vendored", "compile": false}
+{"label": "decode 42 layers + head experts=3b attn=8 mask=vendored compile=True ctx=4096", "experts": 3, "attn": "8", "mask": "vendored", "compile": true, "med_ms_r1": 197.647, "best_ms_r1": 153.296, "gbps_r1": 33.1, "nbytes": 6539526144}
+{"label": "tok/s", "value": 5.1, "best": 6.5, "experts": 3, "attn": "8", "mask": "vendored", "compile": true}
+{"label": "decode 42 layers + head experts=3b attn=8 mask=cheap compile=False ctx=4096", "experts": 3, "attn": "8", "mask": "cheap", "compile": false, "med_ms_r1": 213.8512, "best_ms_r1": 162.8356, "gbps_r1": 30.6, "nbytes": 6539526144}
+{"label": "tok/s", "value": 4.7, "best": 6.1, "experts": 3, "attn": "8", "mask": "cheap", "compile": false}
+{"label": "decode 42 layers + head experts=3b attn=8 mask=cheap compile=True ctx=4096", "experts": 3, "attn": "8", "mask": "cheap", "compile": true, "med_ms_r1": 195.129, "best_ms_r1": 162.9162, "gbps_r1": 33.5, "nbytes": 6539526144}
+{"label": "tok/s", "value": 5.1, "best": 6.1, "experts": 3, "attn": "8", "mask": "cheap", "compile": true}
+{"label": "decode one sliding layer experts=3b attn=8", "med_ms_r1": 5.2654, "best_ms_r1": 4.0889, "med_ms_r8": 5.1181, "best_ms_r8": 3.9821}
+{"label": "decode one global layer ctx=4096 experts=3b attn=8", "med_ms_r1": 4.5351, "best_ms_r1": 4.1216, "med_ms_r8": 3.9497, "best_ms_r8": 3.6206}
+{"label": "prefill one sliding layer T=2048 experts=3b attn=8 (vendored mask)", "med_ms_r1": 223.5091, "best_ms_r1": 220.2651}
+{"label": "prefill one global layer T=2048 experts=3b attn=8 (vendored mask)", "med_ms_r1": 203.4867, "best_ms_r1": 201.0848}
+{"label": "prefill 42-layer estimate T=2048", "ms": 9247.2, "tok_per_s": 221.0, "experts": 3, "attn": "8"}

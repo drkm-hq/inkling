@@ -1,0 +1,205 @@
+From 9b8b6bd9375d0bcc67a2148a56c5457f82645005 Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Wed, 28 Oct 2026 22:51:18 -0400
+Subject: [PATCH] server : do not apply the SWA back-off to a recurrent-tail
+ pos_min
+
+llama_memory_hybrid[_iswa]::seq_pos_min() returns max(attn_min, recr_min),
+and the recurrent side keeps a single live cell per sequence whose pos is
+the LAST decoded position. For a recurrent or hybrid memory (seq_rm type
+FULL or RS) the pos_min the server sees is therefore a tail, not the
+oldest position the state still covers, and a tail is usable only when it
+ends right before the first token to evaluate.
+
+The prompt-cache reuse gate backs pos_min off by n_swa when the model has
+a sliding window. For a hybrid model with SWA layers that makes the gate
+fire on every request, including a strict extension of the cached prompt
+that needs no rewind, and the checkpoint search cannot succeed unless a
+checkpoint lies more than n_swa - 2 tokens back, which the default
+placement (n_ubatch + 4 and 4 tokens before the end of the prompt)
+provides only when n_swa < n_ubatch + 7. Otherwise n_past is reset to 0
+and the whole prompt is re-processed on every request: multi-turn chats
+and agent loops re-prefill their entire context each turn.
+
+Apply the back-off only when pos_min is a genuine window start (type
+PART). Strict extensions now reuse the cached state as-is; rewinds restore
+the context checkpoint before the first changed token, as they already
+did for models without SWA. Models with n_swa == 0 are unaffected. The
+predicate relies on FULL/RS arising only from a recurrent memory today
+(the only seq_rm that refuses a partial range); a non-recurrent FULL
+memory would need its own case.
+
+Add a server test on the hybrid LFM2 CI model (3 shortconv layers, 1
+attention layer), once as-is and once with a sliding window forced through
+--override-kv, covering the strict extension, the identical prompt, a
+rewind within the last tokens, a rewind into the extension and a rewind
+before every checkpoint, each compared against an uncached request.
+
+The fix is F3zz1k's fork commit 371c74a0553663d9d6e28b4ebecac9542f076c19
+ported to the current gate.
+
+Co-authored-by: fezzik <fezzik@fezzik.dev>
+Assisted-by: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ tools/server/server-context.cpp            |  9 +-
+ tools/server/tests/unit/test_completion.py | 97 ++++++++++++++++++++++
+ tools/server/tests/utils.py                | 17 ++++
+ 3 files changed, 122 insertions(+), 1 deletion(-)
+
+diff --git a/tools/server/server-context.cpp b/tools/server/server-context.cpp
+index da0d58fb4..4a9a60cbe 100644
+--- a/tools/server/server-context.cpp
++++ b/tools/server/server-context.cpp
+@@ -4101,8 +4101,15 @@ private:
+                             // starting at pos_eval - n_swa + 1 is enough, while a state without SWA must end before pos_eval
+                             const llama_pos pos_eval = pos_next - (has_new_tokens ? 0 : 1);
+ 
++                            // the pos_min of a recurrent or hybrid memory (FULL/RS) is the position of its single live cell, i.e. the
++                            // last decoded position: a tail that is usable only when it ends right before pos_eval, so the SWA
++                            // back-off does not apply to it (with it, the gate below fires on every request, even a strict extension)
++                            const bool pos_min_is_tail =
++                                ctx_tgt_seq_rm_type == COMMON_CONTEXT_SEQ_RM_TYPE_FULL ||
++                                ctx_tgt_seq_rm_type == COMMON_CONTEXT_SEQ_RM_TYPE_RS;
++
+                             // a state or a checkpoint is useful when its pos_min is below this threshold
+-                            const auto pos_min_thold = std::max(0, n_swa > 0 ? pos_eval - n_swa + 2 : pos_eval);
++                            const auto pos_min_thold = std::max(0, n_swa > 0 && !pos_min_is_tail ? pos_eval - n_swa + 2 : pos_eval);
+ 
+                             if (n_past > 0 && n_past <= slot.prompt.n_tokens()) {
+                                 const auto pos_min = llama_memory_seq_pos_min(llama_get_memory(ctx_tgt), slot.id);
+diff --git a/tools/server/tests/unit/test_completion.py b/tools/server/tests/unit/test_completion.py
+index 572f5368c..ac7ca18dd 100644
+--- a/tools/server/tests/unit/test_completion.py
++++ b/tools/server/tests/unit/test_completion.py
+@@ -767,3 +767,100 @@ def test_completion_checkpoint_kept_after_restore():
+     for suffix in suffixes[1:]:
+         assert len(suffix) > server.n_ubatch + 4
+         assert cache_n(prefix + suffix) == len(prefix) - 1
++
++
++# a recurrent or hybrid memory cannot roll its state back: llama_memory_seq_pos_min() reports the position of its single
++# live cell, the last decoded position, so a cached prompt is reusable only as-is (extended without a rewind) or from a
++# context checkpoint. with a sliding window (n_swa > 0) the attention part of the memory is hybrid-iswa, and the server
++# must not back pos_min off by n_swa then: every request would re-process the whole prompt
++@pytest.mark.parametrize("n_swa", [0, 64])
++def test_completion_cache_hybrid_memory(n_swa: int):
++    global server
++    server = ServerPreset.lfm2_hybrid()
++    server.n_slots = 2
++    server.n_batch = 64
++    server.n_ubatch = 32
++    server.cache_ram = 0
++    server.temperature = 0.0
++    if n_swa > 0:
++        server.override_kv = f"lfm2.attention.sliding_window=int:{n_swa}"
++    server.start()
++
++    def tokenize(content):
++        res = server.make_request("POST", "/tokenize", data={"content": content})
++        assert res.status_code == 200
++        return res.body["tokens"]
++
++    # (cache_n, prompt_n, the sampled token, the top logprobs it was sampled from)
++    def completion(prompt, cache_prompt, id_slot):
++        res = server.make_request("POST", "/completion", data={
++            "prompt": prompt,
++            "id_slot": id_slot,
++            "n_predict": 1,
++            "n_probs": 5,
++            "cache_prompt": cache_prompt,
++        })
++        assert res.status_code == 200
++        timings = res.body["timings"]
++        probs = res.body["completion_probabilities"][0]
++        top = [(p["id"], p["logprob"]) for p in probs["top_logprobs"]]
++        return timings["cache_n"], timings["prompt_n"], probs["id"], top
++
++    # the cached requests use slot 0, the reference requests without the cache use slot 1
++    def cached(prompt):
++        return completion(prompt, True, 0)
++
++    def reference(prompt):
++        return completion(prompt, False, 1)[3]
++
++    # the cached request evaluates its tokens in fewer ubatches than the reference, so the logprobs differ by the
++    # accumulation order (up to a few tenths of a nat on a short suffix of this Q4_K_M model): same greedy token,
++    # and the logprobs of the candidates both lists have within 0.2 nats
++    def assert_same_output(top, expected):
++        assert top[0][0] == expected[0][0]
++        lp_expected = dict(expected)
++        common = [(tid, lp) for tid, lp in top if tid in lp_expected]
++        assert len(common) >= 3
++        for tid, lp in common:
++            assert lp == pytest.approx(lp_expected[tid], abs=0.2)
++
++    base = tokenize("Purple elephants quietly compose sonnets about tax law in the moonlight while seven tiny robots "
++                    "repair the broken lighthouse lens before the storm arrives and the farmer counts his sheep")
++    ext  = tokenize("Green apples rolled down the hill toward the river where a curious otter collected them")
++    alt  = tokenize("under a flat stone near the old mill")
++    n_base = len(base)
++    assert n_base > server.n_ubatch + 8 and len(ext) > 8 and len(alt) > 4
++
++    # prime the cache: the slot keeps the prompt (the sampled token is not decoded, so it is not kept)
++    cache_n, prompt_n, _, _ = cached(base)
++    assert (cache_n, prompt_n) == (0, n_base)
++
++    # a strict extension reuses the whole cached prompt: only the new tokens are evaluated
++    assert ext[-3] != alt[0] and ext[2] != alt[0]
++    n_full = n_base + len(ext)
++
++    cache_n, prompt_n, _, top = cached(base + ext)
++    assert (cache_n, prompt_n) == (n_base, len(ext))
++    assert_same_output(top, reference(base + ext))
++
++    # the same prompt: at least one token has to be evaluated, from the checkpoint 4 tokens before the end of the prompt
++    cache_n, prompt_n, _, top = cached(base + ext)
++    assert (cache_n, prompt_n) == (n_full - 4, 4)
++    assert_same_output(top, reference(base + ext))
++
++    # a rewind within the last 4 tokens restores the same checkpoint
++    cache_n, prompt_n, _, top = cached(base + ext[:-3] + alt[:3])
++    assert (cache_n, prompt_n) == (n_full - 4, 4)
++    assert_same_output(top, reference(base + ext[:-3] + alt[:3]))
++
++    # a rewind into the extension restores the checkpoint taken before it was evaluated
++    cache_n, prompt_n, _, top = cached(base + ext[:2] + alt)
++    assert (cache_n, prompt_n) == (n_base, 2 + len(alt))
++    assert_same_output(top, reference(base + ext[:2] + alt))
++
++    # a rewind before every checkpoint (the earliest one is n_ubatch + 4 tokens before the end of the primed prompt)
++    # re-processes the whole prompt
++    n_head = n_base - server.n_ubatch - 8
++    cache_n, prompt_n, _, top = cached(base[:n_head] + ext)
++    assert (cache_n, prompt_n) == (0, n_head + len(ext))
++    assert_same_output(top, reference(base[:n_head] + ext))
+diff --git a/tools/server/tests/utils.py b/tools/server/tests/utils.py
+index 0ca49192a..955c217ba 100644
+--- a/tools/server/tests/utils.py
++++ b/tools/server/tests/utils.py
+@@ -692,6 +692,23 @@ class ServerPreset:
+         server.seed = 42
+         return server
+ 
++    @staticmethod
++    def lfm2_hybrid() -> ServerProcess:
++        server = ServerProcess()
++        server.offline = True # will be downloaded by load_all()
++        # hybrid memory: 3 shortconv (recurrent) layers and 1 attention layer
++        server.model_hf_repo = "ggml-org/LFM2-test-ci-80M"
++        server.model_hf_file = "model-Q4_K_M.gguf"
++        server.model_alias = "lfm2-hybrid"
++        server.n_ctx = 512
++        server.n_batch = 64
++        server.n_ubatch = 32
++        server.n_slots = 1
++        server.n_predict = 16
++        server.temperature = 0.0
++        server.seed = 42
++        return server
++
+     @staticmethod
+     def router() -> ServerProcess:
+         server = ServerProcess()
+-- 
+2.55.0
+

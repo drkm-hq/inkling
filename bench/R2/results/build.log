@@ -1,0 +1,444 @@
+[  0%] Building CXX object vendor/cpp-httplib/CMakeFiles/cpp-httplib.dir/httplib.cpp.o
+[  0%] Building C object ggml/src/CMakeFiles/ggml-base.dir/ggml-alloc.c.o
+[  0%] Building CXX object common/CMakeFiles/llama-common-base.dir/build-info.cpp.o
+[  0%] Building C object vendor/hash/CMakeFiles/vendor-hash.dir/xxhash/xxhash.c.o
+[  1%] Building C object ggml/src/CMakeFiles/ggml-base.dir/ggml.c.o
+[  1%] Building CXX object vendor/hash/CMakeFiles/vendor-hash.dir/hash.cpp.o
+[  1%] Building C object vendor/hash/CMakeFiles/vendor-hash.dir/sha256/sha256.c.o
+[  1%] Building CXX object ggml/src/CMakeFiles/ggml-base.dir/ggml-backend-meta.cpp.o
+[  1%] Building CXX object vendor/hash/CMakeFiles/vendor-hash.dir/sha1/sha1.c.o
+[  1%] Provisioning UI assets
+[  1%] Building CXX object ggml/src/CMakeFiles/ggml-base.dir/ggml-backend.cpp.o
+[  1%] Building CXX object ggml/src/CMakeFiles/ggml-base.dir/ggml.cpp.o
+-- UI: downloading from b11983: https://huggingface.co/buckets/ggml-org/llama-ui/resolve/b11983/dist.tar.gz
+-- UI: download dist.tar.gz.sha256 from b11983 failed: "HTTP response code said error"
+-- UI: downloading from latest: https://huggingface.co/buckets/ggml-org/llama-ui/resolve/latest/dist.tar.gz
+[  3%] Building CXX object ggml/src/CMakeFiles/ggml-base.dir/ggml-opt.cpp.o
+[  3%] Building CXX object ggml/src/CMakeFiles/ggml-base.dir/ggml-threading.cpp.o
+[  3%] Building C object ggml/src/CMakeFiles/ggml-base.dir/ggml-quants.c.o
+[  5%] Linking CXX static library libllama-common-base.a
+[  5%] Building CXX object ggml/src/CMakeFiles/ggml-base.dir/gguf.cpp.o
+[  5%] Built target llama-common-base
+[  7%] Linking CXX static library libvendor-hash.a
+[  7%] Built target vendor-hash
+-- UI: archive verified and extracted
+-- UI: HF download succeeded, stamp updated (ggml-org/llama-ui|b11983, resolved: latest)
+-- UI: gzip compression applied (<workdir>/upstream/llama.cpp-inkling/build/tools/ui/ui-gzip/_gzip)
+[  7%] Linking CXX shared library ../../bin/libggml-base.dylib
+[  7%] Built target ggml-base
+[  7%] Generate embedded Metal library for conv
+[  7%] Generate embedded Metal library for argsort
+[  7%] Generate embedded Metal library for wkv
+[  7%] Generate embedded Metal library for fa_aux
+[  8%] Generate embedded Metal library for fa_q4_0
+[  8%] Generate embedded Metal library for binbcast
+[  8%] Generate embedded Metal library for fa_f32
+[  8%] Generate embedded Metal library for fa_f16
+[  8%] Building CXX object ggml/src/ggml-blas/CMakeFiles/ggml-blas.dir/ggml-blas.cpp.o
+[  8%] Building C object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/ggml-cpu.c.o
+[  8%] Generate embedded Metal library for fa_q4_1
+[  8%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/ggml-cpu.cpp.o
+[  8%] Generate embedded Metal library for fa_q8_0
+[  8%] Generate embedded Metal library for fa_q5_0
+[  8%] Generate embedded Metal library for fa_q5_1
+[ 10%] Generate embedded Metal library for fa_tensor
+[ 10%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/repack.cpp.o
+[ 10%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/hbm.cpp.o
+[ 12%] Building C object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/quants.c.o
+[ 12%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/traits.cpp.o
+[ 12%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/amx/amx.cpp.o
+[ 12%] Generate embedded Metal library for fa_vec_f16
+[ 12%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/amx/mmq.cpp.o
+[ 12%] Generate embedded Metal library for fa_vec_f32
+[ 12%] Generate embedded Metal library for fa_vec_q4_0
+[ 12%] Generate embedded Metal library for fa_vec_q4_1
+[ 12%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/tiled/tiled.cpp.o
+[ 12%] Generate embedded Metal library for fa_vec_q5_0
+[ 14%] Generate embedded Metal library for fa_vec_q5_1
+[ 14%] Generate embedded Metal library for fa_vec_q8_0
+[ 14%] Generate embedded Metal library for gated_delta_net
+[ 14%] Generate embedded Metal library for misc
+[ 14%] Generate embedded Metal library for mul_mm
+[ 14%] Generate embedded Metal library for mul_mv
+[ 14%] Generate embedded Metal library for mul_mv_mma
+[ 14%] Generate embedded Metal library for norm
+[ 14%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/tiled/tiled-kernel.cpp.o
+[ 14%] Generate embedded Metal library for pool
+[ 15%] Generate embedded Metal library for quantize
+[ 17%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/binary-ops.cpp.o
+[ 17%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/unary-ops.cpp.o
+[ 17%] Generate embedded Metal library for reduce
+[ 17%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/vec.cpp.o
+[ 19%] Generate embedded Metal library for rope
+[ 19%] Generate embedded Metal library for softmax
+[ 19%] Generate embedded Metal library for solve_tri
+[ 19%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/ops.cpp.o
+[ 19%] Generate embedded Metal library for ssm
+[ 21%] Generate embedded Metal library for tri
+[ 21%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/llamafile/sgemm.cpp.o
+[ 21%] Generate embedded Metal library for unary
+[ 21%] Generate embedded Metal library for upscale
+[ 22%] Building CXX object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/ggml-metal.cpp.o
+[ 22%] Building C object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/ggml-metal-device.m.o
+[ 22%] Building CXX object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/ggml-metal-device.cpp.o
+[ 24%] Building C object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/arch/arm/quants.c.o
+[ 26%] Linking CXX shared library ../../../bin/libggml-blas.dylib
+[ 26%] Built target ggml-blas
+[ 26%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/arch/arm/repack.cpp.o
+[ 26%] Building CXX object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/ggml-metal-common.cpp.o
+[ 26%] Building C object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/ggml-metal-context.m.o
+-- UI: embedded 70 assets
+[ 26%] Built target llama-ui-assets
+[ 28%] Building CXX object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/ggml-metal-fusion.cpp.o
+[ 28%] Building CXX object tools/ui/CMakeFiles/llama-ui.dir/ui.cpp.o
+[ 28%] Building CXX object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/ggml-metal-ops.cpp.o
+[ 28%] Building CXX object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/ggml-metal-tuning.cpp.o
+[ 28%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-fa_aux.s.o
+[ 28%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-fa_f16.s.o
+[ 28%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-fa_f32.s.o
+[ 29%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-fa_q4_0.s.o
+[ 29%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-fa_q4_1.s.o
+[ 29%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-fa_q5_0.s.o
+[ 29%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-fa_q5_1.s.o
+[ 29%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-fa_q8_0.s.o
+[ 31%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-fa_tensor.s.o
+[ 31%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-fa_vec_f16.s.o
+[ 31%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-fa_vec_f32.s.o
+[ 31%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-fa_vec_q4_0.s.o
+[ 31%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-fa_vec_q4_1.s.o
+[ 31%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-fa_vec_q5_0.s.o
+[ 33%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-fa_vec_q5_1.s.o
+[ 33%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-fa_vec_q8_0.s.o
+[ 33%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-mul_mv.s.o
+[ 33%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-mul_mv_mma.s.o
+[ 33%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-mul_mm.s.o
+[ 35%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-quantize.s.o
+[ 35%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-softmax.s.o
+[ 35%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-norm.s.o
+[ 35%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-unary.s.o
+[ 35%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-binbcast.s.o
+[ 35%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-reduce.s.o
+[ 36%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-tri.s.o
+[ 36%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-ssm.s.o
+[ 36%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-wkv.s.o
+[ 36%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-gated_delta_net.s.o
+[ 36%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-solve_tri.s.o
+[ 38%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-rope.s.o
+[ 38%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-conv.s.o
+[ 38%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-upscale.s.o
+[ 38%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-argsort.s.o
+[ 38%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-pool.s.o
+[ 38%] Building ASM object ggml/src/ggml-metal/CMakeFiles/ggml-metal.dir/autogenerated/ggml-metal-embed-misc.s.o
+[ 40%] Linking CXX shared library ../../../bin/libggml-metal.dylib
+[ 40%] Built target ggml-metal
+[ 40%] Linking CXX static library libllama-ui.a
+[ 40%] Built target llama-ui
+[ 40%] Linking CXX shared library ../../bin/libggml-cpu.dylib
+[ 40%] Built target ggml-cpu
+[ 40%] Building CXX object ggml/src/CMakeFiles/ggml.dir/ggml-backend-dl.cpp.o
+[ 40%] Building CXX object ggml/src/CMakeFiles/ggml.dir/ggml-backend-reg.cpp.o
+[ 40%] Linking CXX shared library ../../bin/libggml.dylib
+[ 40%] Built target ggml
+[ 40%] Building CXX object src/CMakeFiles/llama.dir/Unity/unity_8_cxx.cxx.o
+[ 40%] Building CXX object src/CMakeFiles/llama.dir/Unity/unity_10_cxx.cxx.o
+[ 42%] Building CXX object src/CMakeFiles/llama.dir/Unity/unity_6_cxx.cxx.o
+[ 42%] Building CXX object src/CMakeFiles/llama.dir/Unity/unity_9_cxx.cxx.o
+[ 42%] Building CXX object src/CMakeFiles/llama.dir/Unity/unity_7_cxx.cxx.o
+[ 42%] Building CXX object src/CMakeFiles/llama.dir/Unity/unity_3_cxx.cxx.o
+[ 42%] Building CXX object src/CMakeFiles/llama.dir/Unity/unity_2_cxx.cxx.o
+[ 43%] Building CXX object src/CMakeFiles/llama.dir/Unity/unity_1_cxx.cxx.o
+[ 43%] Building CXX object src/CMakeFiles/llama.dir/Unity/unity_5_cxx.cxx.o
+[ 43%] Building CXX object src/CMakeFiles/llama.dir/Unity/unity_4_cxx.cxx.o
+[ 43%] Building CXX object src/CMakeFiles/llama.dir/Unity/unity_0_cxx.cxx.o
+[ 43%] Linking CXX static library libcpp-httplib.a
+[ 43%] Built target cpp-httplib
+[ 43%] Building CXX object src/CMakeFiles/llama.dir/llama.cpp.o
+[ 43%] Building CXX object src/CMakeFiles/llama.dir/llama-adapter.cpp.o
+[ 43%] Building CXX object src/CMakeFiles/llama.dir/llama-arch.cpp.o
+[ 43%] Building CXX object src/CMakeFiles/llama.dir/llama-batch.cpp.o
+[ 45%] Building CXX object src/CMakeFiles/llama.dir/llama-chat.cpp.o
+[ 45%] Building CXX object src/CMakeFiles/llama.dir/llama-context.cpp.o
+[ 45%] Building CXX object src/CMakeFiles/llama.dir/llama-cparams.cpp.o
+[ 45%] Building CXX object src/CMakeFiles/llama.dir/llama-grammar.cpp.o
+[ 45%] Building CXX object src/CMakeFiles/llama.dir/llama-graph.cpp.o
+[ 47%] Building CXX object src/CMakeFiles/llama.dir/llama-hparams.cpp.o
+[ 47%] Building CXX object src/CMakeFiles/llama.dir/llama-impl.cpp.o
+[ 47%] Building CXX object src/CMakeFiles/llama.dir/llama-io.cpp.o
+[ 47%] Building CXX object src/CMakeFiles/llama.dir/llama-kv-cache.cpp.o
+[ 47%] Building CXX object src/CMakeFiles/llama.dir/llama-kv-cache-iswa.cpp.o
+[ 47%] Building CXX object src/CMakeFiles/llama.dir/llama-kv-cache-dsa.cpp.o
+[ 49%] Building CXX object src/CMakeFiles/llama.dir/llama-kv-cache-dsa-iswa.cpp.o
+[ 49%] Building CXX object src/CMakeFiles/llama.dir/llama-kv-cache-msa.cpp.o
+[ 49%] Building CXX object src/CMakeFiles/llama.dir/llama-kv-cache-dsv4.cpp.o
+[ 49%] Building CXX object src/CMakeFiles/llama.dir/llama-memory.cpp.o
+[ 49%] Building CXX object src/CMakeFiles/llama.dir/llama-moe-cache.cpp.o
+[ 50%] Building CXX object src/CMakeFiles/llama.dir/llama-memory-hybrid.cpp.o
+[ 50%] Building CXX object src/CMakeFiles/llama.dir/llama-memory-hybrid-iswa.cpp.o
+[ 50%] Building CXX object src/CMakeFiles/llama.dir/llama-memory-hybrid-idx.cpp.o
+[ 50%] Building CXX object src/CMakeFiles/llama.dir/llama-memory-recurrent.cpp.o
+[ 50%] Building CXX object src/CMakeFiles/llama.dir/llama-mmap.cpp.o
+[ 50%] Building CXX object src/CMakeFiles/llama.dir/llama-model-loader.cpp.o
+[ 52%] Building CXX object src/CMakeFiles/llama.dir/llama-model-saver.cpp.o
+[ 52%] Building CXX object src/CMakeFiles/llama.dir/llama-model.cpp.o
+[ 52%] Building CXX object src/CMakeFiles/llama.dir/llama-quant.cpp.o
+[ 52%] Building CXX object src/CMakeFiles/llama.dir/llama-sampler.cpp.o
+[ 52%] Building CXX object src/CMakeFiles/llama.dir/llama-vocab.cpp.o
+[ 54%] Building CXX object src/CMakeFiles/llama.dir/unicode-data.cpp.o
+[ 54%] Building CXX object src/CMakeFiles/llama.dir/unicode.cpp.o
+[ 54%] Linking CXX shared library ../bin/libllama.dylib
+[ 54%] Built target llama
+[ 54%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/mtmd-helper.cpp.o
+[ 54%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/mtmd-image.cpp.o
+[ 54%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/mtmd-helper-gen.cpp.o
+[ 56%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/parsers.cpp.o
+[ 56%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/mtmd-audio.cpp.o
+[ 56%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/mtmd.cpp.o
+[ 56%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/deepseek.cpp.o
+[ 56%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/cohere2moe.cpp.o
+[ 56%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/gpt-oss.cpp.o
+[ 56%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/gemma4.cpp.o
+[ 56%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/functionary-v3-2.cpp.o
+[ 57%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/gigachat-v3.cpp.o
+[ 59%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/clip.cpp.o
+[ 59%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/harmony-xml.cpp.o
+[ 59%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/inkling.cpp.o
+[ 59%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/k2-horizon.cpp.o
+[ 59%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/cogvlm.cpp.o
+[ 59%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/conformer.cpp.o
+[ 61%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/kimi-k2.cpp.o
+[ 61%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/kimi-k3.cpp.o
+[ 61%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/deepseek4v.cpp.o
+[ 61%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/dots3note.cpp.o
+[ 61%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/ling3.cpp.o
+[ 61%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/dotsocr.cpp.o
+[ 63%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/exaone4_5.cpp.o
+[ 63%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/gemma4a.cpp.o
+[ 63%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/gemma4v.cpp.o
+[ 63%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/gemma4ua.cpp.o
+[ 63%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/gemma4uv.cpp.o
+[ 63%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/lfm2.cpp.o
+[ 63%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/llm-jp-harmony.cpp.o
+[ 63%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/minicpm5.cpp.o
+[ 64%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/minimax-m3.cpp.o
+[ 66%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/glm4v.cpp.o
+[ 66%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/granite-speech.cpp.o
+[ 66%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/ministral3.cpp.o
+[ 66%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/muse-glimmer.cpp.o
+[ 66%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/granite4-vision.cpp.o
+[ 66%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/muse-spark.cpp.o
+[ 66%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/hunyuanvl.cpp.o
+[ 66%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/internvl.cpp.o
+[ 66%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/qwen3-coder.cpp.o
+[ 66%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/inkling.cpp.o
+[ 68%] Building CXX object common/CMakeFiles/llama-common.dir/parsers/translate-gemma.cpp.o
+[ 70%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/kimivl.cpp.o
+[ 70%] Building CXX object common/CMakeFiles/llama-common.dir/arg.cpp.o
+[ 70%] Building CXX object common/CMakeFiles/llama-common.dir/chat-auto-parser-generator.cpp.o
+[ 70%] Building CXX object common/CMakeFiles/llama-common.dir/chat-auto-parser-helpers.cpp.o
+[ 70%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/kimik25.cpp.o
+[ 70%] Building CXX object common/CMakeFiles/llama-common.dir/chat-diff-analyzer.cpp.o
+[ 70%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/nemotron-v2-vl.cpp.o
+[ 70%] Building CXX object common/CMakeFiles/llama-common.dir/chat-peg-parser.cpp.o
+[ 70%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/nemotron-omni.cpp.o
+[ 70%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/muse-glimmer.cpp.o
+[ 71%] Building CXX object common/CMakeFiles/llama-common.dir/chat.cpp.o
+[ 73%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/muse-spark-audio.cpp.o
+[ 73%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/llama4.cpp.o
+[ 73%] Building CXX object common/CMakeFiles/llama-common.dir/common.cpp.o
+[ 73%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/llava.cpp.o
+[ 73%] Building CXX object common/CMakeFiles/llama-common.dir/console.cpp.o
+[ 73%] Building CXX object common/CMakeFiles/llama-common.dir/debug.cpp.o
+[ 73%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/minicpmv.cpp.o
+[ 73%] Building CXX object common/CMakeFiles/llama-common.dir/download.cpp.o
+[ 75%] Building CXX object common/CMakeFiles/llama-common.dir/fit.cpp.o
+[ 75%] Building CXX object common/CMakeFiles/llama-common.dir/file-lock.cpp.o
+[ 75%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/paddleocr.cpp.o
+[ 75%] Building CXX object common/CMakeFiles/llama-common.dir/hf-cache.cpp.o
+[ 75%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/pixtral.cpp.o
+[ 75%] Building CXX object common/CMakeFiles/llama-common.dir/imatrix-loader.cpp.o
+[ 75%] Building CXX object common/CMakeFiles/llama-common.dir/json-schema-to-grammar.cpp.o
+[ 75%] Building CXX object common/CMakeFiles/llama-common.dir/json-schema.cpp.o
+[ 77%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/qwen2vl.cpp.o
+[ 78%] Building CXX object common/CMakeFiles/llama-common.dir/json.cpp.o
+[ 78%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/sensenova-u1.cpp.o
+[ 78%] Building CXX object common/CMakeFiles/llama-common.dir/llguidance.cpp.o
+[ 78%] Building CXX object common/CMakeFiles/llama-common.dir/log.cpp.o
+[ 78%] Building CXX object common/CMakeFiles/llama-common.dir/ngram-cache.cpp.o
+[ 78%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/minimax-m3.cpp.o
+[ 78%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/qwen3vl.cpp.o
+[ 78%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/lfm3vl.cpp.o
+[ 80%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/ling3vl.cpp.o
+[ 80%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/mimovl.cpp.o
+[ 80%] Building CXX object common/CMakeFiles/llama-common.dir/ngram-map.cpp.o
+[ 82%] Building CXX object common/CMakeFiles/llama-common.dir/ngram-mod.cpp.o
+[ 82%] Building CXX object common/CMakeFiles/llama-common.dir/peg-parser.cpp.o
+[ 82%] Building CXX object common/CMakeFiles/llama-common.dir/preset.cpp.o
+[ 82%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/qwen3a.cpp.o
+[ 82%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/mimo-audio.cpp.o
+[ 82%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/qwen3tts-spkenc.cpp.o
+[ 82%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/qwen3tts-gen.cpp.o
+[ 84%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/pockettts-seanet.cpp.o
+[ 84%] Building CXX object common/CMakeFiles/llama-common.dir/reasoning-budget.cpp.o
+[ 84%] Building CXX object common/CMakeFiles/llama-common.dir/sampling.cpp.o
+[ 84%] Building CXX object common/CMakeFiles/llama-common.dir/speculative.cpp.o
+[ 84%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/pockettts-spkenc.cpp.o
+[ 84%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/pockettts-gen.cpp.o
+[ 84%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/soprano.cpp.o
+[ 85%] Building CXX object common/CMakeFiles/llama-common.dir/subproc.cpp.o
+[ 85%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/step3vl.cpp.o
+[ 87%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/siglip.cpp.o
+[ 87%] Building CXX object common/CMakeFiles/llama-common.dir/trie.cpp.o
+[ 87%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/whisper-enc.cpp.o
+[ 87%] Building CXX object common/CMakeFiles/llama-common.dir/unicode.cpp.o
+[ 87%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/voxtral-rt.cpp.o
+[ 87%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/deepseekocr.cpp.o
+[ 87%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/deepseekocr2.cpp.o
+[ 87%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/mobilenetv5.cpp.o
+[ 89%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/youtuvl.cpp.o
+[ 89%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/yasa2.cpp.o
+[ 89%] Building CXX object tools/mtmd/CMakeFiles/mtmd.dir/models/parakeet.cpp.o
+[ 89%] Building CXX object common/CMakeFiles/llama-common.dir/jinja/lexer.cpp.o
+[ 89%] Building CXX object common/CMakeFiles/llama-common.dir/jinja/parser.cpp.o
+[ 91%] Building CXX object common/CMakeFiles/llama-common.dir/jinja/runtime.cpp.o
+[ 91%] Building CXX object common/CMakeFiles/llama-common.dir/jinja/value.cpp.o
+[ 91%] Building CXX object common/CMakeFiles/llama-common.dir/jinja/string.cpp.o
+[ 91%] Building CXX object common/CMakeFiles/llama-common.dir/jinja/caps.cpp.o
+[ 91%] Linking CXX shared library ../../bin/libmtmd.dylib
+[ 91%] Built target mtmd
+[ 91%] Linking CXX shared library ../bin/libllama-common.dylib
+[ 91%] Built target llama-common
+[ 91%] Building CXX object tools/server/CMakeFiles/server-context.dir/server-context.cpp.o
+[ 91%] Building CXX object tools/server/CMakeFiles/server-context.dir/server-chat.cpp.o
+[ 91%] Building CXX object tools/server/CMakeFiles/server-context.dir/server-decision.cpp.o
+[ 92%] Building CXX object tools/server/CMakeFiles/server-context.dir/server-queue.cpp.o
+[ 92%] Building CXX object tools/server/CMakeFiles/server-context.dir/server-common.cpp.o
+[ 92%] Building CXX object tools/server/CMakeFiles/server-context.dir/server-stream.cpp.o
+[ 92%] Building CXX object tools/server/CMakeFiles/server-context.dir/server-task.cpp.o
+[ 94%] Building CXX object tools/server/CMakeFiles/server-context.dir/server-schema.cpp.o
+[ 94%] Building CXX object tools/server/CMakeFiles/server-context.dir/server-mcp.cpp.o
+[ 94%] Building CXX object tools/server/CMakeFiles/server-context.dir/server-tools.cpp.o
+[ 94%] Linking CXX static library libserver-context.a
+[ 94%] Built target server-context
+[ 94%] Building CXX object tools/server/CMakeFiles/llama-server-impl.dir/server-http.cpp.o
+[ 94%] Building CXX object tools/server/CMakeFiles/llama-server-impl.dir/server-models.cpp.o
+[ 96%] Building CXX object tools/server/CMakeFiles/llama-server-impl.dir/server.cpp.o
+[ 96%] Building CXX object tools/server/CMakeFiles/llama-server-impl.dir/server-models-sched.cpp.o
+[ 96%] Building CXX object tools/server/CMakeFiles/llama-server-impl.dir/server-connect.cpp.o
+[ 96%] Linking CXX shared library ../../bin/libllama-server-impl.dylib
+[ 96%] Built target llama-server-impl
+[ 96%] Building CXX object tools/cli/CMakeFiles/llama-cli-impl.dir/cli-context.cpp.o
+[ 96%] Building CXX object tools/cli/CMakeFiles/llama-cli-impl.dir/cli-client.cpp.o
+[ 96%] Building CXX object tools/cli/CMakeFiles/llama-cli-impl.dir/cli.cpp.o
+[ 98%] Linking CXX shared library ../../bin/libllama-cli-impl.dylib
+[ 98%] Built target llama-cli-impl
+[100%] Building CXX object tools/cli/CMakeFiles/llama-cli.dir/main.cpp.o
+[100%] Linking CXX executable ../../bin/llama-cli
+[100%] Built target llama-cli
+-- llama.cpp version: 0.7.0-dev
+CMAKE_BUILD_TYPE=Release
+-- Warning: ccache not found - consider installing it for faster compilation or disable this warning with GGML_CCACHE=OFF
+-- CMAKE_SYSTEM_PROCESSOR: arm64
+-- GGML_SYSTEM_ARCH: ARM
+-- Could NOT find OpenMP_C (missing: OpenMP_C_FLAGS OpenMP_C_LIB_NAMES) 
+-- Could NOT find OpenMP_CXX (missing: OpenMP_CXX_FLAGS OpenMP_CXX_LIB_NAMES) 
+-- Could NOT find OpenMP (missing: OpenMP_C_FOUND OpenMP_CXX_FOUND) 
+CMake Warning at ggml/src/CMakeLists.txt:347 (message):
+  OpenMP not found
+
+
+-- Including CPU backend
+-- Accelerate framework found
+-- ARM detected
+CMake Warning at ggml/src/ggml-cpu/CMakeLists.txt:155 (message):
+  ARM -march/-mcpu not found, -mcpu=native will be used
+Call Stack (most recent call first):
+  ggml/src/CMakeLists.txt:596 (ggml_add_cpu_backend_variant_impl)
+
+
+-- Checking for ARM features using flags:
+--   -U__ARM_FEATURE_SVE
+--   -mcpu=native+dotprod+i8mm+nosve+sme
+-- Adding CPU backend variant ggml-cpu: -U__ARM_FEATURE_SVE;-mcpu=native+dotprod+i8mm+nosve+sme 
+-- BLAS found, Libraries: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/Accelerate.framework
+-- BLAS found, Includes: 
+-- Including BLAS backend
+-- Metal framework found
+-- Including METAL backend
+-- ggml version: 0.27.0
+-- ggml commit:  3582c5ee0
+-- OpenSSL found: 4.0.3
+-- Generating embedded license file for target: llama-app
+-- Configuring done (1.0s)
+-- Generating done (0.9s)
+-- Build files have been written to: <workdir>/upstream/llama.cpp-inkling/build
+[  0%] Provisioning UI assets
+-- UI: HF stamp matches 'ggml-org/llama-ui|b11983', skipping HF fetch
+[  1%] Built target llama-common-base
+[  3%] Built target vendor-hash
+[  3%] Built target cpp-httplib
+[  7%] Built target ggml-base
+-- UI: assets unchanged, skipping embedding
+[  7%] Built target llama-ui-assets
+[  9%] Built target ggml-blas
+[  9%] Built target llama-ui
+[ 36%] Built target ggml-metal
+[ 41%] Built target ggml-cpu
+[ 41%] Built target ggml
+[ 56%] Built target llama
+[ 74%] Built target llama-common
+[ 94%] Built target mtmd
+[ 98%] Built target server-context
+[100%] Built target llama-server-impl
+[100%] Building CXX object tools/server/CMakeFiles/llama-server.dir/main.cpp.o
+[100%] Linking CXX executable ../../bin/llama-server
+[100%] Built target llama-server
+[  2%] Built target llama-common-base
+[  2%] Built target cpp-httplib
+[  7%] Built target ggml-base
+[ 10%] Built target ggml-blas
+[ 47%] Built target ggml-metal
+[ 55%] Built target ggml-cpu
+[ 55%] Built target ggml
+[ 75%] Built target llama
+[100%] Built target llama-common
+[100%] Building CXX object tools/llama-bench/CMakeFiles/llama-bench-impl.dir/llama-bench.cpp.o
+[100%] Linking CXX shared library ../../bin/libllama-bench-impl.dylib
+[100%] Built target llama-bench-impl
+[100%] Building CXX object tools/llama-bench/CMakeFiles/llama-bench.dir/main.cpp.o
+[100%] Linking CXX executable ../../bin/llama-bench
+[100%] Built target llama-bench
+[  9%] Built target ggml-base
+[ 13%] Built target ggml-blas
+[ 81%] Built target ggml-metal
+[ 95%] Built target ggml-cpu
+[ 95%] Built target ggml
+[ 95%] Building CXX object tests/CMakeFiles/test-backend-ops.dir/test-backend-ops.cpp.o
+[100%] Linking CXX executable ../bin/test-backend-ops
+[100%] Built target test-backend-ops
+[  2%] Built target llama-common-base
+[  2%] Built target cpp-httplib
+[  7%] Built target ggml-base
+[ 10%] Built target ggml-blas
+[ 47%] Built target ggml-metal
+[ 55%] Built target ggml-cpu
+[ 55%] Built target ggml
+[ 75%] Built target llama
+[100%] Built target llama-common
+[100%] Building CXX object tools/gguf-split/CMakeFiles/llama-gguf-split.dir/gguf-split.cpp.o
+[100%] Linking CXX executable ../../bin/llama-gguf-split
+[100%] Built target llama-gguf-split
+[  3%] Built target llama-common-base
+[  3%] Built target vendor-hash
+[  3%] Built target cpp-httplib
+[  7%] Built target ggml-base
+[  9%] Built target ggml-blas
+[ 38%] Built target ggml-metal
+[ 44%] Built target ggml-cpu
+[ 44%] Built target ggml
+[ 59%] Built target llama
+[ 90%] Built target mtmd
+[100%] Built target llama-common
+[100%] Building CXX object tools/mtmd/CMakeFiles/llama-mtmd-cli.dir/mtmd-cli.cpp.o
+[100%] Linking CXX executable ../../bin/llama-mtmd-cli
+[100%] Built target llama-mtmd-cli
+exit=0

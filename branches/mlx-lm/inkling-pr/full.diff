@@ -1,0 +1,1381 @@
+diff --git a/ACKNOWLEDGMENTS.md b/ACKNOWLEDGMENTS.md
+index 87d1578..b9f191e 100644
+--- a/ACKNOWLEDGMENTS.md
++++ b/ACKNOWLEDGMENTS.md
+@@ -32,3 +32,4 @@ MoonshotAI's `Kimi K2.5`, Upstage's `Solar Open`, LG AI Research's `K-Exaone MoE
+ Meituan's `LongCat Flash Lite` Helped add support for the following model architectures: 
+ Z.ai & THUKEG's `GLM5 (GLM MoE DSA)`
+ - Ethan Elasky: Added support for talkie-lm's `Talkie`.
++- the submitter Alonso: Added support for Thinking Machines' `Inkling` (`inkling_mm_model`).
+diff --git a/mlx_lm/generate.py b/mlx_lm/generate.py
+index 96ee5b0..8fc60f6 100644
+--- a/mlx_lm/generate.py
++++ b/mlx_lm/generate.py
+@@ -7,6 +7,7 @@ import functools
+ import json
+ import sys
+ import time
++import warnings
+ from collections import deque
+ from dataclasses import asdict, dataclass
+ from typing import (
+@@ -316,6 +317,12 @@ class GenerationResponse:
+ def maybe_quantize_kv_cache(prompt_cache, quantized_kv_start, kv_group_size, kv_bits):
+     if kv_bits is None:
+         return
++    if not any(hasattr(c, "to_quantized") for c in prompt_cache):
++        warnings.warn(
++            "kv_bits is set but none of the model's caches support quantization; "
++            "the KV cache stays unquantized."
++        )
++        return
+     for e, c in enumerate(prompt_cache):
+         if hasattr(c, "to_quantized") and c.offset >= quantized_kv_start:
+             prompt_cache[e] = c.to_quantized(group_size=kv_group_size, bits=kv_bits)
+diff --git a/mlx_lm/models/cache.py b/mlx_lm/models/cache.py
+index bb3d62f..034d8ee 100644
+--- a/mlx_lm/models/cache.py
++++ b/mlx_lm/models/cache.py
+@@ -530,6 +530,19 @@ class RotatingKVCache(_BaseCache):
+         else:
+             return self.keys, self.values
+ 
++    def key_distances(self):
++        """How many positions behind the most recent key each cached key is, in
++        the order ``update_and_fetch`` returned them (the cache may be rotated)."""
++        S = min(self.offset, self.keys.shape[2])
++        s = mx.arange(S)
++        if self.keys.shape[2] > self.max_size:
++            # Temporal order, right after a multi-token update
++            return S - 1 - s
++        dist = (self._idx - 1 - s) % (self.max_size - self.keep)
++        if self.keep > 0:
++            dist = mx.where(s < self.keep, self.offset - 1 - s, dist)
++        return dist
++
+     def size(self):
+         return min(self.offset, self.max_size)
+ 
+@@ -1240,6 +1253,14 @@ class BatchRotatingKVCache(_BaseCache):
+         else:
+             return self.keys, self.values
+ 
++    def key_distances(self):
++        """See ``RotatingKVCache.key_distances``."""
++        S = min(self._offset, self.keys.shape[2])
++        s = mx.arange(S)
++        if self.keys.shape[2] > self.max_size:
++            return S - 1 - s
++        return (self._idx - 1 - s) % self.max_size
++
+     def prepare(self, *, left_padding=None, lengths=None, right_padding=None):
+         if left_padding is not None:
+             if self.keys is not None:
+diff --git a/mlx_lm/models/inkling_mm_model.py b/mlx_lm/models/inkling_mm_model.py
+new file mode 100644
+index 0000000..a007429
+--- /dev/null
++++ b/mlx_lm/models/inkling_mm_model.py
+@@ -0,0 +1,813 @@
++# Copyright © 2026 Apple Inc.
++
++from dataclasses import dataclass
++from functools import partial
++from typing import List, Optional, Union
++
++import mlx.core as mx
++import mlx.nn as nn
++
++from .activations import swiglu
++from .base import BaseModelArgs, scaled_dot_product_attention
++from .cache import ArraysCache, CacheList, KVCache, RotatingKVCache
++from .switch_layers import SwitchGLU
++
++
++@dataclass
++class TextArgs(BaseModelArgs):
++    model_type: str = "inkling_text"
++    hidden_size: int = 4096
++    num_hidden_layers: int = 42
++    vocab_size: int = 201024
++    unpadded_vocab_size: Optional[int] = None
++    rms_norm_eps: float = 1e-6
++    use_embed_norm: bool = True
++    logits_mup_width_multiplier: float = 1.0
++    num_attention_heads: int = 32
++    num_key_value_heads: int = 8
++    head_dim: int = 128
++    swa_num_attention_heads: Optional[int] = None
++    swa_num_key_value_heads: Optional[int] = None
++    swa_head_dim: Optional[int] = None
++    sliding_window_size: int = 512
++    local_layer_ids: Optional[List[int]] = None
++    layer_types: Optional[List[str]] = None
++    d_rel: int = 16
++    rel_extent: int = 1024
++    log_scaling_n_floor: Optional[int] = None
++    log_scaling_alpha: float = 0.1
++    sconv_kernel_size: int = 4
++    dense_mlp_idx: int = 0
++    mlp_layer_types: Optional[List[str]] = None
++    # ``intermediate_size`` is the width of one expert, the dense layers use
++    # ``dense_intermediate_size``.
++    intermediate_size: int = 2048
++    dense_intermediate_size: Optional[int] = None
++    n_routed_experts: int = 256
++    num_experts_per_tok: int = 6
++    n_shared_experts: int = 2
++    route_scale: float = 8.0
++    use_sconv: bool = True
++    q_bias: bool = False
++    o_bias: bool = False
++    use_gate_bias: bool = True
++    gate_activation: str = "sigmoid"
++    norm_after_topk: bool = True
++    use_global_scale: bool = True
++    shared_expert_sink: bool = True
++    final_logit_softcapping: Optional[float] = None
++
++    def __post_init__(self):
++        if self.swa_num_attention_heads is None:
++            self.swa_num_attention_heads = self.num_attention_heads
++        if self.swa_num_key_value_heads is None:
++            self.swa_num_key_value_heads = self.num_key_value_heads
++        if self.swa_head_dim is None:
++            self.swa_head_dim = self.head_dim
++        if self.dense_intermediate_size is None:
++            self.dense_intermediate_size = self.intermediate_size
++        unsupported = {
++            "use_sconv": self.use_sconv is not True,
++            "q_bias": self.q_bias,
++            "o_bias": self.o_bias,
++            "use_gate_bias": self.use_gate_bias is not True,
++            "gate_activation": self.gate_activation != "sigmoid",
++            "norm_after_topk": self.norm_after_topk is not True,
++            "use_global_scale": self.use_global_scale is not True,
++            "shared_expert_sink": self.shared_expert_sink is not True,
++            "final_logit_softcapping": self.final_logit_softcapping is not None,
++        }
++        bad = [k for k, v in unsupported.items() if v]
++        if bad:
++            raise ValueError(f"Unsupported Inkling configuration: {bad}")
++
++    def layer_is_sliding(self, i: int) -> bool:
++        if self.layer_types is not None:
++            return self.layer_types[i] == "hybrid_sliding"
++        if self.local_layer_ids is not None:
++            return i in self.local_layer_ids
++        return (i + 1) % 6 != 0
++
++    def layer_is_dense(self, i: int) -> bool:
++        if self.mlp_layer_types is not None:
++            return self.mlp_layer_types[i] == "dense"
++        return i < self.dense_mlp_idx
++
++
++@dataclass
++class ModelArgs(BaseModelArgs):
++    text_config: Union[TextArgs, dict]
++    model_type: str = "inkling_mm_model"
++
++    @classmethod
++    def from_dict(cls, params):
++        if "text_config" not in params:
++            return cls(model_type=params["model_type"], text_config=params)
++        return super().from_dict(params)
++
++    def __post_init__(self):
++        if isinstance(self.text_config, dict):
++            self.text_config = TextArgs.from_dict(self.text_config)
++
++
++@partial(mx.compile, shapeless=True)
++def _short_conv_taps(x, *taps_and_weights):
++    # fp32 accumulation, one rounding to the activation dtype (the reference
++    # keeps the whole convolution in fp32)
++    K = len(taps_and_weights) // 2
++    y = x.astype(mx.float32)
++    for t, w in zip(taps_and_weights[:K], taps_and_weights[K:]):
++        y = y + t.astype(mx.float32) * w.astype(mx.float32)
++    return y.astype(x.dtype)
++
++
++@partial(mx.compile, shapeless=True)
++def _short_conv_taps_residual(x, residual, *taps_and_weights):
++    K = len(taps_and_weights) // 2
++    y = x.astype(mx.float32)
++    for t, w in zip(taps_and_weights[:K], taps_and_weights[K:]):
++        y = y + t.astype(mx.float32) * w.astype(mx.float32)
++    # The convolution output is rounded before the layer's residual add
++    y = y.astype(x.dtype).astype(mx.float32) + residual.astype(mx.float32)
++    return y.astype(x.dtype)
++
++
++_SHORT_CONV_SRC = """
++    uint c = thread_position_in_grid.x;   // channel
++    uint b = thread_position_in_grid.y;   // batch row
++    uint C = threads_per_grid.x;
++    uint L = x_shape[1];
++    // The virtual input is [state (K - 1 rows); x (L rows)]
++    for (uint i = 0; i < L; ++i) {
++        float acc = x[b * x_strides[0] + i * x_strides[1] + c * x_strides[2]];
++        for (uint k = 0; k < K; ++k) {
++            int r = int(i + k) - int(K - 1);
++            float v = r < 0
++                ? float(state[b * state_strides[0] + uint(r + K - 1) * state_strides[1]
++                              + c * state_strides[2]])
++                : float(x[b * x_strides[0] + uint(r) * x_strides[1] + c * x_strides[2]]);
++            acc += v * float(w[c * K + k]);
++        }
++        T y = T(acc);
++        if (HAS_RESIDUAL) {
++            y = T(float(y) + float(res[b * res_strides[0] + i * res_strides[1]
++                                       + c * res_strides[2]]));
++        }
++        out[(b * L + i) * C + c] = y;
++    }
++    for (uint k = 0; k < K - 1; ++k) {
++        int r = int(L + k) - int(K - 1);
++        new_state[(b * (K - 1) + k) * C + c] = r < 0
++            ? state[b * state_strides[0] + uint(r + K - 1) * state_strides[1]
++                    + c * state_strides[2]]
++            : x[b * x_strides[0] + uint(r) * x_strides[1] + c * x_strides[2]];
++    }
++"""
++
++
++def _make_short_conv_kernel():
++    if not mx.metal.is_available():
++        return None
++    return mx.fast.metal_kernel(
++        name="inkling_short_conv",
++        input_names=["x", "state", "w", "res"],
++        output_names=["out", "new_state"],
++        source=_SHORT_CONV_SRC,
++        ensure_row_contiguous=False,
++    )
++
++
++_short_conv_kernel = _make_short_conv_kernel()
++
++
++class ShortConv(nn.Module):
++    """Depthwise causal convolution with a built-in residual::
++
++        y[t] = x[t] + sum_k w[k] * x[t - (K - 1) + k]
++
++    The decode state is the last ``K - 1`` inputs, kept in slot ``slot`` of the
++    layer's ``ArraysCache``. The weight keeps the ``nn.Conv1d`` layout
++    ``[channels, K, 1]`` of the checkpoints. A few tokens at a time go through
++    one kernel (convolution, residual and state update); longer inputs through
++    the compiled taps. Both accumulate in fp32 and agree after the rounding to
++    the activation dtype (their fp32 sums differ in the last bits).
++    """
++
++    def __init__(self, channels: int, kernel_size: int, slot: int):
++        super().__init__()
++        self.kernel_size = kernel_size
++        self.slot = slot
++        self.weight = mx.zeros((channels, kernel_size, 1))
++
++    def __call__(self, x, cache=None, mask=None, residual=None):
++        B, L, C = x.shape
++        K = self.kernel_size
++        if mask is not None:
++            x = mx.where(mask[..., None], x, 0)
++        state = cache[self.slot] if cache is not None else None
++        if state is None:
++            state = mx.zeros((B, K - 1, C), x.dtype)
++        if (
++            _short_conv_kernel is not None
++            and mx.default_device() == mx.gpu
++            and cache is not None
++            and cache.lengths is None
++            and mask is None
++            and L <= 8
++        ):
++            y, cache[self.slot] = _short_conv_kernel(
++                inputs=[x, state, self.weight, x if residual is None else residual],
++                template=[
++                    ("T", x.dtype),
++                    ("K", K),
++                    ("HAS_RESIDUAL", residual is not None),
++                ],
++                grid=(C, B, 1),
++                threadgroup=(min(C, 256), 1, 1),
++                output_shapes=[(B, L, C), (B, K - 1, C)],
++                output_dtypes=[x.dtype, x.dtype],
++            )
++            return y
++        xp = mx.concatenate([state, x], axis=1)
++        taps = [xp[:, k : k + L] for k in range(K)]
++        weights = [self.weight[:, k, 0] for k in range(K)]
++        if residual is None:
++            y = _short_conv_taps(x, *taps, *weights)
++        else:
++            y = _short_conv_taps_residual(x, residual, *taps, *weights)
++        if cache is not None:
++            if cache.lengths is not None:
++                # Right padded prompts: the state is the last K - 1 inputs of
++                # the valid part of every sequence
++                ends = mx.clip(cache.lengths, 0, L)
++                positions = (ends[:, None] + mx.arange(K - 1))[..., None]
++                state = mx.take_along_axis(xp, positions, axis=1)
++            else:
++                state = xp[:, L:]
++                if L > K:
++                    # Do not keep the whole prompt chunk alive through a view
++                    state = mx.contiguous(state)
++            cache[self.slot] = state
++        return y
++
++
++_BANDED_MASK_SRC = """
++    uint j = thread_position_in_grid.x;   // key
++    uint i = thread_position_in_grid.y;   // query
++    uint bh = thread_position_in_grid.z;  // batch * heads + head
++    uint S = threads_per_grid.x;
++    uint L = threads_per_grid.y;
++    uint H = rel_shape[1];
++    int dist = int(i + S - L) - int(j);
++    T val;
++    if (dist < 0 || (WINDOW > 0 && dist >= WINDOW)) {
++        val = T(-INFINITY);
++    } else if (dist < EXTENT) {
++        uint b = bh / H;
++        uint h = bh % H;
++        val = rel[b * rel_strides[0] + h * rel_strides[1] + i * rel_strides[2]
++                  + uint(EXTENT - 1 - dist) * rel_strides[3]];
++    } else {
++        val = T(0);
++    }
++    out[(bh * L + i) * S + j] = val;
++"""
++
++
++def _make_banded_mask_kernel():
++    if not mx.metal.is_available():
++        return None
++    return mx.fast.metal_kernel(
++        name="inkling_banded_mask",
++        input_names=["rel"],
++        output_names=["out"],
++        source=_BANDED_MASK_SRC,
++        ensure_row_contiguous=False,
++    )
++
++
++_banded_mask_kernel = _make_banded_mask_kernel()
++
++
++def banded_mask(rel_logits, n_keys, window, extent):
++    """Additive attention mask carrying the relative position bias.
++
++    ``rel_logits`` is ``[B, H, L, extent]`` in reversed distance order: column
++    ``extent - 1 - d`` is the bias of a query against the key ``d`` positions
++    back. The ``L`` queries are the last ``L`` of the ``n_keys`` positions. Keys
++    that are in the future, or at least ``window`` positions back when
++    ``window > 0``, get ``-inf``; keys at least ``extent`` positions back get
++    ``0``.
++    """
++    B, H, L, E = rel_logits.shape
++    dtype = rel_logits.dtype
++    if _banded_mask_kernel is not None and mx.default_device() == mx.gpu:
++        return _banded_mask_kernel(
++            inputs=[rel_logits],
++            template=[("T", dtype), ("WINDOW", window), ("EXTENT", E)],
++            grid=(n_keys, L, B * H),
++            threadgroup=(32, 8, 1),
++            output_shapes=[(B, H, L, n_keys)],
++            output_dtypes=[dtype],
++        )[0]
++    dist = (mx.arange(L) + (n_keys - L))[:, None] - mx.arange(n_keys)[None]
++    idx = E - 1 - mx.clip(dist, 0, E - 1)
++    idx = mx.broadcast_to(idx[None, None], (B, H, L, n_keys))
++    bias = mx.take_along_axis(rel_logits, idx, axis=-1)
++    bias = mx.where(dist >= E, mx.array(0, dtype), bias)
++    masked = dist < 0
++    if window > 0:
++        masked = masked | (dist >= window)
++    return mx.where(masked, mx.array(-float("inf"), dtype), bias)
++
++
++class RelativeLogits(nn.Module):
++    """A learned bank of ``d_rel`` bias-vs-distance profiles.
++
++    ``proj_reversed`` is the checkpoint's ``proj`` ``[d_rel, extent]`` with the
++    distance axis reversed (``sanitize`` does that), so that ``r @ proj_reversed``
++    lists the bias of a query against the keys ``extent - 1, ..., 0`` positions
++    back in key order: the bias of a single query against its last ``S`` keys
++    is the last ``S`` columns, no gather or flip needed.
++    """
++
++    def __init__(self, d_rel: int, extent: int):
++        super().__init__()
++        self.proj_reversed = mx.zeros((d_rel, extent))
++
++
++class Attention(nn.Module):
++    def __init__(self, args: TextArgs, layer_idx: int):
++        super().__init__()
++        sliding = args.layer_is_sliding(layer_idx)
++        self.n_heads = (
++            args.swa_num_attention_heads if sliding else args.num_attention_heads
++        )
++        self.n_kv_heads = (
++            args.swa_num_key_value_heads if sliding else args.num_key_value_heads
++        )
++        self.head_dim = args.swa_head_dim if sliding else args.head_dim
++        self.d_rel = args.d_rel
++        self.window = args.sliding_window_size if sliding else 0
++        self.extent = args.sliding_window_size if sliding else args.rel_extent
++        # q and k are per-head RMS normalized so the scale is 1/d, not 1/sqrt(d)
++        self.scale = 1.0 / self.head_dim
++        self.log_scaling_n_floor = None if sliding else args.log_scaling_n_floor
++        self.log_scaling_alpha = args.log_scaling_alpha
++
++        dims = self.n_heads * self.head_dim
++        kv_dims = self.n_kv_heads * self.head_dim
++        self.splits = (dims, dims + 2 * kv_dims)
++        # q, k, v and r are one projection (fused by ``sanitize``)
++        self.qkvr_proj = nn.Linear(
++            args.hidden_size, dims + 2 * kv_dims + self.n_heads * self.d_rel, bias=False
++        )
++        self.wo_ud = nn.Linear(dims, args.hidden_size, bias=False)
++        # k and v go through their short convolutions before the norm and the cache
++        self.kv_sconv = ShortConv(2 * kv_dims, args.sconv_kernel_size, slot=0)
++        self.q_norm = nn.RMSNorm(self.head_dim, eps=args.rms_norm_eps)
++        self.k_norm = nn.RMSNorm(self.head_dim, eps=args.rms_norm_eps)
++        self.rel_logits_proj = RelativeLogits(self.d_rel, self.extent)
++
++    def __call__(self, x, cache=None, conv_cache=None, conv_mask=None, rel_index=None):
++        B, L, _ = x.shape
++        q, kv, r = mx.split(self.qkvr_proj(x), self.splits, axis=-1)
++        kv = self.kv_sconv(kv, conv_cache, conv_mask)
++        k, v = mx.split(kv, 2, axis=-1)
++
++        q = self.q_norm(q.reshape(B, L, self.n_heads, -1)).transpose(0, 2, 1, 3)
++        k = self.k_norm(k.reshape(B, L, self.n_kv_heads, -1)).transpose(0, 2, 1, 3)
++        v = v.reshape(B, L, self.n_kv_heads, -1).transpose(0, 2, 1, 3)
++
++        q_offset = cache.offset if cache is not None else 0
++        # Batched caches mask their padding (and rotation) with a boolean mask
++        # that describes the cache after this update
++        valid = cache.make_mask(L) if hasattr(cache, "left_padding") else None
++        if cache is not None:
++            k, v = cache.update_and_fetch(k, v)
++        S = k.shape[2]
++
++        # Bias of every query against the keys extent - 1 .. 0 positions back
++        r = r.reshape(B, L, self.n_heads, self.d_rel)
++        rel_logits = (r @ self.rel_logits_proj.proj_reversed).transpose(0, 2, 1, 3)
++        if L > 1:
++            mask = banded_mask(rel_logits, S, self.window, self.extent)
++        elif self.window > 0 and cache is not None:
++            # The rotating cache of a sliding layer: gather by slot distance
++            if rel_index is None:
++                rel_index = self.slot_rel_index(cache)
++            mask = mx.take_along_axis(rel_logits, rel_index, axis=-1)
++        elif S <= self.extent:
++            # A single query against the last S keys in temporal order
++            mask = rel_logits[..., self.extent - S :]
++        else:
++            mask = mx.pad(rel_logits, [(0, 0), (0, 0), (0, 0), (S - self.extent, 0)])
++        if valid is not None:
++            mask = mx.where(valid, mask, -float("inf"))
++
++        if self.log_scaling_n_floor is not None:
++            # Long-context log scaling of the logits, tau is 1 below the floor
++            n_floor = self.log_scaling_n_floor
++            if isinstance(q_offset, int):
++                positions = (
++                    (mx.arange(L) + q_offset)[None] if q_offset + L > n_floor else None
++                )
++            else:
++                positions = q_offset[:, None] + mx.arange(L)[None]
++            if positions is not None:
++                tau = (positions + 1).astype(mx.float32) / n_floor
++                tau = 1 + self.log_scaling_alpha * mx.log(mx.maximum(tau, 1))
++                tau = tau.reshape(-1, 1, L, 1)
++                q = (q * tau).astype(q.dtype)
++                mask = (mask * tau).astype(mask.dtype)
++
++        out = scaled_dot_product_attention(
++            q, k, v, cache=cache, scale=self.scale, mask=mask
++        )
++        out = out.transpose(0, 2, 1, 3).reshape(B, L, -1)
++        return self.wo_ud(out)
++
++    def slot_rel_index(self, cache):
++        """The column of the reversed bias bank for every slot of a rotating
++        cache after a single-token update."""
++        return (self.extent - 1 - cache.key_distances())[None, None, None]
++
++
++class DenseMLP(nn.Module):
++    def __init__(self, args: TextArgs):
++        super().__init__()
++        self.gate_proj = nn.Linear(
++            args.hidden_size, args.dense_intermediate_size, bias=False
++        )
++        self.up_proj = nn.Linear(
++            args.hidden_size, args.dense_intermediate_size, bias=False
++        )
++        self.down_proj = nn.Linear(
++            args.dense_intermediate_size, args.hidden_size, bias=False
++        )
++        self.global_scale = mx.ones((1,))
++
++    def __call__(self, x):
++        y = self.down_proj(swiglu(self.gate_proj(x), self.up_proj(x)))
++        return y * self.global_scale.astype(y.dtype)
++
++
++class Router(nn.Module):
++    """Sigmoid router with a selection bias and shared-expert sinks.
++
++    The router runs in fp32: rows ``[0, n_routed)`` of ``weight`` score the
++    routed experts, the remaining ``n_shared`` rows the always-on shared
++    experts.
++    """
++
++    def __init__(self, args: TextArgs):
++        super().__init__()
++        n_total = args.n_routed_experts + args.n_shared_experts
++        self.weight = mx.zeros((n_total, args.hidden_size), dtype=mx.float32)
++        self.bias = mx.zeros((args.n_routed_experts,), dtype=mx.float32)
++        self.global_scale = mx.ones((1,), dtype=mx.float32)
++
++
++@mx.compile
++def _select_experts(logits, bias, global_scale, top_k, route_scale):
++    n_routed = bias.shape[0]
++    routed = logits[:, :n_routed]
++    shared = logits[:, n_routed:]
++    scores = mx.sigmoid(routed) + bias
++    inds = mx.argpartition(-scores, kth=top_k - 1, axis=-1)[:, :top_k]
++    inds = mx.stop_gradient(inds)
++    # Routing weights: softmax of the log-sigmoid of the raw logits over the
++    # selected routed experts and the shared sinks
++    active = mx.concatenate([mx.take_along_axis(routed, inds, axis=-1), shared], -1)
++    weights = mx.softmax(-mx.logaddexp(0.0, -active), axis=-1, precise=True)
++    weights = weights * (route_scale * global_scale)
++    shared_inds = mx.arange(n_routed, logits.shape[1])[None]
++    inds = mx.concatenate(
++        [inds, mx.broadcast_to(shared_inds, (*inds.shape[:-1], shared.shape[-1]))], -1
++    )
++    return inds, weights
++
++
++_ROUTE_SRC = """
++    // One simdgroup per token. Lane l owns the routed experts l, l + 32, ...
++    // Selection: top-K of sigmoid(logit) + bias, ties to the lowest expert
++    // index. Weights: softmax of the log-sigmoid of the raw logits over the
++    // K selected and the S shared (sink) experts, times scale.
++    uint lane = thread_position_in_threadgroup.x;
++    uint n = threadgroup_position_in_grid.x;
++    constexpr uint PER = (R + 31) / 32;
++    const device float* lg = logits + n * (R + S);
++    float score[PER];
++    bool taken[PER];
++    for (uint t = 0; t < PER; ++t) {
++        uint j = lane + 32 * t;
++        taken[t] = j >= R;
++        score[t] = j < R ? 1.0f / (1.0f + metal::exp(-lg[j])) + bias[j] : -INFINITY;
++    }
++    float active[K + S];
++    for (uint k = 0; k < K; ++k) {
++        float best = -INFINITY;
++        uint best_t = 0;
++        for (uint t = 0; t < PER; ++t) {
++            if (!taken[t] && score[t] > best) {
++                best = score[t];
++                best_t = t;
++            }
++        }
++        float group_best = simd_max(best);
++        uint j = simd_min(best == group_best ? lane + 32 * best_t : 0xFFFFFFFFu);
++        if (j == lane + 32 * best_t) {
++            taken[best_t] = true;
++        }
++        if (lane == 0) {
++            inds[n * (K + S) + k] = j;
++        }
++        active[k] = lg[j];
++    }
++    for (uint i = 0; i < S; ++i) {
++        active[K + i] = lg[R + i];
++        if (lane == 0) {
++            inds[n * (K + S) + K + i] = R + i;
++        }
++    }
++    if (lane == 0) {
++        float lp[K + S];
++        float m = -INFINITY;
++        for (uint i = 0; i < K + S; ++i) {
++            float a = active[i];  // log sigmoid(a) = -softplus(-a)
++            lp[i] = -(metal::max(-a, 0.0f) + metal::log(1.0f + metal::exp(-metal::abs(a))));
++            m = metal::max(m, lp[i]);
++        }
++        float total = 0.0f;
++        for (uint i = 0; i < K + S; ++i) {
++            total += metal::exp(lp[i] - m);
++        }
++        for (uint i = 0; i < K + S; ++i) {
++            weights[n * (K + S) + i] = metal::exp(lp[i] - m) / total * scale[0];
++        }
++    }
++"""
++
++
++def _make_route_kernel():
++    if not mx.metal.is_available():
++        return None
++    return mx.fast.metal_kernel(
++        name="inkling_route",
++        input_names=["logits", "bias", "scale"],
++        output_names=["inds", "weights"],
++        source=_ROUTE_SRC,
++    )
++
++
++_route_kernel = _make_route_kernel()
++
++
++def select_experts(logits, bias, global_scale, top_k, route_scale):
++    """Expert indices ``[N, top_k + n_shared]`` (the shared experts last) and
++    their routing weights from fp32 router logits ``[N, n_routed + n_shared]``."""
++    N, n_total = logits.shape
++    n_routed = bias.shape[0]
++    if _route_kernel is not None and mx.default_device() == mx.gpu:
++        return _route_kernel(
++            inputs=[logits, bias, route_scale * global_scale],
++            template=[("R", n_routed), ("S", n_total - n_routed), ("K", top_k)],
++            grid=(32 * N, 1, 1),
++            threadgroup=(32, 1, 1),
++            output_shapes=[(N, top_k + n_total - n_routed)] * 2,
++            output_dtypes=[mx.uint32, mx.float32],
++        )
++    return _select_experts(logits, bias, global_scale, top_k, route_scale)
++
++
++class MoE(nn.Module):
++    """Top-k routed experts plus always-on shared experts.
++
++    The shared experts are stored after the routed ones in ``experts`` and are
++    selected for every token, so one ``SwitchGLU`` call serves both (measured
++    faster than a separate dense SwiGLU for them at decode and at prefill).
++    """
++
++    def __init__(self, args: TextArgs):
++        super().__init__()
++        self.top_k = args.num_experts_per_tok
++        self.route_scale = args.route_scale
++        self.gate = Router(args)
++        self.experts = SwitchGLU(
++            args.hidden_size,
++            args.intermediate_size,
++            args.n_routed_experts + args.n_shared_experts,
++        )
++
++    def __call__(self, x):
++        B, L, D = x.shape
++        x = x.reshape(-1, D)
++        logits = x.astype(mx.float32) @ self.gate.weight.astype(mx.float32).T
++        inds, weights = select_experts(
++            logits, self.gate.bias, self.gate.global_scale, self.top_k, self.route_scale
++        )
++        y = self.experts(x, inds)
++        y = (y * weights[..., None].astype(y.dtype)).sum(axis=-2)
++        return y.reshape(B, L, D)
++
++
++class DecoderLayer(nn.Module):
++    def __init__(self, args: TextArgs, layer_idx: int):
++        super().__init__()
++        self.attn = Attention(args, layer_idx)
++        self.mlp = DenseMLP(args) if args.layer_is_dense(layer_idx) else MoE(args)
++        self.attn_norm = nn.RMSNorm(args.hidden_size, eps=args.rms_norm_eps)
++        self.mlp_norm = nn.RMSNorm(args.hidden_size, eps=args.rms_norm_eps)
++        self.attn_sconv = ShortConv(args.hidden_size, args.sconv_kernel_size, slot=1)
++        self.mlp_sconv = ShortConv(args.hidden_size, args.sconv_kernel_size, slot=2)
++
++    def __call__(self, x, cache=None, rel_index=None):
++        kv_cache = conv_cache = conv_mask = None
++        if cache is not None:
++            kv_cache, conv_cache = cache[0], cache[1]
++            if conv_cache.lengths is not None or conv_cache.left_padding is not None:
++                conv_mask = conv_cache.make_mask(x.shape[1])
++        r = self.attn(self.attn_norm(x), kv_cache, conv_cache, conv_mask, rel_index)
++        h = self.attn_sconv(r, conv_cache, conv_mask, residual=x)
++        r = self.mlp(self.mlp_norm(h))
++        out = self.mlp_sconv(r, conv_cache, conv_mask, residual=h)
++        if conv_cache is not None:
++            conv_cache.advance(x.shape[1])
++        return out
++
++
++class InklingTextModel(nn.Module):
++    def __init__(self, args: TextArgs):
++        super().__init__()
++        self.args = args
++        self.embed = nn.Embedding(args.vocab_size, args.hidden_size)
++        if args.use_embed_norm:
++            self.embed_norm = nn.RMSNorm(args.hidden_size, eps=args.rms_norm_eps)
++        self.layers = [DecoderLayer(args, i) for i in range(args.num_hidden_layers)]
++        self.norm = nn.RMSNorm(args.hidden_size, eps=args.rms_norm_eps)
++        self.unembed = nn.Linear(args.hidden_size, args.vocab_size, bias=False)
++        self.first_sliding = next(
++            (i for i in range(args.num_hidden_layers) if args.layer_is_sliding(i)), None
++        )
++
++    def embed_tokens(self, inputs):
++        h = self.embed(inputs)
++        if self.args.use_embed_norm:
++            h = self.embed_norm(h)
++        return h
++
++    def __call__(self, inputs, cache=None, input_embeddings=None):
++        h = (
++            input_embeddings
++            if input_embeddings is not None
++            else self.embed_tokens(inputs)
++        )
++        if cache is None:
++            cache = [None] * len(self.layers)
++        # The sliding layers' rotating caches move in lockstep, so the slot
++        # index of the first one serves all of them for a single token
++        rel_index = None
++        for i, (layer, c) in enumerate(zip(self.layers, cache)):
++            h = layer(h, c, rel_index if layer.attn.window > 0 else None)
++            if i == self.first_sliding and c is not None and h.shape[1] == 1:
++                rel_index = layer.attn.slot_rel_index(c[0])
++        h = self.norm(h) * (1.0 / self.args.logits_mup_width_multiplier)
++        logits = self.unembed(h)
++        if self.args.unpadded_vocab_size is not None:
++            logits = logits[..., : self.args.unpadded_vocab_size]
++        return logits
++
++
++class InklingModel(nn.Module):
++    def __init__(self, args: TextArgs):
++        super().__init__()
++        self.llm = InklingTextModel(args)
++
++
++class Model(nn.Module):
++    def __init__(self, args: ModelArgs):
++        super().__init__()
++        self.args = args
++        self.model_type = args.model_type
++        self.model = InklingModel(args.text_config)
++
++    def __call__(self, inputs, cache=None, input_embeddings=None):
++        return self.model.llm(inputs, cache, input_embeddings)
++
++    @property
++    def layers(self):
++        return self.model.llm.layers
++
++    def make_cache(self):
++        args = self.args.text_config
++        caches = []
++        for i in range(args.num_hidden_layers):
++            if args.layer_is_sliding(i):
++                kv = RotatingKVCache(max_size=args.sliding_window_size)
++            else:
++                kv = KVCache()
++            caches.append(CacheList(kv, ArraysCache(size=3)))
++        return caches
++
++    def sanitize(self, weights):
++        """Accepts the mlx-community layout (split gate/up, ``[C, K, 1]`` convs)
++        and the HF source layout (interleaved ``w13`` rows, ``[C, 1, K]`` convs),
++        then fuses q/k/v/r, k|v convs and routed|shared experts."""
++        args = self.args.text_config
++        drop = ("model.visual.", "model.audio.", "model.mtp.")
++        weights = {k: v for k, v in weights.items() if not k.startswith(drop)}
++
++        def split_gate_up(w):
++            # Fused gate/up rows are interleaved: [g0, u0, g1, u1, ...]
++            w = w.reshape(*w.shape[:-2], w.shape[-2] // 2, 2, w.shape[-1])
++            return mx.contiguous(w[..., 0, :]), mx.contiguous(w[..., 1, :])
++
++        out = {}
++        for k, v in weights.items():
++            if k.endswith("_sconv.weight") and v.shape[1] == 1 and v.shape[2] > 1:
++                v = v.swapaxes(1, 2)  # torch [C, 1, K] -> [C, K, 1]
++            if k.endswith(".mlp.w13_dn.weight"):
++                base = k[: -len("w13_dn.weight")]
++                out[base + "gate_proj.weight"], out[base + "up_proj.weight"] = (
++                    split_gate_up(v)
++                )
++            elif k.endswith(".mlp.w2_md.weight"):
++                out[k[: -len("w2_md.weight")] + "down_proj.weight"] = v
++            elif k.endswith(".experts.w13_weight"):
++                base = k[: -len("w13_weight")]
++                out[base + "gate_proj.weight"], out[base + "up_proj.weight"] = (
++                    split_gate_up(v)
++                )
++            elif k.endswith(".experts.w2_weight"):
++                out[k[: -len("w2_weight")] + "down_proj.weight"] = v
++            elif k.endswith(".shared_experts.shared_w13_weight"):
++                base = k[: -len("shared_w13_weight")]
++                out[base + "gate_proj.weight"], out[base + "up_proj.weight"] = (
++                    split_gate_up(v)
++                )
++            elif k.endswith(".shared_experts.shared_w2_weight"):
++                out[k[: -len("shared_w2_weight")] + "down_proj.weight"] = v
++            elif k.endswith(".mlp.gate.weight"):
++                out[k] = v.astype(mx.float32)
++            elif k.endswith(".rel_logits_proj.proj"):
++                out[k + "_reversed"] = v[:, ::-1]
++            else:
++                out[k] = v
++        weights = out
++
++        def fuse(prefix, names, fused):
++            # Concatenate the (possibly quantized) tensors of ``names`` into
++            # ``fused`` along the first axis; every row keeps its own
++            # quantization groups so this is exact.
++            leaves = ("weight", "scales", "biases")
++            present = [
++                leaf
++                for leaf in leaves
++                if any(f"{prefix}{n}.{leaf}" in weights for n in names)
++            ]
++            for leaf in present:
++                parts = [weights.pop(f"{prefix}{n}.{leaf}", None) for n in names]
++                if any(p is None for p in parts):
++                    raise ValueError(f"Incomplete {leaf} tensors for {prefix}{fused}")
++                if any(p.shape[1:] != parts[0].shape[1:] for p in parts):
++                    raise ValueError(
++                        f"Cannot fuse {prefix}{fused}.{leaf}: quantization differs"
++                    )
++                weights[f"{prefix}{fused}.{leaf}"] = mx.concatenate(parts, axis=0)
++
++        for i in range(args.num_hidden_layers):
++            prefix = f"model.llm.layers.{i}."
++            attn = prefix + "attn."
++            if f"{attn}wq_du.weight" in weights:
++                fuse(attn, ["wq_du", "wk_dv", "wv_dv", "wr_du"], "qkvr_proj")
++            if f"{attn}k_sconv.weight" in weights:
++                fuse(attn, ["k_sconv", "v_sconv"], "kv_sconv")
++            mlp = prefix + "mlp."
++            if f"{mlp}shared_experts.gate_proj.weight" in weights:
++                for proj in ("gate_proj", "up_proj", "down_proj"):
++                    fuse(
++                        mlp,
++                        [f"experts.{proj}", f"shared_experts.{proj}"],
++                        f"experts.{proj}",
++                    )
++        return weights
++
++    @property
++    def cast_predicate(self):
++        def predicate(path):
++            # The router runs in fp32
++            return ".mlp.gate." not in path
++
++        return predicate
++
++    @property
++    def quant_predicate(self):
++        def predicate(path, _):
++            # Attention is the dominant error source below 8 bits
++            if path.endswith(
++                (".attn.qkvr_proj", ".attn.wo_ud", "llm.embed", "llm.unembed")
++            ):
++                return {"group_size": 64, "bits": 8}
++            return True
++
++        return predicate
+diff --git a/tests/test_inkling.py b/tests/test_inkling.py
+new file mode 100644
+index 0000000..a5b26b8
+--- /dev/null
++++ b/tests/test_inkling.py
+@@ -0,0 +1,439 @@
++# Copyright © 2026 Apple Inc.
++
++import unittest
++
++import mlx.core as mx
++import numpy as np
++from mlx.utils import tree_flatten, tree_unflatten
++
++from mlx_lm.models import inkling_mm_model as inkling
++from mlx_lm.models.cache import (
++    BatchRotatingKVCache,
++    RotatingKVCache,
++    make_prompt_cache,
++)
++
++
++def tiny_text_config(**overrides):
++    config = dict(
++        hidden_size=64,
++        num_hidden_layers=3,
++        vocab_size=64,
++        unpadded_vocab_size=60,
++        logits_mup_width_multiplier=16.0,
++        num_attention_heads=2,
++        num_key_value_heads=1,
++        head_dim=32,
++        sliding_window_size=4,
++        layer_types=["hybrid_sliding", "hybrid", "hybrid_sliding"],
++        d_rel=4,
++        rel_extent=8,
++        log_scaling_n_floor=4,
++        log_scaling_alpha=0.1,
++        sconv_kernel_size=4,
++        mlp_layer_types=["dense", "sparse", "sparse"],
++        intermediate_size=32,
++        dense_intermediate_size=96,
++        n_routed_experts=8,
++        num_experts_per_tok=2,
++        n_shared_experts=2,
++        route_scale=8.0,
++    )
++    config.update(overrides)
++    return config
++
++
++def random_model(seed=0, dtype=mx.float32, **overrides):
++    """A tiny model whose every parameter is random and non-trivial."""
++    mx.random.seed(seed)
++    args = inkling.ModelArgs.from_dict(
++        {"model_type": "inkling_mm_model", "text_config": tiny_text_config(**overrides)}
++    )
++    model = inkling.Model(args)
++    params = []
++    for k, v in tree_flatten(model.parameters()):
++        if k.endswith("norm.weight") or k.endswith("global_scale"):
++            v = 1.0 + 0.3 * mx.random.normal(v.shape)
++        elif k.endswith("_sconv.weight"):
++            v = 0.3 * mx.random.normal(v.shape)
++        elif v.ndim >= 2:
++            v = mx.random.normal(v.shape) * (0.3 / v.shape[-1] ** 0.5)
++        else:
++            v = 0.3 * mx.random.normal(v.shape)
++        if ".mlp.gate." not in k:  # the router stays fp32
++            v = v.astype(dtype)
++        params.append((k, v))
++    model.update(tree_unflatten(params))
++    mx.eval(model.parameters())
++    return model, args
++
++
++def banded_mask_numpy(rel_logits, n_keys, window, extent):
++    # rel_logits[..., d] is the bias against the key d positions back
++    B, H, L, E = rel_logits.shape
++    assert E == extent
++    dist = (np.arange(L) + n_keys - L)[:, None] - np.arange(n_keys)[None]
++    idx = np.clip(dist, 0, E - 1)
++    bias = np.take_along_axis(
++        rel_logits, np.broadcast_to(idx, (B, H, L, n_keys)), axis=-1
++    )
++    bias = np.where(dist >= E, 0.0, bias)
++    masked = dist < 0
++    if window > 0:
++        masked |= dist >= window
++    return np.where(masked, -np.inf, bias)
++
++
++def sconv_numpy(x, w, state):
++    # y[t] = x[t] + sum_k w[k] x[t - (K-1) + k]; state = the previous K-1 inputs
++    B, L, C = x.shape
++    K = w.shape[1]
++    xp = np.concatenate([state, x], axis=1)
++    y = x.copy()
++    for k in range(K):
++        y += w[:, k] * xp[:, k : k + L]
++    return y, xp[:, L:]
++
++
++def router_numpy(logits, bias, global_scale, route_scale, top_k):
++    n_routed = bias.shape[0]
++    routed, shared = logits[:, :n_routed], logits[:, n_routed:]
++    scores = 1 / (1 + np.exp(-routed)) + bias
++    inds = np.argsort(-scores, axis=-1, kind="stable")[:, :top_k]
++    active = np.concatenate([np.take_along_axis(routed, inds, -1), shared], -1)
++    lp = -np.logaddexp(0, -active)
++    w = np.exp(lp - lp.max(-1, keepdims=True))
++    w = w / w.sum(-1, keepdims=True) * route_scale * global_scale
++    return inds, w
++
++
++class TestInkling(unittest.TestCase):
++
++    def test_banded_mask(self):
++        # Shapes crossing the sliding window (512) and the bias extent (1024)
++        cases = [
++            (1, 2, 1, 600, 512, 512),
++            (2, 2, 8, 2000, 512, 512),
++            (1, 3, 37, 548, 512, 512),
++            (1, 2, 600, 1111, 512, 512),
++            (1, 2, 1, 1500, 0, 1024),
++            (2, 2, 8, 1030, 0, 1024),
++            (1, 2, 37, 1100, 0, 1024),
++            (1, 2, 1300, 1300, 0, 1024),
++        ]
++        for B, H, L, S, window, extent in cases:
++            rel = mx.random.normal((B, H, L, extent)).astype(mx.float16)
++            ref = banded_mask_numpy(np.array(rel.astype(mx.float32)), S, window, extent)
++            # The model passes the bias in reversed distance order
++            out = inkling.banded_mask(rel[..., ::-1], S, window, extent)
++            self.assertEqual(out.shape, (B, H, L, S))
++            self.assertEqual(out.dtype, mx.float16)
++            out = np.array(out.astype(mx.float32))
++            np.testing.assert_array_equal(np.isinf(out), np.isinf(ref))
++            finite = np.isfinite(ref)
++            np.testing.assert_allclose(out[finite], ref[finite], rtol=0, atol=0)
++            # The fallback used without Metal
++            if inkling._banded_mask_kernel is not None:
++                kernel = inkling._banded_mask_kernel
++                inkling._banded_mask_kernel = None
++                try:
++                    fallback = np.array(
++                        inkling.banded_mask(rel[..., ::-1], S, window, extent).astype(
++                            mx.float32
++                        )
++                    )
++                finally:
++                    inkling._banded_mask_kernel = kernel
++                np.testing.assert_array_equal(fallback, out)
++
++    def test_decode_bias_matches_prefill(self):
++        # The reversed-slice bias of a single query equals the banded mask row
++        model, args = random_model()
++        attn = model.layers[1].attn  # global layer, extent 8
++        x = mx.random.normal((1, 12, args.text_config.hidden_size))
++        cache = make_prompt_cache(model)[1]
++        full = attn(x, cache[0], cache[1], None)
++        cache = make_prompt_cache(model)[1]
++        steps = [attn(x[:, :5], cache[0], cache[1], None)]
++        steps += [attn(x[:, t : t + 1], cache[0], cache[1], None) for t in range(5, 12)]
++        # fp32 GEMMs may run at reduced (TF32) precision on the GPU
++        self.assertTrue(
++            mx.allclose(mx.concatenate(steps, 1), full, rtol=1e-2, atol=1e-2)
++        )
++
++    def test_short_conv_state(self):
++        B, L, C, K = 2, 11, 16, 4
++        conv = inkling.ShortConv(C, K, slot=0)
++        conv.weight = mx.random.normal((C, K, 1))
++        x = mx.random.normal((B, L, C)).astype(mx.bfloat16)
++        cache = make_prompt_cache(random_model()[0])[0][1]
++        # Prefill of L tokens == L single-token decodes, bit for bit
++        full = conv(x, cache)
++        state_full = cache[0]
++        cache2 = make_prompt_cache(random_model()[0])[0][1]
++        steps = [conv(x[:, t : t + 1], cache2) for t in range(L)]
++        self.assertTrue(mx.array_equal(mx.concatenate(steps, 1), full))
++        self.assertTrue(mx.array_equal(cache2[0], state_full))
++        # Against the numpy reference in fp32
++        xf = mx.random.normal((B, L, C))
++        state = mx.random.normal((B, K - 1, C))
++        cache3 = make_prompt_cache(random_model()[0])[0][1]
++        cache3[0] = state
++        y = conv(xf, cache3)
++        y_ref, state_ref = sconv_numpy(
++            np.array(xf), np.array(conv.weight)[:, :, 0], np.array(state)
++        )
++        np.testing.assert_allclose(np.array(y), y_ref, rtol=1e-5, atol=1e-6)
++        np.testing.assert_array_equal(np.array(cache3[0]), state_ref)
++
++    def test_router(self):
++        for N, R, S, top_k in [
++            (37, 8, 2, 3),
++            (1, 256, 2, 6),
++            (300, 256, 2, 6),
++            (5, 40, 1, 4),
++        ]:
++            route_scale = 8.0
++            logits = mx.random.normal((N, R + S))
++            bias = 0.1 * mx.random.normal((R,))
++            global_scale = mx.array([1.3])
++            ref_inds, ref_w = router_numpy(
++                np.array(logits), np.array(bias), 1.3, route_scale, top_k
++            )
++            for name, fn in [
++                ("kernel", inkling.select_experts),
++                ("compiled", inkling._select_experts),
++            ]:
++                inds, w = fn(logits, bias, global_scale, top_k, route_scale)
++                inds, w = np.array(inds), np.array(w)
++                self.assertEqual(inds.shape, (N, top_k + S), name)
++                np.testing.assert_array_equal(
++                    inds[:, top_k:], np.broadcast_to(np.arange(R, R + S), (N, S))
++                )
++                # Same expert sets, same weights per expert
++                for n in range(N):
++                    self.assertEqual(set(inds[n, :top_k]), set(ref_inds[n]), name)
++                    got = dict(zip(inds[n], w[n]))
++                    ref = dict(zip(list(ref_inds[n]) + list(range(R, R + S)), ref_w[n]))
++                    for e in ref:
++                        self.assertAlmostEqual(got[e], ref[e], places=5, msg=name)
++        # The kernel breaks exact ties towards the lowest expert index
++        if inkling._route_kernel is not None and mx.default_device() == mx.gpu:
++            inds, w = inkling.select_experts(
++                mx.zeros((2, 10)), mx.zeros((8,)), mx.array([1.0]), 3, 8.0
++            )
++            self.assertEqual(np.array(inds)[1, :3].tolist(), [0, 1, 2])
++            self.assertTrue(mx.allclose(w, mx.full((2, 5), 8.0 / 5)))
++
++    def test_sanitize_layouts(self):
++        # The HF source layout (interleaved w13, [C,1,K] convs, separate q/k/v/r,
++        # separate shared experts) and the mlx-community layout (split
++        # gate/up, [C,K,1] convs) load to the same parameters.
++        model, args = random_model()
++        cfg = args.text_config
++        hf, mlx_layout = {}, {}
++        prefix = "model.llm.layers.1."
++        H, I, E, S = (
++            cfg.hidden_size,
++            cfg.intermediate_size,
++            cfg.n_routed_experts,
++            cfg.n_shared_experts,
++        )
++        attn = model.layers[1].attn
++        dq, dkv = (
++            cfg.num_attention_heads * cfg.head_dim,
++            cfg.num_key_value_heads * cfg.head_dim,
++        )
++        fused = attn.qkvr_proj.weight
++        for name, a, b in [
++            ("wq_du", 0, dq),
++            ("wk_dv", dq, dq + dkv),
++            ("wv_dv", dq + dkv, dq + 2 * dkv),
++            ("wr_du", dq + 2 * dkv, fused.shape[0]),
++        ]:
++            hf[f"{prefix}attn.{name}.weight"] = fused[a:b]
++            mlx_layout[f"{prefix}attn.{name}.weight"] = fused[a:b]
++        kv_w = attn.kv_sconv.weight
++        hf[f"{prefix}attn.k_sconv.weight"] = kv_w[:dkv].swapaxes(1, 2)
++        hf[f"{prefix}attn.v_sconv.weight"] = kv_w[dkv:].swapaxes(1, 2)
++        mlx_layout[f"{prefix}attn.k_sconv.weight"] = kv_w[:dkv]
++        mlx_layout[f"{prefix}attn.v_sconv.weight"] = kv_w[dkv:]
++        gate = mx.random.normal((E + S, I, H))
++        up = mx.random.normal((E + S, I, H))
++        down = mx.random.normal((E + S, H, I))
++        w13 = mx.stack([gate, up], axis=2).reshape(E + S, 2 * I, H)
++        hf[f"{prefix}mlp.experts.w13_weight"] = w13[:E]
++        hf[f"{prefix}mlp.experts.w2_weight"] = down[:E]
++        hf[f"{prefix}mlp.shared_experts.shared_w13_weight"] = w13[E:]
++        hf[f"{prefix}mlp.shared_experts.shared_w2_weight"] = down[E:]
++        for n, w in [("gate_proj", gate), ("up_proj", up), ("down_proj", down)]:
++            mlx_layout[f"{prefix}mlp.experts.{n}.weight"] = w[:E]
++            mlx_layout[f"{prefix}mlp.shared_experts.{n}.weight"] = w[E:]
++        hf[f"{prefix}mlp.gate.weight"] = mx.random.normal((E + S, H)).astype(
++            mx.bfloat16
++        )
++        mlx_layout[f"{prefix}mlp.gate.weight"] = hf[f"{prefix}mlp.gate.weight"]
++        proj = mx.random.normal((cfg.d_rel, cfg.rel_extent))
++        hf[f"{prefix}attn.rel_logits_proj.proj"] = proj
++        mlx_layout[f"{prefix}attn.rel_logits_proj.proj"] = proj
++        hf["model.visual.x"] = mx.zeros(1)
++        hf["model.audio.x"] = mx.zeros(1)
++        hf["model.mtp.x"] = mx.zeros(1)
++
++        a = model.sanitize(hf)
++        b = model.sanitize(mlx_layout)
++        self.assertEqual(set(a), set(b))
++        for k in a:
++            self.assertTrue(mx.array_equal(a[k], b[k]), k)
++        self.assertTrue(mx.array_equal(a[f"{prefix}attn.qkvr_proj.weight"], fused))
++        self.assertTrue(mx.array_equal(a[f"{prefix}attn.kv_sconv.weight"], kv_w))
++        self.assertTrue(
++            mx.array_equal(a[f"{prefix}mlp.experts.gate_proj.weight"], gate)
++        )
++        self.assertTrue(mx.array_equal(a[f"{prefix}mlp.experts.up_proj.weight"], up))
++        self.assertTrue(
++            mx.array_equal(a[f"{prefix}mlp.experts.down_proj.weight"], down)
++        )
++        self.assertEqual(a[f"{prefix}mlp.gate.weight"].dtype, mx.float32)
++        self.assertTrue(
++            mx.array_equal(
++                a[f"{prefix}attn.rel_logits_proj.proj_reversed"], proj[:, ::-1]
++            )
++        )
++
++    def test_sanitize_quantized_fold(self):
++        # Appending quantized shared experts to quantized routed experts is exact
++        model, args = random_model()
++        E, S, I, H = 8, 2, 64, 128
++        gate = mx.random.normal((E + S, I, H))
++        prefix = "model.llm.layers.1.mlp."
++        weights = {}
++        for part, sl in [("experts", slice(0, E)), ("shared_experts", slice(E, E + S))]:
++            w, s, b = mx.quantize(gate[sl], group_size=64, bits=2)
++            weights[f"{prefix}{part}.gate_proj.weight"] = w
++            weights[f"{prefix}{part}.gate_proj.scales"] = s
++            weights[f"{prefix}{part}.gate_proj.biases"] = b
++        out = model.sanitize(weights)
++        w, s, b = mx.quantize(gate, group_size=64, bits=2)
++        self.assertTrue(mx.array_equal(out[f"{prefix}experts.gate_proj.weight"], w))
++        self.assertTrue(mx.array_equal(out[f"{prefix}experts.gate_proj.scales"], s))
++        self.assertTrue(mx.array_equal(out[f"{prefix}experts.gate_proj.biases"], b))
++        # Mismatched quantization is refused
++        bad = dict(weights)
++        bad[f"{prefix}shared_experts.gate_proj.scales"] = weights[
++            f"{prefix}shared_experts.gate_proj.scales"
++        ][..., :1]
++        with self.assertRaises(ValueError):
++            model.sanitize(bad)
++
++    def test_key_distances(self):
++        b, h, d, W = 1, 2, 8, 6
++        for cls in (RotatingKVCache, BatchRotatingKVCache):
++            cache = cls(W) if cls is RotatingKVCache else cls(W, [0])
++            xs = mx.random.normal((b, h, 23, d))
++            pos = 0
++            for n in [3, 1, 1, 4, 1, 1, 1, 7, 1, 1, 1, 1]:
++                k, _ = cache.update_and_fetch(
++                    xs[..., pos : pos + n, :], xs[..., pos : pos + n, :]
++                )
++                pos += n
++                dist = cache.key_distances()
++                self.assertEqual(dist.shape[0], k.shape[2])
++                # slot s holds the key dist[s] positions behind the newest one
++                expected = xs[..., pos - 1 - dist, :]
++                self.assertTrue(mx.array_equal(k, expected), (pos, n))
++
++    def test_batched_prompts(self):
++        # A right-padded batch through merged caches equals the single-sequence runs
++        model, args = random_model()
++        toks_a = mx.random.randint(0, 60, (1, 7))
++        toks_b = mx.random.randint(0, 60, (1, 3))
++        ref = []
++        for toks in (toks_a, toks_b):
++            cache = make_prompt_cache(model)
++            lp = model(toks, cache=cache)[:, -1]
++            nxt = mx.argmax(lp, -1, keepdims=True)
++            ref.append((lp, model(nxt, cache=cache)[:, -1], nxt))
++        caches = [make_prompt_cache(model) for _ in range(2)]
++        merged = [
++            c[0].merge([c[i] for c in caches]) for i, c in enumerate(zip(*caches))
++        ]
++        for c in merged:
++            c.prepare(lengths=[7, 3], right_padding=[0, 4])
++        padded = mx.concatenate([toks_a, mx.pad(toks_b, [(0, 0), (0, 4)])], 0)
++        lp = model(padded, cache=merged)
++        for c in merged:
++            c.finalize()
++        # fp32 GEMMs may run at reduced (TF32) precision on the GPU
++        tol = dict(rtol=1e-2, atol=1e-2)
++        self.assertTrue(mx.allclose(lp[0, -1], ref[0][0][0], **tol))
++        self.assertTrue(mx.allclose(lp[1, 2], ref[1][0][0], **tol))
++        nxt = mx.concatenate([ref[0][2], ref[1][2]], 0)
++        lp = model(nxt, cache=merged)[:, -1]
++        self.assertTrue(mx.allclose(lp[0], ref[0][1][0], **tol))
++        self.assertTrue(mx.allclose(lp[1], ref[1][1][0], **tol))
++
++    def test_prefill_decode_consistency(self):
++        model, args = random_model(dtype=mx.float16)
++        ids = mx.random.randint(0, 60, (2, 12))
++        full = model(ids)
++        cache = make_prompt_cache(model)
++        steps = [model(ids[:, :7], cache=cache)]
++        steps += [model(ids[:, t : t + 1], cache=cache) for t in range(7, 12)]
++        self.assertTrue(
++            mx.allclose(mx.concatenate(steps, 1), full, rtol=2e-2, atol=2e-2)
++        )
++
++    def test_cpu_exactness(self):
++        # On the CPU device fp32 matmuls are exact (the GPU may use TF32), so the
++        # cached decode and the chunked prefill match the full forward at fp32
++        # precision; the pure-MLX paths of the kernels are exercised here
++        model, args = random_model()
++        ids = mx.random.randint(0, 60, (2, 12))
++        default = mx.default_device()
++        mx.set_default_device(mx.cpu)
++        try:
++            full = model(ids)
++            cache = make_prompt_cache(model)
++            steps = [model(ids[:, :7], cache=cache)]
++            steps += [model(ids[:, t : t + 1], cache=cache) for t in range(7, 12)]
++            decode = mx.concatenate(steps, 1)
++            cache = make_prompt_cache(model)
++            chunks = [(0, 5), (5, 8), (8, 9), (9, 10), (10, 11), (11, 12)]
++            chunked = mx.concatenate(
++                [model(ids[:, a:b], cache=cache) for a, b in chunks], 1
++            )
++            mx.eval(full, decode, chunked)
++        finally:
++            mx.set_default_device(default)
++        self.assertTrue(mx.allclose(decode, full, rtol=1e-5, atol=1e-6))
++        self.assertTrue(mx.allclose(chunked, full, rtol=1e-5, atol=1e-6))
++
++    def test_kv_bits_warns(self):
++        import warnings
++
++        from mlx_lm.generate import generate_step
++
++        model, args = random_model(dtype=mx.float16)
++        prompt = mx.random.randint(0, 60, (5,))
++        with warnings.catch_warnings(record=True) as caught:
++            warnings.simplefilter("always")
++            for _ in generate_step(prompt, model, max_tokens=2, kv_bits=4):
++                pass
++        self.assertTrue(any("kv_bits" in str(w.message) for w in caught))
++
++    def test_flat_text_config(self):
++        args = inkling.ModelArgs.from_dict(
++            {"model_type": "inkling_text", **tiny_text_config()}
++        )
++        self.assertEqual(args.text_config.hidden_size, 64)
++        model = inkling.Model(args)
++        self.assertEqual(len(model.layers), 3)
++        with self.assertRaises(ValueError):
++            inkling.ModelArgs.from_dict(
++                {"model_type": "inkling_text", **tiny_text_config(use_sconv=False)}
++            )
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/tests/test_models.py b/tests/test_models.py
+index ad6c41e..6b8b111 100644
+--- a/tests/test_models.py
++++ b/tests/test_models.py
+@@ -2444,6 +2444,39 @@ class TestModels(unittest.TestCase):
+             model, args.model_type, args.vocab_size, args.num_hidden_layers
+         )
+ 
++    def test_inkling_mm_model(self):
++        from mlx_lm.models import inkling_mm_model
++
++        text_config = dict(
++            hidden_size=64,
++            num_hidden_layers=4,
++            vocab_size=128,
++            unpadded_vocab_size=120,
++            logits_mup_width_multiplier=16.0,
++            num_attention_heads=4,
++            num_key_value_heads=2,
++            head_dim=16,
++            sliding_window_size=4,
++            local_layer_ids=[0, 1, 2],
++            d_rel=4,
++            rel_extent=8,
++            log_scaling_n_floor=4,
++            sconv_kernel_size=4,
++            dense_mlp_idx=1,
++            intermediate_size=32,
++            dense_intermediate_size=96,
++            n_routed_experts=8,
++            num_experts_per_tok=2,
++            n_shared_experts=2,
++        )
++        args = inkling_mm_model.ModelArgs.from_dict(
++            {"model_type": "inkling_mm_model", "text_config": text_config}
++        )
++        model = inkling_mm_model.Model(args)
++        self.model_test_runner(
++            model, args.model_type, text_config["unpadded_vocab_size"], 4
++        )
++
+     def test_deepseek_v41(self):
+         from mlx_lm.models import deepseek_v41
+ 

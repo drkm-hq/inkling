@@ -1,0 +1,25 @@
+$ python -m mlx_lm.server --model ~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit/snapshots/f8a0af554e168077bdaf48e1fb6682fb395c807c/ --port 8181 (bounded 300s to load)
+server pid 66889
+ready after ~5s: ok=1
+{"id": "cmpl-5d9a2f0b-f3f2-4ea0-8e56-554665ec647a", "system_fingerprint": "0.1.dev8+gcce083427-0.32.4-macOS-26.5.1-arm64-arm-64bit-applegpu_g17s", "object": "text_completion", "model": "default_model", "created": 1793258820, "choices": [{"index": 0, "finish_reason": "length", "text": "The user is asking \"The secret to baking a good cake is\" which seems like an incomplete sentence or a prompt asking"}], "usage": {"prompt_tokens": 8, "completion_tokens": 24, "total_tokens": 32, "prompt_tokens_details": {"cached_tokens": 0}}}
+{"id": "chatcmpl-f1329712-0cd4-4e6e-a0ec-b4163bf1ecdd", "system_fingerprint": "0.1.dev8+gcce083427-0.32.4-macOS-26.5.1-arm64-arm-64bit-applegpu_g17s", "object": "chat.completion", "model": "default_model", "created": 1793258824, "choices": [{"index": 0, "finish_reason": "length", "message": {"role": "assistant", "content": "<|content_thinking|>The user asks: \"In one sentence, who narrates Moby-Dick?\" They want a one-sentence answer identifying the narrator of Moby Dick"}}], "usage": {"prompt_tokens": 27, "completion_tokens": 32, "total_tokens": 59, "prompt_tokens_details": {"cached_tokens": 0}}}
+[server stopped] 2026-10-29T07:27:10Z
+--- server stdout/stderr (tail)
+<workdir>/upstream/mlx-lm-a2/mlx_lm/server.py:1882: UserWarning: mlx_lm.server is not recommended for production as it only implements basic security checks.
+  warnings.warn(
+2026-10-29 03:26:56,239 - INFO - Starting httpd at 127.0.0.1 on port 8181...
+127.0.0.1 - - [29/Oct/2026 03:26:59] "GET /v1/models HTTP/1.1" 200 -
+2026-10-29 03:27:03,528 - INFO - Prompt Cache: 0 sequences, 0.00 GB
+2026-10-29 03:27:03,528 - INFO - - assistant: 0 sequences, 0.00 GB
+2026-10-29 03:27:03,528 - INFO - - user: 0 sequences, 0.00 GB
+2026-10-29 03:27:03,528 - INFO - - system: 0 sequences, 0.00 GB
+127.0.0.1 - - [29/Oct/2026 03:27:03] "POST /v1/completions HTTP/1.1" 200 -
+2026-10-29 03:27:03,608 - INFO - Prompt processing progress: 7/8
+2026-10-29 03:27:03,769 - INFO - Prompt processing progress: 8/8
+2026-10-29 03:27:04,471 - INFO - Prompt Cache: 2 sequences, 0.01 GB
+2026-10-29 03:27:04,471 - INFO - - assistant: 2 sequences, 0.01 GB
+2026-10-29 03:27:04,471 - INFO - - user: 0 sequences, 0.00 GB
+2026-10-29 03:27:04,471 - INFO - - system: 0 sequences, 0.00 GB
+127.0.0.1 - - [29/Oct/2026 03:27:04] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-10-29 03:27:04,640 - INFO - Prompt processing progress: 26/27
+2026-10-29 03:27:04,680 - INFO - Prompt processing progress: 27/27

@@ -1,0 +1,14 @@
+W1029 02:21:59.810000 42551 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+[02:22:00] {"kind": "meta", "tag": "tf-before-512", "model": "~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit/snapshots/f8a0af554e168077bdaf48e1fb6682fb395c807c/", "mlx": "0.32.4", "mlx_vlm": "0.7.11", "mlx_vlm_file": "~/.venvs/inkling-base/lib/python3.12/site-packages/mlx_vlm/__init__.py", "git": null, "python": "~/.venvs/inkling-base/bin/python", "device": "Apple M5 Max", "argv": ["<workdir>/package/k4-mlx-vlm-fast-path/bench/equiv_bench.py", "--no-lock", "--tag", "tf-before-512", "--teacher-forced", "<workdir>/package/k4-mlx-vlm-fast-path/bench/results/before.jsonl", "--prefill-step-size", "512", "--max-tokens", "128", "--tf-reference", "tf-before-2048"], "pid": 42551, "load1": 13.15087890625, "env_tf32": null}
+[02:22:13] load: lazy 0.8s, chunked eval 11.5s, 82.3 GiB of parameters, active 82.4 GiB, peak 82.4 GiB
+[02:22:13] parameter dtypes: {'mlx.core.bfloat16': 1014, 'mlx.core.uint32': 250, 'mlx.core.float32': 160}
+[02:22:13] make_cache kv kinds: ['KVCache']
+[02:22:13] prompt p_short: 833 chars, 239 tokens
+[02:22:13] prompt p_2k: 6929 chars, 2085 tokens
+[02:22:13] prompt p_8k: 30131 chars, 8231 tokens
+[02:22:13] prompt p_32k: 128212 chars, 32807 tokens
+[02:22:13] gen kwargs: {'max_tokens': 128, 'temperature': 0.0, 'top_p': 1.0, 'top_k': 0, 'verbose': False, 'prefill_step_size': 512}
+[02:22:25] tf p_short: chunk 512, 239 prompt tokens + 128 teacher tokens in 12.0s, teacher top-1 123/128, md5 2664952957e7, vs tf-before-2048: identical=True KL mean 0.00e+00 max 0.00e+00 at 0, |dlogprob| mean 0.00e+00 max 0.00e+00, top-1 agree 128/128
+[02:22:38] tf p_2k: chunk 512, 2085 prompt tokens + 128 teacher tokens in 12.3s, teacher top-1 121/128, md5 c248f6ae2d0c, vs tf-before-2048: identical=False KL mean 3.26e-02 max 1.62e+00 at 120, |dlogprob| mean 8.09e-02 max 4.83e+00, top-1 agree 124/128
+[02:23:26] tf p_8k: chunk 512, 8231 prompt tokens + 128 teacher tokens in 48.2s, teacher top-1 124/128, md5 542cd3fdba70, vs tf-before-2048: identical=False KL mean 1.84e-02 max 2.64e-01 at 18, |dlogprob| mean 4.52e-02 max 7.70e-01, top-1 agree 123/128
+[02:26:48] tf p_32k: chunk 512, 32807 prompt tokens + 128 teacher tokens in 200.6s, teacher top-1 122/128, md5 2b8b14d1ba40, vs tf-before-2048: identical=False KL mean 1.30e-02 max 2.95e-01 at 17, |dlogprob| mean 4.53e-02 max 9.54e-01, top-1 agree 122/128

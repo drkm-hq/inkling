@@ -1,0 +1,8 @@
+[  9%] Built target ggml-base
+[ 13%] Built target ggml-blas
+[ 81%] Built target ggml-metal
+[ 95%] Built target ggml-cpu
+[ 95%] Built target ggml
+[ 95%] Building CXX object tests/CMakeFiles/test-backend-ops.dir/test-backend-ops.cpp.o
+[100%] Linking CXX executable ../bin/test-backend-ops
+[100%] Built target test-backend-ops

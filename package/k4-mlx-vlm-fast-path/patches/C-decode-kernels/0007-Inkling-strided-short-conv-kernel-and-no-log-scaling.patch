@@ -1,0 +1,261 @@
+From 982cc5a83171925fb4bd6a118b8417f7cc3b04e9 Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Wed, 28 Oct 2026 22:52:17 -0400
+Subject: [PATCH 7/9] Inkling: strided short-conv kernel and no log-scaling
+ passes below the floor
+
+Two decode-time kernel reductions per layer, both bit-exact. The fused
+short-convolution kernel kept metal_kernel's default ensure_row_contiguous,
+so the k and v streams, which are column slices of the fused qkvr
+projection, were copied to contiguous buffers before every call (two extra
+kernels per layer per token, 84 per Inkling-Small token). The kernel now
+reads x, the conv state, the weight and the residual through their
+injected strides, which also removes the reshape of the [C, K, 1] weight;
+the arithmetic is unchanged and the output was checked equal to the
+previous kernel's on strided inputs at the production shapes. On global
+layers the log-scaling factor tau is exactly 1 for every query position up
+to log_scaling_n_floor (128000 for the real checkpoints): the branch built
+tau from the positions, multiplied q, and ran a compare, a multiply and a
+where over the full [B, H, L, S] mask anyway, about a dozen kernels per
+global layer per token and three mask-sized passes per prefill chunk
+(12.9 GB of temporaries for an 8192-token chunk). It is now skipped while
+offset + L <= floor and runs unchanged as soon as a position crosses it.
+Tests check the kernel on strided views, strided conv state and the
+checkpoint's transposed weight against contiguous copies (exact) and the
+unfused path (1 ulp), and that tau is neither computed nor applied below
+the floor while rows past it are scaled by the closed form.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ mlx_vlm/models/inkling/language.py      |  39 +++++---
+ mlx_vlm/tests/test_inkling_fast_path.py | 124 ++++++++++++++++++++++++
+ 2 files changed, 151 insertions(+), 12 deletions(-)
+
+diff --git a/mlx_vlm/models/inkling/language.py b/mlx_vlm/models/inkling/language.py
+index a35c9f3..69cfd3a 100644
+--- a/mlx_vlm/models/inkling/language.py
++++ b/mlx_vlm/models/inkling/language.py
+@@ -258,18 +258,29 @@ _SCONV_SRC = r"""
+     uint c = thread_position_in_grid.x;   // channel
+     uint b = thread_position_in_grid.y;   // batch row
+     if (c >= C || b >= B) return;
+-    float w0 = (float)w[c * K + 0];
+-    float w1 = (float)w[c * K + 1];
+-    float w2 = (float)w[c * K + 2];
+-    float w3 = (float)w[c * K + 3];
++    // Inputs are read through their strides: the k/v streams arrive as
++    // column slices of the fused qkvr projection, and the kernel would
++    // otherwise need a contiguous copy of each per call.
++    const size_t xb = (size_t)b * x_strides[0] + (size_t)c * x_strides[2];
++    const size_t xs = (size_t)x_strides[1];
++    const size_t sb = (size_t)b * state_strides[0] + (size_t)c * state_strides[2];
++    const size_t ss = (size_t)state_strides[1];
++    const size_t rb = (size_t)b * res_strides[0] + (size_t)c * res_strides[2];
++    const size_t rs = (size_t)res_strides[1];
++    const size_t wb = (size_t)c * w_strides[0];
++    const size_t ws = (size_t)w_strides[1];
++    float w0 = (float)w[wb + 0 * ws];
++    float w1 = (float)w[wb + 1 * ws];
++    float w2 = (float)w[wb + 2 * ws];
++    float w3 = (float)w[wb + 3 * ws];
+     // Virtual padded input xp = [state (K-1 rows, fp32); x (L rows, T)].
+     for (uint i = 0; i < L; ++i) {
+         float acc = 0.0f;
+         for (uint k = 0; k < K; ++k) {
+             int r = (int)(i + k) - (int)(K - 1);  // row into x; negative -> state
+             float v = (r < 0)
+-                ? state[(b * (K - 1) + (uint)(r + (int)(K - 1))) * C + c]
+-                : (float)x[(b * L + (uint)r) * C + c];
++                ? state[sb + (size_t)(r + (int)(K - 1)) * ss]
++                : (float)x[xb + (size_t)r * xs];
+             float wk = (k == 0) ? w0 : (k == 1) ? w1 : (k == 2) ? w2 : w3;
+             acc += wk * v;
+         }
+@@ -277,10 +288,10 @@ _SCONV_SRC = r"""
+         // before the fp32 residual add; the layer residual is a second bf16
+         // add on top (as the decoder layer's x + sconv(r) was).
+         float conv_r = (float)((T)acc);
+-        T inner = (T)(conv_r + (float)x[(b * L + i) * C + c]);
++        T inner = (T)(conv_r + (float)x[xb + (size_t)i * xs]);
+         if (HAS_RES) {
+             out[(b * L + i) * C + c] =
+-                (T)((float)inner + (float)res[(b * L + i) * C + c]);
++                (T)((float)inner + (float)res[rb + (size_t)i * rs]);
+         } else {
+             out[(b * L + i) * C + c] = inner;
+         }
+@@ -288,8 +299,8 @@ _SCONV_SRC = r"""
+     for (uint s = 0; s < K - 1; ++s) {
+         int r = (int)(L + s) - (int)(K - 1);
+         nstate[(b * (K - 1) + s) * C + c] = (r < 0)
+-            ? state[(b * (K - 1) + (uint)(r + (int)(K - 1))) * C + c]
+-            : (float)x[(b * L + (uint)r) * C + c];
++            ? state[sb + (size_t)(r + (int)(K - 1)) * ss]
++            : (float)x[xb + (size_t)r * xs];
+     }
+ """
+ _sconv_kernel = mx.fast.metal_kernel(
+@@ -297,6 +308,7 @@ _sconv_kernel = mx.fast.metal_kernel(
+     input_names=["x", "state", "w", "res"],
+     output_names=["out", "nstate"],
+     source=_SCONV_SRC,
++    ensure_row_contiguous=False,
+ )
+ 
+ 
+@@ -338,7 +350,7 @@ class InklingShortConvolution(nn.Module):
+                 inputs=[
+                     x,
+                     state,
+-                    self.conv.weight.reshape(-1),
++                    self.conv.weight,  # [C, K, 1], read through its strides
+                     residual if residual is not None else x,
+                 ],
+                 template=[
+@@ -469,7 +481,10 @@ class InklingAttention(nn.Module):
+             left_padding=left_padding,
+             shape_ref=k,
+         )
+-        if self.log_floor is not None:
++        # Log scaling is exactly 1 for every query position up to the floor
++        # (the real checkpoints set it at 128K): skip the tau passes over q
++        # and the [B, H, L, S] mask until a position crosses it.
++        if self.log_floor is not None and offset + L > self.log_floor:
+             qpos = (mx.arange(L) + offset + 1).astype(mx.float32)
+             tau = 1.0 + self.log_alpha * mx.log(mx.maximum(qpos / self.log_floor, 1.0))
+             tau = tau.reshape(1, 1, L, 1).astype(x.dtype)
+diff --git a/mlx_vlm/tests/test_inkling_fast_path.py b/mlx_vlm/tests/test_inkling_fast_path.py
+index 9cfbed7..a6438ec 100644
+--- a/mlx_vlm/tests/test_inkling_fast_path.py
++++ b/mlx_vlm/tests/test_inkling_fast_path.py
+@@ -274,3 +274,127 @@ def test_prompt_processing_batch_matches_single_rows():
+             want.append(int(y.item()))
+             y = mx.argmax(model(y[:, None], cache=cache).logits[:, -1], axis=-1)
+         assert generated[uid] == want, uid
++
++
++# --------------------------------------------------------------- kernel counts
++
++
++def _unfused_sconv(conv, x, state, residual):
++    """The pure-MLX path, with the same cache contents, for reference."""
++    cache = [None] * 4
++    cache[conv.conv_idx] = state
++    conv_cpu = lang.InklingShortConvolution(x.shape[-1], 4, conv.conv_idx)
++    conv_cpu.conv.weight = conv.conv.weight
++    with mx.stream(mx.cpu):
++        out = conv_cpu(x, cache=cache, residual=residual)
++        mx.eval(out, cache[conv.conv_idx])
++    return out, cache[conv.conv_idx]
++
++
++@pytest.mark.parametrize("dtype", [mx.float32, mx.bfloat16])
++@pytest.mark.parametrize("L", [1, 5, 8])
++@pytest.mark.parametrize("with_residual", [False, True])
++def test_sconv_kernel_reads_strided_inputs_exactly(dtype, L, with_residual):
++    if not (mx.default_device() == mx.gpu and mx.metal.is_available()):
++        pytest.skip("Metal kernel path")
++    B, C, width = 2, 24, 70
++    mx.random.seed(5)
++    conv = lang.InklingShortConvolution(C, 4, conv_idx=1)
++    # Checkpoint layout: [C, 1, K] transposed to [C, K, 1] (a strided view).
++    conv.conv.weight = mx.random.normal((C, 1, 4)).transpose(0, 2, 1).astype(dtype)
++    fused = mx.random.normal((B, L, width)).astype(dtype)
++    x = fused[..., 30 : 30 + C]  # a column slice, like the k/v streams
++    residual = mx.random.normal((B, L, C)).astype(dtype) if with_residual else None
++    # A state that is itself a strided slice (what the prefill path stores).
++    state = mx.concatenate([mx.random.normal((B, 3, C)), mx.zeros((B, 2, C))], axis=1)[
++        :, :3
++    ]
++    mx.eval(conv.conv.weight, fused, state)
++
++    cache = [None] * 4
++    cache[1] = state
++    out = conv(x, cache=cache, residual=residual)
++    mx.eval(out, cache[1])
++    assert out.dtype == dtype and cache[1].dtype == mx.float32
++
++    contiguous_cache = [None] * 4
++    contiguous_cache[1] = mx.contiguous(state)
++    out_c = conv(mx.contiguous(x), cache=contiguous_cache, residual=residual)
++    assert mx.array_equal(out, out_c).item()
++    assert mx.array_equal(cache[1], contiguous_cache[1]).item()
++
++    # The unfused conv accumulates the four taps in another order: 1 ulp.
++    ref, ref_state = _unfused_sconv(
++        conv, mx.contiguous(x), mx.contiguous(state), residual
++    )
++    assert mx.array_equal(cache[1], ref_state).item()
++    np.testing.assert_allclose(
++        np.array(out.astype(mx.float32)),
++        np.array(ref.astype(mx.float32)),
++        rtol=1e-6 if dtype == mx.float32 else 1e-2,
++        atol=1e-6 if dtype == mx.float32 else 2e-2,
++    )
++
++
++def _attention_inputs(monkeypatch):
++    captured = []
++    real = lang.scaled_dot_product_attention
++
++    def spy(q, k, v, cache, scale, mask, **kwargs):
++        captured.append((q, mask))
++        return real(q, k, v, cache, scale, mask, **kwargs)
++
++    monkeypatch.setattr(lang, "scaled_dot_product_attention", spy)
++    return captured
++
++
++def test_log_scaling_skipped_below_the_floor(monkeypatch):
++    floor = 8
++    config = tiny_config(log_scaling_n_floor=floor, layer_types=["hybrid"] * 3)
++    mx.random.seed(2)
++    scaled = lang.InklingAttention(config, layer_idx=0)
++    scaled.rel_proj = mx.random.normal(scaled.rel_proj.shape)
++    plain = lang.InklingAttention(config, layer_idx=0)
++    plain.update(scaled.parameters())
++    plain.log_floor = None
++    x = mx.random.normal((1, 12, 32))
++    captured = _attention_inputs(monkeypatch)
++    logs = []
++    real_log = mx.log
++    monkeypatch.setattr(mx, "log", lambda *a, **k: logs.append(1) or real_log(*a, **k))
++
++    # Prefill crossing the floor: tau applies to the rows past it only.
++    cache = CacheList(KVCache(), ArraysCache(4))
++    out = scaled(x, cache=cache)
++    plain_out = plain(x, cache=CacheList(KVCache(), ArraysCache(4)))
++    (q_s, m_s), (q_p, m_p) = captured
++    assert len(logs) == 1
++    tau = 1 + 0.1 * np.log(np.maximum(np.arange(1, 13) / floor, 1.0))
++    np.testing.assert_allclose(
++        np.array(q_s), np.array(q_p) * tau[None, None, :, None], rtol=1e-6
++    )
++    finite = np.array(m_p) > -1e29
++    np.testing.assert_allclose(
++        np.where(finite, np.array(m_s), 0),
++        np.where(finite, np.array(m_p) * tau[None, None, :, None], 0),
++        rtol=1e-6,
++        atol=1e-6,
++    )
++    assert np.array_equal(np.array(m_s) > -1e29, finite)
++    close(out[:, :floor], plain_out[:, :floor])
++    assert not np.allclose(np.array(out[:, floor:]), np.array(plain_out[:, floor:]))
++
++    # Decode below the floor: no tau ops at all, same q and mask as unscaled.
++    del captured[:]
++    del logs[:]
++    cache = CacheList(KVCache(), ArraysCache(4))
++    plain_cache = CacheList(KVCache(), ArraysCache(4))
++    for step in range(floor):
++        tok = x[:, step : step + 1]
++        close(scaled(tok, cache=cache), plain(tok, cache=plain_cache))
++    assert logs == []
++    for (q_s, m_s), (q_p, m_p) in zip(captured[::2], captured[1::2]):
++        assert mx.array_equal(q_s, q_p).item() and mx.array_equal(m_s, m_p).item()
++    # The step that crosses the floor scales again.
++    scaled(x[:, floor : floor + 1], cache=cache)
++    assert len(logs) == 1
+-- 
+2.55.0
+

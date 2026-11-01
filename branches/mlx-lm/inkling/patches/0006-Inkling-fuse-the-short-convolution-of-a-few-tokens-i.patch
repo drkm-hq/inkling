@@ -1,0 +1,127 @@
+From 450edaf16154b815d317c5d3a65bf53e4c6213c8 Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Wed, 28 Oct 2026 23:14:58 -0400
+Subject: [PATCH 06/10] Inkling: fuse the short convolution of a few tokens
+ into one kernel
+
+At decode the three short convolutions per layer cost more dispatch than the
+rest of the layer (bench/K2-dispatch-profile.log): the concatenation, eight
+slice views and a nine-input compiled call per convolution. One Metal kernel
+now computes the convolution, the residual and the new state for up to 8
+tokens with fp32 accumulation and the same single rounding, so the compiled
+taps serve prefill and non-Metal devices only. The conv mask is only built
+when the cache carries padding.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ mlx_lm/models/inkling_mm_model.py | 76 ++++++++++++++++++++++++++++++-
+ 1 file changed, 74 insertions(+), 2 deletions(-)
+
+diff --git a/mlx_lm/models/inkling_mm_model.py b/mlx_lm/models/inkling_mm_model.py
+index a45c846..6d85386 100644
+--- a/mlx_lm/models/inkling_mm_model.py
++++ b/mlx_lm/models/inkling_mm_model.py
+@@ -132,6 +132,54 @@ def _short_conv_taps_residual(x, residual, *taps_and_weights):
+     return y.astype(x.dtype)
+ 
+ 
++_SHORT_CONV_SRC = """
++    uint c = thread_position_in_grid.x;   // channel
++    uint b = thread_position_in_grid.y;   // batch row
++    uint C = threads_per_grid.x;
++    uint L = x_shape[1];
++    // The virtual input is [state (K - 1 rows); x (L rows)]
++    for (uint i = 0; i < L; ++i) {
++        float acc = x[b * x_strides[0] + i * x_strides[1] + c * x_strides[2]];
++        for (uint k = 0; k < K; ++k) {
++            int r = int(i + k) - int(K - 1);
++            float v = r < 0
++                ? float(state[b * state_strides[0] + uint(r + K - 1) * state_strides[1]
++                              + c * state_strides[2]])
++                : float(x[b * x_strides[0] + uint(r) * x_strides[1] + c * x_strides[2]]);
++            acc += v * float(w[c * K + k]);
++        }
++        T y = T(acc);
++        if (HAS_RESIDUAL) {
++            y = T(float(y) + float(res[b * res_strides[0] + i * res_strides[1]
++                                       + c * res_strides[2]]));
++        }
++        out[(b * L + i) * C + c] = y;
++    }
++    for (uint k = 0; k < K - 1; ++k) {
++        int r = int(L + k) - int(K - 1);
++        new_state[(b * (K - 1) + k) * C + c] = r < 0
++            ? state[b * state_strides[0] + uint(r + K - 1) * state_strides[1]
++                    + c * state_strides[2]]
++            : x[b * x_strides[0] + uint(r) * x_strides[1] + c * x_strides[2]];
++    }
++"""
++
++
++def _make_short_conv_kernel():
++    if not mx.metal.is_available():
++        return None
++    return mx.fast.metal_kernel(
++        name="inkling_short_conv",
++        input_names=["x", "state", "w", "res"],
++        output_names=["out", "new_state"],
++        source=_SHORT_CONV_SRC,
++        ensure_row_contiguous=False,
++    )
++
++
++_short_conv_kernel = _make_short_conv_kernel()
++
++
+ class ShortConv(nn.Module):
+     """Depthwise causal convolution with a built-in residual::
+ 
+@@ -139,7 +187,9 @@ class ShortConv(nn.Module):
+ 
+     The decode state is the last ``K - 1`` inputs, kept in slot ``slot`` of the
+     layer's ``ArraysCache``. The weight keeps the ``nn.Conv1d`` layout
+-    ``[channels, K, 1]`` of the checkpoints.
++    ``[channels, K, 1]`` of the checkpoints. A few tokens at a time go through
++    one kernel (convolution, residual and state update); longer inputs through
++    the compiled taps.
+     """
+ 
+     def __init__(self, channels: int, kernel_size: int, slot: int):
+@@ -156,6 +206,27 @@ class ShortConv(nn.Module):
+         state = cache[self.slot] if cache is not None else None
+         if state is None:
+             state = mx.zeros((B, K - 1, C), x.dtype)
++        if (
++            _short_conv_kernel is not None
++            and mx.default_device() == mx.gpu
++            and cache is not None
++            and cache.lengths is None
++            and mask is None
++            and L <= 8
++        ):
++            y, cache[self.slot] = _short_conv_kernel(
++                inputs=[x, state, self.weight, x if residual is None else residual],
++                template=[
++                    ("T", x.dtype),
++                    ("K", K),
++                    ("HAS_RESIDUAL", residual is not None),
++                ],
++                grid=(C, B, 1),
++                threadgroup=(min(C, 256), 1, 1),
++                output_shapes=[(B, L, C), (B, K - 1, C)],
++                output_dtypes=[x.dtype, x.dtype],
++            )
++            return y
+         xp = mx.concatenate([state, x], axis=1)
+         taps = [xp[:, k : k + L] for k in range(K)]
+         weights = [self.weight[:, k, 0] for k in range(K)]
+@@ -460,7 +531,8 @@ class DecoderLayer(nn.Module):
+         kv_cache = conv_cache = conv_mask = None
+         if cache is not None:
+             kv_cache, conv_cache = cache[0], cache[1]
+-            conv_mask = conv_cache.make_mask(x.shape[1])
++            if conv_cache.lengths is not None or conv_cache.left_padding is not None:
++                conv_mask = conv_cache.make_mask(x.shape[1])
+         r = self.attn(self.attn_norm(x), kv_cache, conv_cache, conv_mask, rel_index)
+         h = self.attn_sconv(r, conv_cache, conv_mask, residual=x)
+         r = self.mlp(self.mlp_norm(h))

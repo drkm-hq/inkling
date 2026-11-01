@@ -1,0 +1,257 @@
+diff --git a/ggml/src/ggml-metal/ggml-metal-fusion.cpp b/ggml/src/ggml-metal/ggml-metal-fusion.cpp
+--- a/ggml/src/ggml-metal/ggml-metal-fusion.cpp
++++ b/ggml/src/ggml-metal/ggml-metal-fusion.cpp
+@@ -760,7 +760,40 @@
+     GGML_OP_ADD, GGML_OP_ADD, GGML_OP_ADD, GGML_OP_ADD, GGML_OP_ADD, GGML_OP_ADD, GGML_OP_ADD
+ };
+ 
++static bool ggml_metal_fusion_check_cont_mul_mat(
++        const ggml_metal_fusion       * fusion,
++        const ggml_tensor * const     * nodes,
++        const ggml_cgraph             * gf,
++        const int                    * node_idxs,
++              int                      idx,
++              ggml_metal_fusion_mode   mode) {
++    const ggml_tensor * cont = nodes[0];
++    const ggml_tensor * mm   = nodes[1];
++    const ggml_tensor * a    = cont->src[0];
++    const ggml_tensor * b    = mm->src[1];
++
++    if (mm->src[0] != cont || !a || !b ||
++        a->type != GGML_TYPE_F32 || b->type != GGML_TYPE_F32 ||
++        cont->type != GGML_TYPE_F32 || mm->type != GGML_TYPE_F32 ||
++        !ggml_are_same_shape(cont, a) || b->ne[0] != 16 ||
++        a->ne[0] != 16 || a->ne[1] < 32 || a->ne[1] > 2048 ||
++        a->ne[2] != 1 || a->ne[3] != 1 ||
++        a->nb[1] != sizeof(float) || a->nb[0] < a->ne[1]*sizeof(float) ||
++        b->ne[2] != 1 || b->ne[3] != 1 ||
++        !ggml_is_contiguous(b) || !ggml_is_contiguous(mm) ||
++        ggml_prec_get_acc(mm) != GGML_PREC_F32_PEDANTIC) {
++        return false;
++    }
++
++    const int output = node_idxs[idx + 1];
++    return ggml_can_fuse_subgraph_ext(gf, node_idxs + idx, 2, fusion->ops.data(), &output, 1) &&
++        // Keep packing independent of token count; limit only the compute kernel.
++        (mode != GGML_METAL_FUSION_FULL ||
++         (b->ne[1] <= 64 && !ggml_metal_fusion_overlap(mm, a) && !ggml_metal_fusion_overlap(mm, b)));
++}
++
+ static const std::vector<ggml_op> ops_mul_mat_add = { GGML_OP_MUL_MAT, GGML_OP_ADD };
++static const std::vector<ggml_op> ops_cont_mul_mat = { GGML_OP_CONT, GGML_OP_MUL_MAT };
+ 
+ static const std::vector<ggml_metal_fusion> ggml_metal_fusions = {
+     { GGML_METAL_FUSION_NORM_MUL,       ops_norm_mul,               {},     false, ggml_metal_fusion_check_norm },
+@@ -790,6 +823,7 @@
+     { GGML_METAL_FUSION_MOE_REDUCE,     ops_moe_reduce_8,           {},     true,  ggml_metal_fusion_check_moe_reduce },
+     { GGML_METAL_FUSION_SSM_CONV_SILU,  ops_ssm_conv_silu,          {},     false, ggml_metal_fusion_check_ssm_conv_silu },
+     { GGML_METAL_FUSION_MUL_MAT_ADD,    ops_mul_mat_add,            {},     false, ggml_metal_fusion_check_mul_mat_add },
++    { GGML_METAL_FUSION_CONT_MUL_MAT,   ops_cont_mul_mat,           {},     true,  ggml_metal_fusion_check_cont_mul_mat },
+ };
+ 
+ // ---- alloc deps -----------------------------------------------------------
+diff --git a/ggml/src/ggml-metal/ggml-metal-fusion.h b/ggml/src/ggml-metal/ggml-metal-fusion.h
+--- a/ggml/src/ggml-metal/ggml-metal-fusion.h
++++ b/ggml/src/ggml-metal/ggml-metal-fusion.h
+@@ -43,6 +43,7 @@
+     GGML_METAL_FUSION_MOE_REDUCE,   // MUL + expert VIEWs + ADD chain (MoE output reduction)
+     GGML_METAL_FUSION_SSM_CONV_SILU, // SSM_CONV + UNARY (silu)
+     GGML_METAL_FUSION_MUL_MAT_ADD,  // MUL_MAT + ADD (residual added in the few-row MMA store)
++    GGML_METAL_FUSION_CONT_MUL_MAT, // transposed small-K CONT + MUL_MAT
+ } ggml_metal_fusion_id;
+ 
+ struct ggml_metal_fusion; // defined in ggml-metal-fusion.cpp
+diff --git a/ggml/src/ggml-metal/ggml-metal-impl.h b/ggml/src/ggml-metal/ggml-metal-impl.h
+--- a/ggml/src/ggml-metal/ggml-metal-impl.h
++++ b/ggml/src/ggml-metal/ggml-metal-impl.h
+@@ -329,6 +329,13 @@
+ } ggml_metal_kargs_cpy;
+ 
+ typedef struct {
++    int32_t  ne0;
++    int32_t  ne1;
++    uint64_t nb00;
++    uint64_t nb11;
++} ggml_metal_kargs_cont_mul_mat;
++
++typedef struct {
+     int64_t  ne10;
+     int64_t  ne11;
+     int64_t  ne12;
+diff --git a/ggml/src/ggml-metal/ggml-metal-ops.cpp b/ggml/src/ggml-metal/ggml-metal-ops.cpp
+--- a/ggml/src/ggml-metal/ggml-metal-ops.cpp
++++ b/ggml/src/ggml-metal/ggml-metal-ops.cpp
+@@ -2343,6 +2343,30 @@
+     ggml_metal_library_t lib = ctx->lib;
+     ggml_metal_encoder_t enc = ctx->enc;
+ 
++    if (ctx->use_fusion()) {
++        int n_fuse = 1;
++        const auto * fusion = ctx->can_fuse(idx, GGML_METAL_FUSION_FULL, &n_fuse);
++        if (fusion && ggml_metal_fusion_get_id(fusion) == GGML_METAL_FUSION_CONT_MUL_MAT) {
++            const ggml_tensor * mm = ctx->node(idx + 1);
++            const char * name = "kernel_cont_mul_mat_f32_k16";
++            auto pipeline = ggml_metal_library_get_pipeline(lib, name);
++            if (!pipeline.pipeline) {
++                pipeline = ggml_metal_library_compile_pipeline(lib, name, name, nullptr);
++            }
++            ggml_metal_kargs_cont_mul_mat args = {
++                (int32_t) mm->ne[0], (int32_t) mm->ne[1], op->src[0]->nb[0], mm->src[1]->nb[1],
++            };
++            ggml_metal_encoder_set_pipeline(enc, pipeline);
++            ggml_metal_encoder_set_bytes(enc, &args, sizeof(args), 0);
++            ggml_metal_encoder_set_buffer(enc, ggml_metal_get_buffer_id(op->src[0]), 1);
++            ggml_metal_encoder_set_buffer(enc, ggml_metal_get_buffer_id(mm->src[1]), 2);
++            ggml_metal_encoder_set_buffer(enc, ggml_metal_get_buffer_id(mm), 3);
++            ggml_metal_encoder_dispatch_threadgroups(enc, (args.ne0 + 127)/128, args.ne1, 1, 128, 1, 1);
++            ctx->count_fusions(fusion);
++            return n_fuse;
++        }
++    }
++
+     GGML_TENSOR_LOCALS( int32_t, ne0, op->src[0], ne);
+     GGML_TENSOR_LOCALS(uint64_t, nb0, op->src[0], nb);
+     GGML_TENSOR_LOCALS( int32_t, ne,  op,         ne);
+diff --git a/ggml/src/ggml-metal/kernels/misc.metal b/ggml/src/ggml-metal/kernels/misc.metal
+--- a/ggml/src/ggml-metal/kernels/misc.metal
++++ b/ggml/src/ggml-metal/kernels/misc.metal
+@@ -1,4 +1,24 @@
+ #include "common.h"
++
++kernel void kernel_cont_mul_mat_f32_k16(
++        constant ggml_metal_kargs_cont_mul_mat & args,
++        device const char * a,
++        device const char * b,
++        device float * dst,
++        uint3 tg [[threadgroup_position_in_grid]],
++        uint3 tid [[thread_position_in_threadgroup]]) {
++    const int row = tg.x*128 + tid.x;
++    if (row >= args.ne0) {
++        return;
++    }
++    device const float * x = (device const float *) (b + tg.y*args.nb11);
++    float sum = 0.0f;
++    FOR_UNROLL (short k = 0; k < 16; ++k) {
++        const float w = ((device const float *) (a + k*args.nb00))[row];
++        sum = fma(w, x[k], sum);
++    }
++    dst[tg.y*args.ne0 + row] = sum;
++}
+ 
+ kernel void kernel_argmax_f32(
+         constant ggml_metal_kargs_argmax & args,
+diff --git a/tests/test-backend-ops.cpp b/tests/test-backend-ops.cpp
+--- a/tests/test-backend-ops.cpp
++++ b/tests/test-backend-ops.cpp
+@@ -3908,6 +3908,45 @@
+         ggml_tensor * out = ggml_scale(ctx, n, scale);
+         ggml_set_name(out, "out");
+ 
++        return out;
++    }
++};
++
++// Transposed small-K weights followed by a matrix multiplication.
++struct test_cont_mul_mat : public test_case {
++    const int64_t k, rows, cols;
++    const bool strided;
++    const int tail;
++    const ggml_type type;
++
++    test_cont_mul_mat(int64_t k, int64_t rows, int64_t cols, bool strided = false, int tail = 0, ggml_type type = GGML_TYPE_F32)
++        : k(k), rows(rows), cols(cols), strided(strided), tail(tail), type(type) {}
++
++    std::string op_desc(ggml_tensor * t) override {
++        GGML_UNUSED(t);
++        return "CONT_MUL_MAT";
++    }
++    bool run_whole_graph() override { return true; }
++    double max_nmse_err() override { return 1e-6; }
++    std::string vars() override { return VARS_TO_STR6(k, rows, cols, strided, tail, type); }
++
++    ggml_tensor * build_graph(ggml_context * ctx) override {
++        ggml_tensor * a = ggml_new_tensor_2d(ctx, type, rows + (strided ? 7 : 0), k);
++        if (strided) {
++            a = ggml_view_2d(ctx, a, rows, k, a->nb[1], ggml_type_size(type));
++        }
++        ggml_tensor * cont = tail == 3
++            ? ggml_cont_2d(ctx, ggml_transpose(ctx, a), k*2, rows/2)
++            : ggml_cont(ctx, ggml_transpose(ctx, a));
++        ggml_tensor * b = ggml_new_tensor_2d(ctx, GGML_TYPE_F32, cont->ne[0], cols);
++        ggml_tensor * out = ggml_mul_mat(ctx, cont, b);
++        ggml_prec_set_acc(out, GGML_PREC_F32_PEDANTIC);
++        if (tail == 1) {
++            out = ggml_add(ctx, out, ggml_sum(ctx, cont));
++        } else if (tail == 2) {
++            ggml_set_output(cont);
++        }
++        ggml_set_name(out, "out");
+         return out;
+     }
+ };
+@@ -11115,6 +11154,20 @@
+     // ne[2] > 65535 exceeds the CUDA gridDim.y limit (#27901)
+     test_cases.emplace_back(new test_rms_norm_mul_rope({4, 1, 65536, 1}, 1e-6f, false, false, false, GGML_ROPE_TYPE_NORMAL));
+     test_cases.emplace_back(new test_rms_norm_mul_rope({4, 1, 65536, 1}, 1e-6f, false, true,  false, GGML_ROPE_TYPE_NEOX));
++    for (int64_t rows : {32, 33, 512, 513, 1024, 2048}) {
++        test_cases.emplace_back(new test_cont_mul_mat(16, rows, 32));
++    }
++    for (int64_t cols : {1, 7, 64, 65}) {
++        test_cases.emplace_back(new test_cont_mul_mat(16, 512, cols));
++    }
++    test_cases.emplace_back(new test_cont_mul_mat(16, 512, 32, true));
++    test_cases.emplace_back(new test_cont_mul_mat(16, 512, 32, false, 1));
++    test_cases.emplace_back(new test_cont_mul_mat(16, 512, 32, false, 2));
++    test_cases.emplace_back(new test_cont_mul_mat(16, 512, 32, false, 3));
++    test_cases.emplace_back(new test_cont_mul_mat(8, 512, 32));
++    test_cases.emplace_back(new test_cont_mul_mat(32, 512, 32));
++    test_cases.emplace_back(new test_cont_mul_mat(16, 512, 32, false, 0, GGML_TYPE_F16));
++
+     // Decode channel dispatch tails, small channel counts, and multiple sequences.
+     for (int64_t d_conv : {1, 3, 4, 8, 9}) {
+         for (int64_t d_inner : {1, 31, 127, 129, 513, 4096}) {
+diff --git a/tests/test-metal-graph-optimize.cpp b/tests/test-metal-graph-optimize.cpp
+--- a/tests/test-metal-graph-optimize.cpp
++++ b/tests/test-metal-graph-optimize.cpp
+@@ -273,13 +273,40 @@
+     return report_reader("reader of a chained MUL_MAT+ADD sum", packed, after);
+ }
+ 
++// Small-K projection packing must stay the same across decode and prefill sizes,
++// even though the encoder only uses the fused kernel for up to 64 columns.
++static bool check_cont_mul_mat_pack() {
++    bool ok = true;
++    for (int64_t rows : { 1, 32, 65, 512 }) {
++        ggml_context * ctx = graph_ctx();
++        ggml_tensor * r = ggml_scale(ctx, ggml_new_tensor_2d(ctx, GGML_TYPE_F32, 16, rows), scale);
++        ggml_tensor * w = ggml_new_tensor_2d(ctx, GGML_TYPE_F32, 512, 16);
++        ggml_tensor * cont = ggml_cont(ctx, ggml_transpose(ctx, w));
++        ggml_tensor * mm = ggml_mul_mat(ctx, cont, r);
++        ggml_prec_set_acc(mm, GGML_PREC_F32_PEDANTIC);
++
++        ggml_cgraph * graph = ggml_new_graph(ctx);
++        // Expand the dynamic input before the constant transpose, as Inkling does.
++        ggml_build_forward_expand(graph, r);
++        ggml_build_forward_expand(graph, mm);
++        const bool packed = ggml_metal_fusion_max(graph, node_index(graph, cont)) == 2;
++        ggml_graph_optimize(graph);
++        const bool adjacent = encoded_in_a_row(graph, { cont, mm });
++        std::printf("CONT+MUL_MAT with %lld columns: packed %d, adjacent %d: %s\n",
++            (long long) rows, packed, adjacent, packed && adjacent ? "OK" : "FAIL");
++        ok = packed && adjacent && ok;
++        ggml_free(ctx);
++    }
++    return ok;
++}
++
+ int main() {
+     const std::vector<device_case> devices = {
+         { "native simdgroup matrices",       true,  true },
+         { "probed or no simdgroup matrices", false, true },
+     };
+     const int failures = run_pack_cases(devices) + (check_chained_pack_reader() ? 0 : 1) + run_row_independent_pack_cases() +
+-        (check_encoder_skips_weight_residual() ? 0 : 1);
++        (check_encoder_skips_weight_residual() ? 0 : 1) + (check_cont_mul_mat_pack() ? 0 : 1);
+ 
+     return failures == 0 ? 0 : 1;
+ }

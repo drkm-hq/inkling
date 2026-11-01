@@ -1,0 +1,23 @@
+Paired K/V shortconv candidate; baseline corrected work/k4-review.
+No original snapshot or upstream files modified. No model weights loaded here.
+All GPU tests and benchmarks ran through work/perf/with_gpu_lock.py.
+
+Commands, cwd work/perf/k4, Python ~/.venvs/inkling/bin/python,
+PYTHONDONTWRITEBYTECODE=1:
+1. python ../with_gpu_lock.py python -m pytest -q mlx_vlm/tests/test_inkling_sconv_pair.py -p no:cacheprovider
+Result 19 passed in 5.62s.
+2. python ../with_gpu_lock.py python bench_pair.py
+256-operation chains, ABBA x4, bf16, B=L=1,C=1024, strided K/V slices
+from width6656 projection. States and outputs evaluated, pipelines warmed.
+Median wall 13.0142 -> 8.7608 us, build 5.0365 -> 3.2678 us,
+eval 7.9615 -> 5.5496 us. Wall 1.4855x, eval 1.4346x.
+Raw per-run values: paired-conv-benchmark.json (contains outliers/spread).
+These are microbenchmarks, not full-model speedup. Approximate 42-layer saving
+of 0.18 ms is an extrapolation; whole-model AB belongs to root.
+3. python -m black mlx_vlm/models/inkling/language.py mlx_vlm/tests/test_inkling_sconv_pair.py
+Test file formatted; source unchanged.
+4. python ../with_gpu_lock.py python -m pytest -q mlx_vlm/tests/test_inkling_sconv_pair.py mlx_vlm/tests/test_inkling_fast_path.py mlx_vlm/tests/test_inkling_kernel_gates.py -p no:cacheprovider
+Result 54 passed in 5.55s.
+Exactness covers fp32/bf16/fp16, C24 and C1024, warm/cold and strided states,
+12 repeated updates, plus full tiny-model decode across cache compactions.
+Fallback covers training, batched, multi-token, masked, and absent-cache calls.

@@ -1,0 +1,21 @@
+01:42:06 free RAM 18 GiB, load1 { 11.69 34.32 37.47 }
+01:43:21 free RAM 18 GiB, load1 { 13.58 29.92 35.53 }
+01:44:35 free RAM 17 GiB, load1 { 17.03 27.40 34.10 }
+01:45:45 free RAM 17 GiB, load1 { 13.18 24.13 32.34 }
+01:46:54 free RAM 17 GiB, load1 { 12.32 21.50 30.68 }
+01:48:04 free RAM 16 GiB, load1 { 11.95 19.49 29.20 }
+01:49:13 free RAM 17 GiB, load1 { 12.84 18.22 27.95 }
+01:50:26 free RAM 17 GiB, load1 { 14.18 17.51 26.92 }
+01:51:35 free RAM 17 GiB, load1 { 12.61 16.39 25.75 }
+01:52:45 free RAM 16 GiB, load1 { 12.61 15.64 24.73 }
+01:53:53 free RAM 16 GiB, load1 { 11.82 14.84 23.71 }
+01:55:07 free RAM 23 GiB, load1 { 11.42 14.04 22.70 }
+01:56:22 free RAM 24 GiB, load1 { 16.15 15.09 22.37 }
+01:57:36 free RAM 24 GiB, load1 { 11.88 13.83 21.27 }
+01:58:53 free RAM 24 GiB, load1 { 8.51 12.29 20.05 }
+02:00:00 free RAM 37 GiB, load1 { 8.80 11.76 19.25 }
+02:01:07 free RAM 38 GiB, load1 { 7.73 10.89 18.37 }
+02:02:14 free RAM 29 GiB, load1 { 6.82 9.95 17.42 }
+02:03:20 free RAM 105 GiB, load1 { 7.94 9.74 16.80 }
+02:03:20 running test_cache.py + test_generate.py at eb93183 (dirty: 0)
+02:03:48 done rc=0 : 956 passed in 27.28s

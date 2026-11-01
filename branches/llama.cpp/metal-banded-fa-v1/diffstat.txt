@@ -1,0 +1,20 @@
+ ggml/include/ggml.h                             |  7 ++-
+ ggml/src/ggml-cpu/ops.cpp                       |  7 ++-
+ ggml/src/ggml-cuda/fattn-banded.cu              |  8 ++-
+ ggml/src/ggml-cuda/fattn-common.cuh             | 12 ++--
+ ggml/src/ggml-cuda/fattn-mma-f16.cuh            | 25 ++++----
+ ggml/src/ggml-metal/ggml-metal-device.cpp       | 53 ++++++++++++-----
+ ggml/src/ggml-metal/ggml-metal-device.h         | 11 ++--
+ ggml/src/ggml-metal/ggml-metal-device.m         | 22 +++++++
+ ggml/src/ggml-metal/ggml-metal-impl.h           | 21 +++++++
+ ggml/src/ggml-metal/ggml-metal-ops.cpp          | 77 ++++++++++++++++++++-----
+ ggml/src/ggml-metal/ggml-metal.cpp              |  1 +
+ ggml/src/ggml-metal/kernels/common.h            | 11 ++++
+ ggml/src/ggml-metal/kernels/fa_common.metal     | 36 +++++++++++-
+ ggml/src/ggml-metal/kernels/fa_tensor.metal     | 26 +++++++++
+ ggml/src/ggml-metal/kernels/fa_vec_common.metal | 33 +++++++++++
+ ggml/src/ggml.c                                 |  6 +-
+ src/models/inkling.cpp                          | 26 +++------
+ tests/test-backend-ops.cpp                      | 67 ++++++++++++++++-----
+ tests/test-flash-attn-bias.cpp                  |  4 +-
+ 19 files changed, 361 insertions(+), 92 deletions(-)

@@ -1,0 +1,12 @@
+$ git am /patches/0001-metal-add-GGML_OP_FLASH_ATTN_EXT_BANDED.patch /patches/0002-tests-banded-flash-attention-cases.patch
+Applying: metal : add GGML_OP_FLASH_ATTN_EXT_BANDED
+Applying: tests : banded flash attention cases
+
+[rc=0]
+$ git log --oneline -4
+0092a566 tests : banded flash attention cases
+18264258 metal : add GGML_OP_FLASH_ATTN_EXT_BANDED
+3582c5ee Fix merge conflicts
+41f46497 Fix merge conflicts
+
+[rc=0]

@@ -1,0 +1,9 @@
+{
+  "prompt": "Explain in two sentences why the sky looks blue during the day.",
+  "n_predict": 32,
+  "temperature": 0,
+  "seed": 1234,
+  "cache_prompt": false,
+  "return_tokens": true,
+  "stream": false
+}

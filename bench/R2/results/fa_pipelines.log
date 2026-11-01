@@ -1,0 +1,18 @@
+== fa 512 32768
+base = 'kernel_flash_attn_ext_blk'
+base = 'kernel_flash_attn_ext_tensor_f16_dk128_dv128'
+RESULT backend=MTL0 variant=fa n_q=512 n_kv=32768 swa=0 extent=1024 threads=0 pool=0 nodes=6 compute_MiB=154.3 us_mean=16274.3 us_min=15301.6 gflops=17964.0
+== fa 512 32785
+base = 'kernel_flash_attn_ext_pad'
+base = 'kernel_flash_attn_ext_blk'
+base = 'kernel_flash_attn_ext_f16_dk128_dv128'
+RESULT backend=MTL0 variant=fa n_q=512 n_kv=32785 swa=0 extent=1024 threads=0 pool=0 nodes=6 compute_MiB=154.4 us_mean=36796.2 us_min=36220.4 gflops=7593.0
+== fa 1 32785
+base = 'kernel_flash_attn_ext_pad'
+base = 'kernel_flash_attn_ext_vec_f16_dk128_dv128_q2_ne2'
+base = 'kernel_flash_attn_ext_vec_reduce'
+RESULT backend=MTL0 variant=fa n_q=1 n_kv=32785 swa=0 extent=1024 threads=0 pool=0 nodes=6 compute_MiB=130.6 us_mean=9316.5 us_min=8221.3 gflops=65.3
+== fa 512 1024 --swa 512
+base = 'kernel_flash_attn_ext_blk'
+base = 'kernel_flash_attn_ext_tensor_f16_dk128_dv128'
+RESULT backend=MTL0 variant=fa n_q=512 n_kv=1024 swa=512 extent=1024 threads=0 pool=0 nodes=6 compute_MiB=30.3 us_mean=948.9 us_min=751.8 gflops=11425.3

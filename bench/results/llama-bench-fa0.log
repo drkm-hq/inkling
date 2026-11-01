@@ -1,0 +1,16 @@
+start 2026-10-29T05:06:40Z fa=0 depths=0,4096,16384,32768 reps=3 model=~/.cache/huggingface/hub/models--unsloth--Inkling-Small-GGUF/snapshots/1a19ef82883cb7b9c581b93c30ea252dabbf658d/UD-IQ3_XXS/Inkling-Small-UD-IQ3_XXS-00001-of-00003.gguf
+commit 3582c5ee05115892e4e96520be0026c3ceb9f829 (<workdir>/upstream/llama.cpp-base)
+cmd: <workdir>/upstream/llama.cpp-base/build/bin/llama-bench -m ~/.cache/huggingface/hub/models--unsloth--Inkling-Small-GGUF/snapshots/1a19ef82883cb7b9c581b93c30ea252dabbf658d/UD-IQ3_XXS/Inkling-Small-UD-IQ3_XXS-00001-of-00003.gguf -ngl 99 -fa 0 -p 512 -n 128 -d 0,4096,16384,32768 -r 3 -o md -oe jsonl --progress
+| model                          |       size |     params | backend    | threads |  fa |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | ------: | --: | --------------: | -------------------: |
+| inkling ?B IQ3_XXS - 3.0625 bpw |  91.19 GiB |   263.66 B | MTL,BLAS   |       6 |   0 |           pp512 |       219.38 ± 22.88 |
+| inkling ?B IQ3_XXS - 3.0625 bpw |  91.19 GiB |   263.66 B | MTL,BLAS   |       6 |   0 |           tg128 |         18.49 ± 2.42 |
+| inkling ?B IQ3_XXS - 3.0625 bpw |  91.19 GiB |   263.66 B | MTL,BLAS   |       6 |   0 |   pp512 @ d4096 |        274.67 ± 8.63 |
+| inkling ?B IQ3_XXS - 3.0625 bpw |  91.19 GiB |   263.66 B | MTL,BLAS   |       6 |   0 |   tg128 @ d4096 |         17.99 ± 0.91 |
+| inkling ?B IQ3_XXS - 3.0625 bpw |  91.19 GiB |   263.66 B | MTL,BLAS   |       6 |   0 |  pp512 @ d16384 |        235.25 ± 7.63 |
+| inkling ?B IQ3_XXS - 3.0625 bpw |  91.19 GiB |   263.66 B | MTL,BLAS   |       6 |   0 |  tg128 @ d16384 |         15.99 ± 2.92 |
+| inkling ?B IQ3_XXS - 3.0625 bpw |  91.19 GiB |   263.66 B | MTL,BLAS   |       6 |   0 |  pp512 @ d32768 |        185.19 ± 3.37 |
+| inkling ?B IQ3_XXS - 3.0625 bpw |  91.19 GiB |   263.66 B | MTL,BLAS   |       6 |   0 |  tg128 @ d32768 |         13.13 ± 0.49 |
+
+build: 3582c5ee0 (11983)
+end 2026-10-29T05:12:49Z rc=0

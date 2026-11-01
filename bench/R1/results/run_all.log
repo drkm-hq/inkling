@@ -1,0 +1,7 @@
++./run_all.sh:6> python layer_bench.py --experts-bits 2
++./run_all.sh:7> python kernels_bench.py
++./run_all.sh:8> python layer_bench.py --experts-bits 4
++./run_all.sh:9> python layer_bench.py --experts-bits 2 --attn-bits 8 --head-bits 8 --skip-prefill
++./run_all.sh:10> python layer_bench.py --experts-bits 4 --attn-bits 4 --head-bits 4 --skip-prefill
++./run_all.sh:11> python layer_bench.py --experts-bits 4 --attn-bits 8 --head-bits 8 --skip-prefill
++./run_all.sh:12> echo ALL_DONE

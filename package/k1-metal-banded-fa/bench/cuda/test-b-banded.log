@@ -1,0 +1,110 @@
+$ ./build/bin/test-backend-ops test -b CUDA0 -o FLASH_ATTN_EXT_BANDED
+ggml_cuda_init: found 1 CUDA devices (Total VRAM: 81071 MiB):
+  Device 0: NVIDIA H100 80GB HBM3, compute capability 9.0, VMM: yes, VRAM: 81071 MiB
+Testing 2 devices
+
+Backend 1/2: CUDA0
+  Device description: NVIDIA H100 80GB HBM3
+  Device memory: 81071 MB (80544 MB free)
+
+  FLASH_ATTN_EXT_BANDED(d=64,n_head=2,n_head_kv=1,n_q=8,n_kv=8,rel_extent=8,mask_kind=1,kv_type=f32,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=2,n_q=16,n_kv=16,rel_extent=8,mask_kind=1,kv_type=f16,rel_type=f16,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=64,n_head=8,n_head_kv=2,n_q=1,n_kv=64,rel_extent=8,mask_kind=1,kv_type=f32,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=2,n_q=64,n_kv=64,rel_extent=8,mask_kind=2,kv_type=bf16,rel_type=bf16,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=64,n_head=8,n_head_kv=1,n_q=64,n_kv=64,rel_extent=512,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=2,n_q=17,n_kv=33,rel_extent=8,mask_kind=1,kv_type=f16,rel_type=f16,strided=1,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+[FLASH_ATTN_EXT_BANDED] ERR = 0.000002932 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;31mFAIL[0m
+[FLASH_ATTN_EXT_BANDED] ERR = 0.000006018 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16384,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;31mFAIL[0m
+[FLASH_ATTN_EXT_BANDED] ERR = 0.000005077 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16403,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;31mFAIL[0m
+[FLASH_ATTN_EXT_BANDED] ERR = 0.000005735 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16896,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;31mFAIL[0m
+[FLASH_ATTN_EXT_BANDED] ERR = 0.000005330 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=17024,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;31mFAIL[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=1,n_kv=17024,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+[FLASH_ATTN_EXT_BANDED] ERR = 0.000009788 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=32768,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;31mFAIL[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=512,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+[FLASH_ATTN_EXT_BANDED] ERR = 0.000001687 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=1536,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;31mFAIL[0m
+[FLASH_ATTN_EXT_BANDED] ERR = 0.000002629 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=2048,rel_extent=1024,mask_kind=0,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;31mFAIL[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=1024,rel_extent=512,mask_kind=2,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+[FLASH_ATTN_EXT_BANDED] ERR = 0.000009437 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8209,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;31mFAIL[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=8209,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=7,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=q8_0,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): not supported [CUDA0] 
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=q8_0,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): not supported [CUDA0] 
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=513,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=577,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+[FLASH_ATTN_EXT_BANDED] ERR = 0.000001138 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=1025,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;31mFAIL[0m
+[FLASH_ATTN_EXT_BANDED] ERR = 0.000004527 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=4097,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;31mFAIL[0m
+[FLASH_ATTN_EXT_BANDED] ERR = 0.000009350 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8193,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;31mFAIL[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=1,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=33,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=65,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=1025,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=4097,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=2,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=20,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=64,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+[FLASH_ATTN_EXT_BANDED] ERR = 0.000003624 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1024,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;31mFAIL[0m
+[FLASH_ATTN_EXT_BANDED] ERR = 0.000009940 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8192,rel_extent=512,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;31mFAIL[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=8192,rel_extent=512,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=64,n_kv=100,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=7,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=4096,rel_extent=1024,mask_kind=2,kv_type=f16,rel_type=f32,strided=0,window=512,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=8192,rel_extent=1024,mask_kind=2,kv_type=f16,rel_type=f32,strided=0,window=512,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=7,n_kv=4100,rel_extent=1024,mask_kind=2,kv_type=f16,rel_type=f32,strided=0,window=512,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=8192,rel_extent=1024,mask_kind=0,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=7,n_kv=4100,rel_extent=1024,mask_kind=0,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+[FLASH_ATTN_EXT_BANDED] ERR = 0.000009650 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8209,rel_extent=1024,mask_kind=0,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;31mFAIL[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=1,n_head_kv=1,n_q=512,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+[FLASH_ATTN_EXT_BANDED] ERR = 0.000001148 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=16,n_head_kv=1,n_q=512,n_kv=2048,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;31mFAIL[0m
+[FLASH_ATTN_EXT_BANDED] ERR = 0.000004659 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=64,n_head=32,n_head_kv=8,n_q=512,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;31mFAIL[0m
+  FLASH_ATTN_EXT_BANDED(d=64,n_head=32,n_head_kv=8,n_q=1,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8209,rel_extent=1024,mask_kind=1,kv_type=bf16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=bf16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=7,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=q8_0,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): not supported [CUDA0] 
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=q4_0,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): not supported [CUDA0] 
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=q4_0,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): not supported [CUDA0] 
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=1024,rel_extent=1024,mask_kind=1,kv_type=f32,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f16,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=bf16,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=64,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=bf16,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=64,n_kv=1024,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=2,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+[FLASH_ATTN_EXT_BANDED] ERR = 0.000001900 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=2049,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=2,rel_ne3=2,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;31mFAIL[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=2048,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=2,rel_ne3=2,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=1,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=1,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=4096,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=7,n_kv=2048,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=2048,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+[FLASH_ATTN_EXT_BANDED] ERR = 0.000001827 > 0.000001000   FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=1.700000,rel_range=4.000000): [1;31mFAIL[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=1.700000,rel_range=4.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=512,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=3.000000,rel_range=8.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=1024,rel_extent=512,mask_kind=2,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=3.000000,rel_range=8.000000): [1;32mOK[0m
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=2,n_q=1,n_kv=1048576,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000): [1;32mOK[0m
+  48/67 tests passed
+
+Failing tests:
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000)
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16384,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000)
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16403,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000)
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=16896,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000)
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=17024,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000)
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=8,n_head_kv=1,n_q=512,n_kv=32768,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000)
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=1536,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000)
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=2048,rel_extent=1024,mask_kind=0,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000)
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8209,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000)
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=1025,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000)
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=4097,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000)
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8193,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000)
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=1024,n_kv=4100,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000)
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8192,rel_extent=512,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000)
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8209,rel_extent=1024,mask_kind=0,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000)
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=16,n_head_kv=1,n_q=512,n_kv=2048,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000)
+  FLASH_ATTN_EXT_BANDED(d=64,n_head=32,n_head_kv=8,n_q=512,n_kv=4096,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=0.250000,rel_range=1.000000)
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=2049,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=2,rel_ne3=2,n_kv_max=0,qk_range=0.250000,rel_range=1.000000)
+  FLASH_ATTN_EXT_BANDED(d=128,n_head=32,n_head_kv=8,n_q=512,n_kv=8192,rel_extent=1024,mask_kind=1,kv_type=f16,rel_type=f32,strided=0,window=0,ne3=1,rel_ne3=1,n_kv_max=0,qk_range=1.700000,rel_range=4.000000)
+  Backend CUDA0: [1;31mFAIL[0m
+Backend 2/2: CPU
+  Skipping
+1/2 backends passed
+[1;31mFAIL[0m
+
+[rc=1]

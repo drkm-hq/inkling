@@ -1,0 +1,119 @@
+--- a/package/k1-metal-banded-fa/bench/ab_quiet.sh
++++ b/package/k1-metal-banded-fa/bench/ab_quiet.sh
+@@ -37,7 +37,11 @@
+     local load=$(sysctl -n vm.loadavg | awk '{print $2}')
+     log "round $2 -fa $1 start, load1 $load"
+     "$ROOT/build/bin/llama-bench" -m "$MODEL" -ngl 99 -fa $1 -p 512 -n 128 -d "$DEPTHS" -r $REPS -o jsonl \
+-        > "$OUT/bench-r$2-fa$1.jsonl" 2> "$OUT/bench-r$2-fa$1.err"
++        > "$OUT/bench-r$2-fa$1.jsonl" 2> "$OUT/bench-r$2-fa$1.err" || {
++        local rc=$?
++        log "round $2 -fa $1 failed (exit=$rc); see $OUT/bench-r$2-fa$1.err"
++        exit "$rc"
++    }
+     log "round $2 -fa $1 exit=$?, load1 now $(sysctl -n vm.loadavg | awk '{print $2}')"
+ }
+ # alternate the order so neither setting always runs first after a pause
+--- a/package/k2-mlx-lm-inkling/README.md
++++ b/package/k2-mlx-lm-inkling/README.md
+@@ -126,8 +126,9 @@
+   `bench/K2/make_attn8.py`)**: in A2's same-hold pair (load 4.2-4.5) p_short decode 27.8 vs 22.6 tok/s
+   for the bf16-attention build (+23%), peak 79.9 vs 83.0 GiB (-3.1 GiB), 79.3 vs 82.4 GiB on disk,
+   and KL 0.028 (median 0.003, max 0.48) / top-1 95.3% against the bf16-attention build's logprobs on
+-  the same tokens: near-lossless and faster. In my hold 3 (load 4-6): 25.4 vs 22.2 tok/s decode,
+-  239 vs 196 tok/s prefill, 1.00 vs 1.22 s TTFT, KL 0.069 / top-1 95.3%.
++  the same 128 teacher-forced tokens. In my hold 3 (load 4-6): 25.4 vs 22.2 tok/s decode,
++  239 vs 196 tok/s prefill, 1.00 vs 1.22 s TTFT, KL 0.069 / top-1 95.3%. These short traces
++  measure distribution agreement; broader task-quality equivalence has not been established.
+ - **Against mlx-vlm 0.7.11 (same checkpoint, same hold, back to back)** the bf16-attention port is
+   not faster on decode: -3 to -23% across two holds (hold 2 at load 7-14: 35.3 vs 45.6 tok/s at
+   p_short, 32.0 vs 40.6 at p_2k, 32.0 vs 38.2 at p_8k; A2's hold at load 4: 22.6 vs 23.5). Long-prompt
+@@ -191,18 +192,20 @@
+ | experts | 0.26 (8 experts in one gather_qmm chain) / 0.32 + 0.13 (dense build) | 0.22 (6) + 0.11 (dense shared) |
+ | decode loop, 64 tokens after the p_short prefill | `generate_step` pipelined 20.9 tok/s, synchronous `mx.eval` per token 20.3 tok/s | (hold 2, same state as its benchmark: 45.6 tok/s pipelined vs a 46.9 ms synchronous step measured in hold 3) |
+ 
+-Reading: per-layer and per-op costs are at parity with mlx-vlm (the fused k|v conv and the
+-bounded sliding cache are slightly cheaper, the 8-expert gather slightly dearer than 6 + dense),
+-and the synchronous step is at parity or faster. The end-to-end decode gap comes from the
+-generation loop: with this model mlx-lm's `generate_step` gains only 3% from `async_eval`
+-pipelining (20.9 vs 20.3 tok/s), i.e. the per-token CPU work (graph build plus the encoding of
+-~1,300 kernel launches) is as long as the GPU work and is not hidden, whereas mlx-vlm's
+-`stream_generate` hides most of it (45.6 tok/s against a ~47 ms synchronous step, 1.5-2x). The
+-tiny-width dispatch benchmarks (graph build 2.0 vs 3.0 ms/token, launch cost at parity) say the
+-difference is not in Python-side graph building; it is in what each loop lets overlap, which this
+-campaign did not resolve (candidates: per-kernel encoding cost at real widths, buffer donation
+-blocked by the one-step-ahead graph, the command-buffer split at 50 ops). Fewer kernels per
+-token (fusing the ~10 small norm/gather/elementwise ops per layer) is the lever either way.
++Reading: per-layer and per-op costs are similar in these samples (the fused k|v conv and the
++bounded sliding cache are slightly cheaper, the 8-expert gather slightly dearer than 6 + dense).
++Within the mlx-lm loop comparison, `async_eval` pipelining improves throughput by about 3%
++(20.9 vs 20.3 tok/s). Generation-loop overlap is one hypothesis for the end-to-end gap, but these
++measurements do not isolate its cause. In particular, mlx-vlm's 45.6 tok/s pipelined result is
++from hold 2 and its 46.9 ms synchronous step is from hold 3; their ratio cannot establish an
++overlap speedup on a machine whose throughput changed substantially between holds.
++
++The tiny-width dispatch benchmarks show graph build times of 2.0 vs 3.0 ms/token and similar
++launch costs, but do not isolate the bottleneck at real widths. Possible contributors include
++per-kernel encoding cost, buffer donation blocked by the one-step-ahead graph, and the
++command-buffer split at 50 ops. A quiet, same-hold comparison of synchronous and pipelined
++loops in both engines, or a CPU/GPU timeline, is needed to distinguish these hypotheses.
++Further kernel fusion is a candidate optimization that needs whole-model measurement.
+ 
+ ## Files
+ 
+diff --git a/package/k4-mlx-vlm-fast-path/README.md b/package/k4-mlx-vlm-fast-path/README.md
+--- a/package/k4-mlx-vlm-fast-path/README.md
++++ b/package/k4-mlx-vlm-fast-path/README.md
+@@ -63,8 +63,10 @@
+ | p_8k | 1.8e-2 | 0.26 (18) | 4.5e-2 | 0.77 | 123/128 |
+ | p_32k | 1.3e-2 | 0.30 (17) | 4.5e-2 | 0.95 | 122/128 |
+ 
+-So a non-bit-exact change is a defect only if its KL exceeds roughly 1e-2 nats
+-mean / 1 nat max; token-level divergence alone proves nothing on this model.
++These measurements quantify sensitivity to prefill chunk size on four prompts;
++they do not establish a universal KL threshold for correctness or quality.
++Greedy-token divergence should be assessed alongside teacher-forced differences
++and broader quality tests, rather than used alone to accept or reject a change.
+ 
+ kv-bits 8 on the branch (item 8: 8-bit keys and values on the 7 global layers,
+ window caches untouched), teacher-forced against the same wheel reference
+@@ -77,9 +79,12 @@
+ | p_8k | 2.7e-2 | 0.73 (17) | 6.7e-2 | 1.66 | 123/128 | 123/128 (wheel: 124) |
+ | p_32k | 6.6e-3 | 0.15 (17) | 2.3e-2 | 0.45 | 128/128 | 128/128 (wheel: 128) |
+ 
+-Every row sits inside the stock implementation's chunk-size floor above, so the
+-quantized global-layer cache is as faithful as the wheel is to itself. It is not
+-a memory win on this model, though: the 7 global layers' keys are only 0.9 GB at
++The mean and maximum KL are below the measured chunk-size differences at 2K
++and 32K, but above them at short and 8K contexts: short is 1.6e-2 / 0.35 versus
++0 / 0, and 8K is 2.7e-2 / 0.73 versus 1.8e-2 / 0.26. These limited measurements
++characterize the opt-in lossy cache; they do not establish quality equivalence.
++It is not a memory win on this model at the measured contexts: the 7 global
++layers' keys are only 0.9 GB at
+ 32K, and the generic quantized attention materializes its scores (no fused
+ kernel), so the teacher-forced peak at 32K was 98.5 GiB with kv8 vs 95.3 GiB for
+ the branch's float caches (wheel: 104.9). kv-bits on Inkling is a correctness
+@@ -221,4 +226,4 @@
+ 
+ ## Review status
+ 
+-Not yet reviewed (REVIEW.md pending).
++Independent review is recorded in REVIEW.md; decode-speed improvement remains unconfirmed.
+--- a/package/README.md
++++ b/package/README.md
+@@ -1,6 +1,6 @@
+ # Inkling contribution package (final, 2026-10-29)
+ 
+-Three opportunities, one per engine Mac users actually run, delivered as four pull-request-ready
++Three opportunities, one per engine Mac users actually run, delivered as four locally prepared
+ change sets. Everything is local: nothing has been pushed, opened or uploaded. Start with
+ REVIEW-GUIDE.md in this directory.
+ 
+@@ -15,7 +15,7 @@
+ 
+ - **1a** With flash attention on, the seven global layers no longer run on the CPU: prefill stays flat with context (pp512 320/267/340 tok/s at 4K/16K/32K vs 72/34 at 0/4K on today's path), 32K and 64K prompts answer correctly, and the multi-GiB dense scratch is gone, which is what made a 70K context unusable (the dense path wired 112 GB and decoded at 3-4 tok/s). Perplexity vs the CPU reference: kernel +1.1%, dense chain +4.0%. Decode: prefill gain confirmed, decode delta unresolved on this loaded machine (bench/ab_quiet.sh is the quiet-machine A/B to run before submission).
+ - **1b** A 200-token extension of an 8K prompt evaluates 200-204 tokens (1.4 s) instead of 716-8418 (3.6-42 s); chat turns evaluate 16-23 tokens (0.8 s) instead of 550-2217 (3-9 s); an edit near the end restores the nearest checkpoint (253 tokens, 1.9 s vs 30 s). Same counts on CUDA.
+-- **2** Loads the mlx-community checkpoints (and the HF layout) in mlx-lm, so mlx_lm.generate/server and everything built on mlx-lm work; numerically equivalent to mlx-vlm (teacher-forced KL 1.0-1.5x the noise floor, 91-97% top-1); peak memory 2.5-7.6 GiB lower (15 GiB at 32K). Not faster than mlx-vlm on this machine (decode -3 to -23% across holds; the gap is loop overlap, documented). The 8-bit-attention recipe its quant_predicate enables: +23% decode, +22% prefill, -3 GiB, KL 0.028.
++- **2** Loads the mlx-community checkpoints (and the HF layout) in mlx-lm, so mlx_lm.generate/server and everything built on mlx-lm work; numerically equivalent to mlx-vlm (teacher-forced KL 1.0-1.5x the noise floor, 91-97% top-1); peak memory 2.5-7.6 GiB lower (15 GiB at 32K). Not faster than mlx-vlm on this machine (decode -3 to -23% across holds; the cause of the gap is unresolved; generation-loop overlap is one hypothesis). The 8-bit-attention recipe its quant_predicate enables: +23% decode, +22% prefill, -3 GiB, KL 0.028.
+ - **3** Bit-identical outputs to the stock wheel; peak memory at 32K 104.9 -> 95.3 GiB and a 64K prompt now fits (the wheel already peaks at 105 GiB at 32K); prefill +8-20%, TTFT -8-17%; the loader no longer trips the GPU watchdog on 80+ GB models; kv-bits now quantizes the global layers instead of being silently ignored. Decode delta unresolved.
+ 
+ ## Facts that shaped the campaign

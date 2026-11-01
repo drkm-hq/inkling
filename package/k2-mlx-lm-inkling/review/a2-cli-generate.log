@@ -1,0 +1,26 @@
+$ mlx_lm.generate --model ~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit/snapshots/f8a0af554e168077bdaf48e1fb6682fb395c807c/ -p 'The secret to baking a good cake is' -m 64 --temp 0  (bounded 300s)
+==========
+<|content_thinking|>The user is asking "The secret to baking a good cake is" which seems like they want to know the secret or key to baking a good cake, but it's phrased as a fill-in-the-blank or asking for a specific answer. However, it's somewhat ambiguous - they might be asking for general tips,
+==========
+Prompt: 23 tokens, 2.583 tokens-per-sec
+Generation: 64 tokens, 20.415 tokens-per-sec
+Peak memory: 88.680 GB
+       30.28 real         4.09 user        47.99 sys
+         60155363328  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+             5313795  page reclaims
+                 732  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                4693  voluntary context switches
+              692244  involuntary context switches
+        174343070208  instructions retired
+        161569645905  cycles elapsed
+         89392871848  peak memory footprint
+[exit code 0] 2026-10-29T07:26:54Z

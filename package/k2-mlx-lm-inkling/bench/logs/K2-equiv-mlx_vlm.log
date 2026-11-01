@@ -1,0 +1,25 @@
+[01:55:56] extras: {'save_logprobs': '../results/K2-logprobs-mlx_vlm', 'noise_floor': True, 'hidden': '../results/K2-hidden'}
+W1029 01:56:03.466000 28922 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+[01:56:12] mlx_vlm 0.7.11: lazy load 8.5s, chunked eval 6.7s, 82.3 GiB, active 82.4 GiB
+[01:56:12] run p_short_raw: 226 prompt tokens
+[01:56:28]   noise floor (self, prefill chunk 2048 vs 128): KL mean 0.0207 median 0.0020 max 0.2601 nats; |dlogprob| top-1 mean 0.0710 max 0.7891, top-100 max 4.2188; top-1 agreement 95.3%
+[01:56:28]   prefill 0.6s, decode 6.5s (19.6 tok/s), min margin 0.000
+[01:56:28]   text: " Answer\n\nWe need answer: The narrator is Ishmael; the ship is the Pequod. But let's craft: The narrator is Ishmael, and the ship is the Pequod (though 'the ship' likely refers to the Pequod). Provide "
+[01:56:28] run p_2k_raw: 2072 prompt tokens
+[01:57:03]   noise floor (self, prefill chunk 2048 vs 128): KL mean 0.0570 median 0.0073 max 1.2062 nats; |dlogprob| top-1 mean 0.1049 max 1.5627, top-100 max 9.4297; top-1 agreement 92.2%
+[01:57:03]   prefill 4.0s, decode 5.6s (22.6 tok/s), min margin 0.125
+[01:57:03]   text: ' The narrator is Ishmael, and the ship is the Pequod.\n\nAnswer: The narrator is Ishmael, and the ship is Pequod.\n\nAnswer: The narrator is Ishmael; the ship is the Pequod.\n\nAnswer: The narrator is Ishma'
+[01:57:03] run p_8k_raw: 8218 prompt tokens
+[01:58:38]   noise floor (self, prefill chunk 2048 vs 128): KL mean 0.0174 median 0.0000 max 0.2939 nats; |dlogprob| top-1 mean 0.0524 max 1.2280, top-100 max 6.6484; top-1 agreement 95.3%
+[01:58:38]   prefill 18.3s, decode 5.2s (24.3 tok/s), min margin 0.000
+[01:58:38]   text: ' The narrator is Ishmael, and the Pequod is the ship mentioned (from Moby Dick).<|end_message|><|message_model|><|content_thinking|>The user asks: "Question: In one sentence, who is the narrator of th'
+[01:58:38] run p_short_chat_none: 239 prompt tokens
+[01:58:52]   noise floor (self, prefill chunk 2048 vs 128): KL mean 0.0338 median 0.0019 max 0.8581 nats; |dlogprob| top-1 mean 0.0688 max 1.5430, top-100 max 6.5391; top-1 agreement 94.5%
+[01:58:52]   prefill 0.4s, decode 5.3s (23.9 tok/s), min margin 0.000
+[01:58:52]   text: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chap'
+[01:58:52] run p_short_chat_low: 241 prompt tokens
+[01:59:07]   noise floor (self, prefill chunk 2048 vs 128): KL mean 0.0286 median 0.0018 max 0.5334 nats; |dlogprob| top-1 mean 0.0701 max 1.0098, top-100 max 4.4453; top-1 agreement 94.5%
+[01:59:07]   prefill 0.5s, decode 5.1s (25.0 tok/s), min margin 0.000
+[01:59:07]   text: '<|content_thinking|>We need answer: The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" The text is table of contents from Moby-Dick? Chap'
+[01:59:07] hidden states and routes written to ../results/K2-hidden
+[01:59:07] wrote <workdir>/bench/results/K2-equiv-mlx_vlm.json

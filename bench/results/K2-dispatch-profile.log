@@ -1,0 +1,17 @@
+42 x short conv at decode (C=64):
+  mlx-lm ShortConv (compiled taps)                     1.64 ms (best 1.20)
+  mlx-vlm InklingShortConvolution (Metal kernel)       0.47 ms (best 0.39)
+42 x ArraysCache.make_mask(1) (an unevaluated arange each):
+  make_mask calls + a dependent op                     0.35 ms (best 0.28)
+whole-model components, tiny widths (42 layers):
+Traceback (most recent call last):
+  File "<stdin>", line 41, in <module>
+  File "<stdin>", line 12, in timeit
+  File "<stdin>", line 41, in <lambda>
+  File "<workdir>/upstream/mlx-lm/mlx_lm/models/inkling_mm_model.py", line 352, in __call__
+    out = scaled_dot_product_attention(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<workdir>/upstream/mlx-lm/mlx_lm/models/base.py", line 132, in scaled_dot_product_attention
+    return mx.fast.scaled_dot_product_attention(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: [broadcast_shapes] Shapes (1,4,1,600) and (1,4,1,512) cannot be broadcast.

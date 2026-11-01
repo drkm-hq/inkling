@@ -1,0 +1,19 @@
+W1029 03:02:25.077000 57477 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+[03:02:25] {"kind": "meta", "tag": "a4-before-32k", "model": "~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit/snapshots/f8a0af554e168077bdaf48e1fb6682fb395c807c/", "mlx": "0.32.4", "mlx_vlm": "0.7.11", "mlx_vlm_file": "~/.venvs/inkling-base/lib/python3.12/site-packages/mlx_vlm/__init__.py", "git": null, "python": "~/.venvs/inkling-base/bin/python", "device": "Apple M5 Max", "argv": ["<workdir>/package/k4-mlx-vlm-fast-path/review/a4_equiv_bench.py", "--no-lock", "--tag", "a4-before-32k", "--out-dir", "<workdir>/package/k4-mlx-vlm-fast-path/review/results", "--prompts", "p_32k", "--repeats", "3", "--max-tokens", "64", "--warmup-prompt", "p_short"], "pid": 57477, "load1": 3.46240234375, "env_tf32": null}
+[03:02:36] load: lazy 0.7s, chunked eval 10.2s, 82.3 GiB of parameters, active 82.3 GiB, peak 82.4 GiB
+[03:02:36] parameter dtypes: {'mlx.core.bfloat16': 1014, 'mlx.core.uint32': 250, 'mlx.core.float32': 160}
+[03:02:36] make_cache kv kinds: ['KVCache']
+[03:02:36] prompt p_32k: 128212 chars, 32807 tokens
+[03:02:36] prompt p_short: 833 chars, 239 tokens
+[03:02:36] gen kwargs: {'max_tokens': 64, 'temperature': 0.0, 'top_p': 1.0, 'top_k': 0, 'verbose': False}
+[03:02:36] warm-up with p_short
+[03:02:45] warmup p_short rep0: prompt 239 tok, prefill 4.93s (48.5 tok/s), TTFT 6.67s, decode 64 tok 38.43 tok/s wall (39.03 api), peak 89.3 GB api / 83.2 GiB, load1 3.6, aborted=None
+[03:02:45]   text64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[03:04:29] run p_32k rep1: prompt 32807 tok, prefill 100.56s (326.2 tok/s), TTFT 100.60s, decode 64 tok 19.09 tok/s wall (19.39 api), peak 112.9 GB api / 105.1 GiB, load1 3.6, aborted=None
+[03:04:29]   text64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" The text is clearly Moby-Dick (Melville). The narrator is Ishmael ("Call'
+[03:06:11] run p_32k rep2: prompt 32807 tok, prefill 98.82s (332.0 tok/s), TTFT 98.89s, decode 64 tok 19.34 tok/s wall (19.65 api), peak 112.9 GB api / 105.1 GiB, load1 3.5, aborted=None
+[03:06:11]   text64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" The text is clearly Moby-Dick (Melville). The narrator is Ishmael ("Call'
+[03:07:52] run p_32k rep3: prompt 32807 tok, prefill 98.40s (333.4 tok/s), TTFT 98.47s, decode 64 tok 20.85 tok/s wall (21.18 api), peak 112.9 GB api / 105.1 GiB, load1 3.8, aborted=None
+[03:07:52]   text64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" The text is clearly Moby-Dick (Melville). The narrator is Ishmael ("Call'
+[03:07:52] SUMMARY p_32k: prompt 32807 tok | prefill 332.0 tok/s (spread 2.2%) | TTFT 98.89s | decode 19.34 tok/s (spread 9.1%) | peak 105.1 GiB | identical=True
+[03:07:52] done; maxrss 57.6 GiB

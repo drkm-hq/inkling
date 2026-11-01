@@ -1,0 +1,53 @@
+From 0a963ac401d147e57c6df11c6f06c116cd844aab Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Wed, 28 Oct 2026 22:48:33 -0400
+Subject: [PATCH 03/11] Inkling: index router logits directly in the route
+ kernel
+
+mx.fast.metal_kernel binds inputs smaller than 32 bytes in constant memory,
+and the route kernel took a device pointer into its logits input, so any
+configuration whose per-token router row is under 32 bytes (the tiny MoE
+configs unit tests use: a handful of experts in float32) failed to compile
+the Metal library. The real checkpoints are far above the threshold, which
+is why generation never hit it. Index the logits array directly, which
+compiles in either address space and generates the same code for the
+production shapes.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ mlx_vlm/models/inkling/language.py | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/mlx_vlm/models/inkling/language.py b/mlx_vlm/models/inkling/language.py
+index 4226079..8ddb722 100644
+--- a/mlx_vlm/models/inkling/language.py
++++ b/mlx_vlm/models/inkling/language.py
+@@ -537,7 +537,9 @@ _ROUTE_SRC = r"""
+     uint lane = thread_position_in_grid.x;   // 0..31, simd lane
+     uint n = thread_position_in_grid.y;      // token
+     if (n >= N) return;
+-    const device T* lg = logits + (size_t)n * (R + SH);
++    // Index logits directly: MLX binds inputs under 32 bytes (tiny test
++    // configs) in constant memory, which a device pointer cannot alias.
++    const size_t lbase = (size_t)n * (R + SH);
+     float ws = wscale[0];
+     constexpr int PER = (R + 31) / 32;
+     float sc[PER];
+@@ -547,7 +549,7 @@ _ROUTE_SRC = r"""
+         uint j = lane + (uint)t * 32u;
+         taken[t] = false;
+         if (j < R) {
+-            float l = (float)lg[j];
++            float l = (float)logits[lbase + j];
+             tl_[t] = l;
+             sc[t] = 1.0f / (1.0f + metal::exp(-l)) + (float)corr[j];
+         } else {
+@@ -573,7 +575,7 @@ _ROUTE_SRC = r"""
+     float lp[K + SH];
+     float m = -INFINITY;
+     for (uint t = 0; t < K + SH; ++t) {
+-        float tv = (t < K) ? btl[t] : (float)lg[R + (t - K)];
++        float tv = (t < K) ? btl[t] : (float)logits[lbase + R + (t - K)];
+         float a = -tv;
+         float lad = metal::max(a, 0.0f)
+                   + metal::log(1.0f + metal::exp(-metal::fabs(a)));

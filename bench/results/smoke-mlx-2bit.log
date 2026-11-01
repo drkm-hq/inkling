@@ -1,0 +1,39 @@
+model: ~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit/snapshots/f8a0af554e168077bdaf48e1fb6682fb395c807c/
+start: 2026-10-29T02:06:05Z
+W1028 22:06:16.710000 37696 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "~/.venvs/inkling/lib/python3.12/site-packages/mlx_vlm/generate/__main__.py", line 4, in <module>
+    main()
+  File "~/.venvs/inkling/lib/python3.12/site-packages/mlx_vlm/generate/dispatch.py", line 1376, in main
+    model, processor = load(
+                       ^^^^^
+  File "~/.venvs/inkling/lib/python3.12/site-packages/mlx_vlm/utils.py", line 862, in load
+    model = load_model(model_path, lazy, strict=strict, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "~/.venvs/inkling/lib/python3.12/site-packages/mlx_vlm/utils.py", line 608, in load_model
+    return load_model_weights(
+           ^^^^^^^^^^^^^^^^^^^
+  File "~/.venvs/inkling/lib/python3.12/site-packages/mlx_vlm/utils.py", line 741, in load_model_weights
+    mx.eval(model.parameters())
+RuntimeError: [METAL] Command buffer execution failed: Caused GPU Timeout Error (00000002:kIOGPUCommandBufferCallbackErrorTimeout).
+       29.79 real         8.38 user        21.33 sys
+         22952067072  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+             1930817  page reclaims
+                  48  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                5428  voluntary context switches
+              364335  involuntary context switches
+        104758279095  instructions retired
+         92676515859  cycles elapsed
+         31876701008  peak memory footprint
+end: 2026-10-29T02:06:35Z

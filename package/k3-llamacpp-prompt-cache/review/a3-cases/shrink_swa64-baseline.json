@@ -1,0 +1,31 @@
+{
+ "obs": [
+  [
+   0,
+   300
+  ],
+  [
+   0,
+   298
+  ],
+  [
+   0,
+   250
+  ],
+  [
+   0,
+   298
+  ],
+  [
+   0,
+   296
+  ]
+ ],
+ "extra": {},
+ "deviations": {
+  "shrink by 2": 0.0,
+  "shrink by 50": 0.0,
+  "re-extension": 0.0,
+  "shrink by 2 again": 0.0
+ }
+}

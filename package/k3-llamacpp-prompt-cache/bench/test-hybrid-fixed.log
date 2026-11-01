@@ -1,0 +1,11 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.14, pytest-8.3.5, pluggy-1.7.0 -- <scratch>
+rootdir: <workdir>/upstream/llama.cpp-k3/tools/server/tests
+configfile: pytest.ini
+plugins: xdist-3.8.0, anyio-4.15.1
+collecting ... collected 45 items / 43 deselected / 2 selected
+
+unit/test_completion.py::test_completion_cache_hybrid_memory[0] PASSED   [ 50%]
+unit/test_completion.py::test_completion_cache_hybrid_memory[64] PASSED  [100%]
+
+======================= 2 passed, 43 deselected in 8.17s =======================

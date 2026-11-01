@@ -1,0 +1,51 @@
+[    0.0s] $ nvidia-smi
+[    0.1s] -> rc=0 (20 lines)
+[    0.1s] $ nvcc --version
+[    0.2s] -> rc=0 (5 lines)
+[    0.2s] $ gcc --version | head -1; cmake --version | head -1; ninja --version; nproc; free -g | head -2
+[    0.3s] -> rc=0 (6 lines)
+[    0.3s] $ ls -la /patches && sha256sum /patches/*.patch
+[    0.3s] -> rc=0 (12 lines)
+[    0.3s] $ rm -rf /work/llama.cpp && git init -q /work/llama.cpp && cd /work/llama.cpp && git remote add origin https://github.com/ggml-org/llama.cpp
+[    0.3s] -> rc=0 (0 lines)
+[    0.3s] $ git config user.name inkling-cuda-verify && git config user.email verify@localhost
+[    0.3s] -> rc=0 (0 lines)
+[    0.3s] $ git fetch --depth 200 origin pull/25731/head:pr-25731
+[    8.0s] -> rc=0 (1305 lines)
+[    8.0s] $ git rev-parse pr-25731
+[    8.0s] -> rc=0 (1 lines)
+[    8.0s] $ git checkout -q pr-25731 && git log --oneline -1
+[    8.8s] -> rc=0 (1 lines)
+[    8.8s] $ git rev-parse HEAD
+[    8.8s] -> rc=0 (1 lines)
+[    8.8s] ===== final: 0001-metal-add-GGML_OP_FLASH_ATTN_EXT_BANDED.patch + 0002-tests-banded-flash-attention-cases.patch + 0003-ggml-q_offset-for-the-banded-flash-attention-proposa.patch + 0004-tests-banded-flash-attention-tolerance-for-the-CUDA-.patch =====
+[    8.8s] $ cmake -S . -B build -G Ninja -DGGML_CUDA=ON -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=OFF -DLLAMA_BUILD_TESTS=ON -DLLAMA_BUILD_EXAMPLES=OFF -DCMAKE_CUDA_ARCHITECTURES=90
+[   12.4s] -> rc=0 (56 lines)
+[   12.4s] $ git am /patches/0001-metal-add-GGML_OP_FLASH_ATTN_EXT_BANDED.patch /patches/0002-tests-banded-flash-attention-cases.patch /patches/0003-ggml-q_offset-for-the-banded-flash-attention-proposa.patch /patches/0004-tests-banded-flash-attention-tolerance-for-the-CUDA-.patch
+[   13.0s] -> rc=0 (4 lines)
+[   13.0s] $ git log --oneline -4
+[   13.0s] -> rc=0 (4 lines)
+[   13.0s] $ cmake --build build --target test-backend-ops test-flash-attn-bias llama-cli -j 32
+[  135.5s] -> rc=0 (421 lines)
+[  135.5s] build final: rc=0 in 122.5s, 0 warning lines in patched files
+[  135.5s] $ ./build/bin/test-backend-ops test -b CUDA0 -o FLASH_ATTN_EXT_BANDED
+[  411.9s] -> rc=0 (99 lines)
+[  411.9s] final banded: 81 OK / 0 FAIL / 5 not supported; summary (80, 80)
+[  411.9s] $ ./build/bin/test-flash-attn-bias cuda small
+[  413.0s] -> rc=0 (14 lines)
+[  413.0s] $ ./build/bin/test-flash-attn-bias cuda medium
+[  414.6s] -> rc=0 (9 lines)
+[  414.6s] $ ./build/bin/test-flash-attn-bias cuda hard
+[  416.1s] -> rc=0 (5 lines)
+[  416.1s] $ ./build/bin/test-flash-attn-bias cuda overflow
+[  416.9s] -> rc=0 (4 lines)
+[  416.9s] $ ./build/bin/test-flash-attn-bias cpu small
+[  417.2s] -> rc=0 (14 lines)
+[  417.2s] final test-flash-attn-bias: cuda-small rc=0 pass=11 fail=0, cuda-medium rc=0 pass=6 fail=0, cuda-hard rc=0 pass=2 fail=0, cuda-overflow rc=0 pass=2 fail=0, cpu-small rc=0 pass=11 fail=0
+[  417.2s] $ ./build/bin/test-backend-ops perf -b CUDA0 -o FLASH_ATTN_EXT_BANDED
+[  425.9s] -> rc=0 (20 lines)
+[  425.9s] $ ./build/bin/test-backend-ops perf -b CUDA0 -o FLASH_ATTN_EXT -p 'hsk=128,hsv=128,nh=8,nr23=\[4,1\]'
+[  456.1s] -> rc=0 (30 lines)
+[  456.1s] $ git log --oneline -6; git status --short | head
+[  456.2s] -> rc=0 (6 lines)
+[  456.2s] done in 456.2s

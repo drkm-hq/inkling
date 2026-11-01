@@ -1,0 +1,14 @@
+W1029 00:13:58.235000 66671 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+[00:13:59] {"kind": "meta", "tag": "after-eager-load", "model": "~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit/snapshots/f8a0af554e168077bdaf48e1fb6682fb395c807c/", "mlx": "0.32.4", "mlx_vlm": "0.7.11", "mlx_vlm_file": "<workdir>/upstream/mlx-vlm/mlx_vlm/__init__.py", "git": "355ea6f", "python": "~/.venvs/inkling/bin/python", "device": "Apple M5 Max", "argv": ["<workdir>/package/k4-mlx-vlm-fast-path/bench/equiv_bench.py", "--no-lock", "--tag", "after-eager-load", "--eager-load", "--prompts", "p_short", "--repeats", "1", "--max-tokens", "32"], "pid": 66671, "load1": 6.07373046875, "env_tf32": null}
+[00:14:12] load: eager 13.1s, chunked eval 0.0s, 82.3 GiB of parameters, active 82.3 GiB, peak 82.4 GiB
+[00:14:12] parameter dtypes: {'mlx.core.bfloat16': 1014, 'mlx.core.uint32': 250, 'mlx.core.float32': 160}
+[00:14:12] make_cache kv kinds: ['KVCache', 'SlidingWindowKVCache']
+[00:14:12] prompt p_short: 833 chars, 239 tokens
+[00:14:12] gen kwargs: {'max_tokens': 32, 'temperature': 0.0, 'top_p': 1.0, 'top_k': 0, 'verbose': False}
+[00:14:12] warm-up with p_short
+[00:14:25] warmup p_short rep0: prompt 239 tok, prefill 9.71s (24.6 tok/s), TTFT 11.16s, decode 32 tok 21.48 tok/s wall (22.17 api), peak 89.5 GB api / 83.3 GiB, load1 7.6, aborted=None
+[00:14:25]   text64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the the'
+[00:14:27] run p_short rep1: prompt 239 tok, prefill 1.52s (157.1 tok/s), TTFT 1.52s, decode 32 tok 27.43 tok/s wall (28.32 api), peak 89.5 GB api / 83.3 GiB, load1 7.8, aborted=None
+[00:14:27]   text64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the the'
+[00:14:27] SUMMARY p_short: prompt 239 tok | prefill 157.1 tok/s (spread 0.0%) | TTFT 1.52s | decode 27.43 tok/s (spread 0.0%) | peak 83.3 GiB | identical=True
+[00:14:27] done; maxrss 53.5 GiB

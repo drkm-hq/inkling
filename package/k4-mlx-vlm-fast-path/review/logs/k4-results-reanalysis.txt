@@ -1,0 +1,30 @@
+meta after-64k ('<workdir>/upstream/mlx-vlm/mlx_vlm/__init__.py', '355ea6f', 7.72607421875)
+meta after-eager-load ('<workdir>/upstream/mlx-vlm/mlx_vlm/__init__.py', '355ea6f', 6.07373046875)
+meta after-kernels ('<workdir>/upstream/mlx-vlm/mlx_vlm/__init__.py', '21e690a', 13.34619140625)
+meta after-kv8 ('<workdir>/upstream/mlx-vlm/mlx_vlm/__init__.py', '355ea6f', 17.623046875)
+meta after-window-only ('<workdir>/upstream/mlx-vlm/mlx_vlm/__init__.py', '0abf8bd', 21.52587890625)
+meta after ('<workdir>/upstream/mlx-vlm/mlx_vlm/__init__.py', '355ea6f', 13.30078125)
+meta before ('~/.venvs/inkling-base/lib/python3.12/site-packages/mlx_vlm/__init__.py', None, 25.7900390625)
+after-64k            p_64k    reps=2 gen={128} load1=[26.4, 22.5] prefill=[449, 495] ttft=[146.11, 132.87] decode=[13.7, 13.5] peak=[100.4, 100.4] self-identical=True
+after-eager-load     p_short  reps=1 gen={32} load1=[7.8] prefill=[157] ttft=[1.52] decode=[27.4] peak=[83.3] self-identical=True
+after-kernels        p_short  reps=2 gen={128} load1=[17.5, 16.8] prefill=[255, 278] ttft=[0.94, 0.86] decode=[26.0, 23.5] peak=[83.3, 83.3] self-identical=True
+after-kernels        p_32k    reps=2 gen={128} load1=[15.2, 18.5] prefill=[490, 529] ttft=[67.03, 62.2] decode=[19.2, 17.8] peak=[95.3, 95.3] self-identical=True
+after-window-only    p_short  reps=2 gen={128} load1=[15.5, 15.0] prefill=[223, 274] ttft=[1.08, 0.88] decode=[26.8, 26.2] peak=[83.3, 83.3] self-identical=True
+after-window-only    p_32k    reps=2 gen={128} load1=[9.1, 14.0] prefill=[430, 456] ttft=[76.43, 72.04] decode=[21.1, 15.7] peak=[101.1, 101.1] self-identical=True
+after                p_short  reps=3 gen={128} load1=[12.7, 12.7, 12.4] prefill=[232, 306, 339] ttft=[1.03, 0.78, 0.71] decode=[26.8, 28.1, 26.0] peak=[83.3, 83.3, 83.3] self-identical=True
+after                p_2k     reps=3 gen={128} load1=[11.9, 11.6, 11.3] prefill=[473, 566, 568] ttft=[4.42, 3.7, 3.68] decode=[23.9, 25.8, 23.9] peak=[87.7, 87.6, 87.8] self-identical=True
+after                p_8k     reps=3 gen={128} load1=[10.6, 11.8, 11.4] prefill=[601, 614, 606] ttft=[13.73, 13.45, 13.61] decode=[21.0, 18.9, 23.3] peak=[91.5, 91.5, 91.5] self-identical=True
+after                p_32k    reps=3 gen={128} load1=[9.0, 7.8, 6.2] prefill=[497, 484, 434] ttft=[66.14, 67.94, 75.74] decode=[24.9, 23.0, 21.7] peak=[95.3, 95.3, 95.3] self-identical=True
+before               p_short  reps=3 gen={128} load1=[17.4, 17.7, 17.9] prefill=[215, 284, 409] ttft=[1.11, 0.85, 0.59] decode=[24.3, 18.4, 16.6] peak=[83.2, 83.2, 83.1] self-identical=True
+before               p_2k     reps=3 gen={128} load1=[18.5, 17.8, 17.3] prefill=[441, 477, 470] ttft=[4.74, 4.39, 4.45] decode=[16.2, 17.7, 18.1] peak=[87.3, 87.3, 87.4] self-identical=True
+before               p_8k     reps=3 gen={128} load1=[14.1, 13.5, 17.2] prefill=[454, 509, 525] ttft=[18.18, 16.21, 15.73] decode=[19.3, 14.9, 13.3] peak=[93.5, 93.5, 93.5] self-identical=True
+before               p_32k    reps=3 gen={128} load1=[32.5, 20.5, 14.2] prefill=[414, 459, 489] ttft=[79.53, 71.52, 67.22] decode=[10.7, 20.0, 17.8] peak=[104.7, 104.8, 104.9] self-identical=True
+vs before: after-eager-load     p_short  first 32 ids identical=True margins identical=True
+vs before: after-kernels        p_short  first 128 ids identical=True margins identical=True
+vs before: after-kernels        p_32k    first 128 ids identical=True margins identical=True
+vs before: after-window-only    p_short  first 128 ids identical=True margins identical=True
+vs before: after-window-only    p_32k    first 128 ids identical=True margins identical=True
+vs before: after                p_short  first 128 ids identical=True margins identical=True
+vs before: after                p_2k     first 128 ids identical=True margins identical=True
+vs before: after                p_8k     first 128 ids identical=True margins identical=True
+vs before: after                p_32k    first 128 ids identical=True margins identical=True

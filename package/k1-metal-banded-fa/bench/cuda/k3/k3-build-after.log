@@ -1,0 +1,59 @@
+$ cmake --build build --target llama-server -j 32
+[0/1] Re-running CMake...
+-- llama.cpp version: 0.7.0-dev
+CMAKE_BUILD_TYPE=Release
+-- Setting GGML_NATIVE_DEFAULT to OFF
+-- Warning: ccache not found - consider installing it for faster compilation or disable this warning with GGML_CCACHE=OFF
+-- CMAKE_SYSTEM_PROCESSOR: x86_64
+-- GGML_SYSTEM_ARCH: x86
+-- Including CPU backend
+-- x86 detected
+-- Adding CPU backend variant ggml-cpu:  
+-- CUDA Toolkit found
+-- Using CMAKE_CUDA_ARCHITECTURES=90 CMAKE_CUDA_ARCHITECTURES_NATIVE=
+-- FlashAttention K-V type combinations: f16-f16;q4_0-q4_0;q8_0-q8_0;bf16-bf16
+-- CUDA host compiler is GNU 11.4.0
+-- Including CUDA backend
+-- ggml version: 0.27.0
+-- ggml commit:  54cec317
+-- Could NOT find OpenSSL, try to set the path to OpenSSL root folder in the system variable OPENSSL_ROOT_DIR (missing: OPENSSL_CRYPTO_LIBRARY OPENSSL_INCLUDE_DIR) 
+CMake Warning at vendor/cpp-httplib/CMakeLists.txt:154 (message):
+  OpenSSL not found, HTTPS support disabled
+
+
+-- Generating embedded license file for target: llama-app
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /work/llama.cpp/build
+[1/26] Building CXX object common/CMakeFiles/llama-common-base.dir/build-info.cpp.o
+[2/26] Linking CXX static library common/libllama-common-base.a
+[3/26] Provisioning UI assets
+-- UI: downloading from b1891: https://huggingface.co/buckets/ggml-org/llama-ui/resolve/b1891/dist.tar.gz
+-- UI: download dist.tar.gz.sha256 from b1891 failed: "HTTP response code said error"
+-- UI: downloading from latest: https://huggingface.co/buckets/ggml-org/llama-ui/resolve/latest/dist.tar.gz
+-- UI: local dist.tar.gz matches checksum from latest, skipping download
+-- UI: archive verified and extracted
+-- UI: HF download succeeded, stamp updated (ggml-org/llama-ui|b1891, resolved: latest)
+-- UI: assets unchanged, skipping embedding
+[4/23] Building CXX object src/CMakeFiles/llama.dir/llama.cpp.o
+[5/23] Building C object ggml/src/CMakeFiles/ggml-base.dir/ggml.c.o
+[6/23] Linking CXX shared library bin/libggml-base.so.0.27.0
+[7/23] Creating library symlink bin/libggml-base.so.0 bin/libggml-base.so
+[8/23] Linking CXX shared library bin/libggml-cpu.so.0.27.0
+[9/23] Creating library symlink bin/libggml-cpu.so.0 bin/libggml-cpu.so
+[10/23] Linking CUDA shared library bin/libggml-cuda.so.0.27.0
+[11/23] Creating library symlink bin/libggml-cuda.so.0 bin/libggml-cuda.so
+[12/23] Linking CXX shared library bin/libggml.so.0.27.0
+[13/23] Creating library symlink bin/libggml.so.0 bin/libggml.so
+[14/23] Linking CXX shared library bin/libllama.so.0.7.0
+[15/23] Creating library symlink bin/libllama.so.0 bin/libllama.so
+[16/23] Linking CXX shared library bin/libmtmd.so.0.7.0
+[17/23] Creating library symlink bin/libmtmd.so.0 bin/libmtmd.so
+[18/23] Linking CXX shared library bin/libllama-common.so.0.7.0
+[19/23] Creating library symlink bin/libllama-common.so.0 bin/libllama-common.so
+[20/23] Building CXX object tools/server/CMakeFiles/server-context.dir/server-context.cpp.o
+[21/23] Linking CXX static library tools/server/libserver-context.a
+[22/23] Linking CXX shared library bin/libllama-server-impl.so
+[23/23] Linking CXX executable bin/llama-server
+
+[rc=0]

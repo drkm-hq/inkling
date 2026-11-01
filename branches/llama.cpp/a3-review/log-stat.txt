@@ -1,0 +1,50 @@
+commit 795968addb6481740cb97cf15b94925eac9bd206
+Author: Nick Alonso <nick@drkm.com>
+Date:   Thu Oct 29 00:17:59 2026 -0400
+
+a3-review: adversarial server tests for the hybrid prompt-cache gate (review only, not for submission)
+
+
+ tools/server/tests/unit/test_a3_hybrid_cache.py | 586 ++++++++++++++++++++++++
+ tools/server/tests/utils.py                     |   3 +
+ 2 files changed, 589 insertions(+)
+commit 5edd1f152eb468bdf4acb73d64176bf61f04e3c4
+Author: Nick Alonso <nick@drkm.com>
+Date:   Wed Oct 28 22:51:18 2026 -0400
+
+server : do not apply the SWA back-off to a recurrent-tail pos_min
+
+llama_memory_hybrid[_iswa]::seq_pos_min() returns max(attn_min, recr_min),
+and the recurrent side keeps a single live cell per sequence whose pos is
+the LAST decoded position. For a recurrent or hybrid memory (seq_rm type
+FULL or RS) the pos_min the server sees is therefore a tail, not the
+oldest position the state still covers, and a tail is usable only when it
+ends right before the first token to evaluate.
+
+The prompt-cache reuse gate backs pos_min off by n_swa when the model has
+a sliding window. For a hybrid model with SWA layers that makes the gate
+fire on every request, including a strict extension of the cached prompt
+that needs no rewind, and the checkpoint search cannot succeed either (a
+checkpoint of such a memory records a tail too), so n_past is reset to 0
+and the whole prompt is re-processed on every request: multi-turn chats
+and agent loops re-prefill their entire context each turn.
+
+Apply the back-off only when pos_min is a genuine window start (type PART).
+Strict extensions now reuse the cached state as-is; rewinds restore the
+context checkpoint before the first changed token, as they already did for
+models without SWA. Models with n_swa == 0 are unaffected.
+
+Add a server test on the hybrid LFM2 CI model (3 shortconv layers, 1
+attention layer), once as-is and once with a sliding window forced through
+--override-kv, covering the strict extension, the identical prompt, a
+rewind within the last tokens, a rewind into the extension and a rewind
+before every checkpoint, each compared against an uncached request.
+
+Co-authored-by: fezzik <fezzik@fezzik.dev>
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+
+ tools/server/server-context.cpp            |  9 ++-
+ tools/server/tests/unit/test_completion.py | 92 ++++++++++++++++++++++++++++++
+ tools/server/tests/utils.py                | 17 ++++++
+ 3 files changed, 117 insertions(+), 1 deletion(-)

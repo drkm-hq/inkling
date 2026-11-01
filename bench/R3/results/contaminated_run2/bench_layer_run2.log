@@ -1,0 +1,12 @@
+{"section": "layer emulation experts=3b attn=bf16"}
+{"label": "weight bytes read per decoded token (est.)", "gb": 9.05, "experts": 3, "attn": "bf16"}
+decode 42 layers + head experts=3b attn=bf16 mask=vendored compile=False ctx=4096 | r1:  501.137 ms (best  428.856)     18 GB/s
+{"label": "tok/s", "value": 2.0, "best": 2.3, "experts": 3, "attn": "bf16", "mask": "vendored", "compile": false}
+decode 42 layers + head experts=3b attn=bf16 mask=vendored compile=True ctx=4096 | r1:  446.568 ms (best  409.982)     20 GB/s
+{"label": "tok/s", "value": 2.2, "best": 2.4, "experts": 3, "attn": "bf16", "mask": "vendored", "compile": true}
+decode 42 layers + head experts=3b attn=bf16 mask=cheap compile=False ctx=4096 | r1:  301.649 ms (best  242.554)     30 GB/s
+{"label": "tok/s", "value": 3.3, "best": 4.1, "experts": 3, "attn": "bf16", "mask": "cheap", "compile": false}
+decode 42 layers + head experts=3b attn=bf16 mask=cheap compile=True ctx=4096 | r1:  432.358 ms (best  192.439)     21 GB/s
+{"label": "tok/s", "value": 2.3, "best": 5.2, "experts": 3, "attn": "bf16", "mask": "cheap", "compile": true}
+decode one sliding layer experts=3b attn=bf16              | r1:   12.402 ms (best   10.440) | r8:   10.681 ms (best    8.572)
+decode one global layer ctx=4096 experts=3b attn=bf16      | r1:   14.106 ms (best    8.987) | r8:   12.292 ms (best    9.180)

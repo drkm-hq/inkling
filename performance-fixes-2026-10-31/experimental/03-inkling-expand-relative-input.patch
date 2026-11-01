@@ -1,0 +1,11 @@
+diff --git a/src/models/inkling.cpp b/src/models/inkling.cpp
+--- a/src/models/inkling.cpp
++++ b/src/models/inkling.cpp
+@@ -375,6 +375,7 @@
+ 
+         // relative position bias
+         ggml_tensor * r2 = ggml_reshape_2d(ctx0, r, d_rel, n_head*n_tokens);
++        ggml_build_forward_expand(gf, r2);
+ 
+         // proj stored [E, d_rel]; transpose so ggml_mul_mat contracts over d_rel
+         ggml_tensor * proj = ggml_cont(ctx0, ggml_transpose(ctx0, layer.attn_rel_proj)); // {d_rel, E}

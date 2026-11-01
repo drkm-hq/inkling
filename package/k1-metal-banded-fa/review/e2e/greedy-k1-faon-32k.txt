@@ -1,0 +1,2 @@
+p_32k: prompt_n=32794 prompt_ms=121565 predicted_n=64 predicted_ms=3525 wall=125.2s
+  text: ' The narrator is Ishmael, and the ship is the Pequod.\n\nReturning to the Spouter-Inn, I found Queequeg had already left, but\nhad left behind him his heavy grego, or wrap-all, his enormous\nseaboots, and his hat; but leaving no communication of'

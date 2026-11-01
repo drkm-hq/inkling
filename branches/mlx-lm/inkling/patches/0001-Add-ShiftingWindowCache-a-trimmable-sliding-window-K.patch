@@ -1,0 +1,144 @@
+From db2121e2dac80aa5949c8bfc0bb34a0832bb49f7 Mon Sep 17 00:00:00 2001
+From: Nick Alonso <nick@drkm.com>
+Date: Wed, 28 Oct 2026 22:41:45 -0400
+Subject: [PATCH 01/10] Add ShiftingWindowCache: a trimmable sliding-window KV
+ cache in temporal order
+
+Retains the window - 1 most recent entries in a buffer that is written in
+place and reallocated every `step` tokens, so decode costs one slice update
+per array and a mask that depends on query-key distance can be sliced rather
+than gathered.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ mlx_lm/models/cache.py | 117 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 117 insertions(+)
+
+diff --git a/mlx_lm/models/cache.py b/mlx_lm/models/cache.py
+index bb3d62f..4066fa7 100644
+--- a/mlx_lm/models/cache.py
++++ b/mlx_lm/models/cache.py
+@@ -593,6 +593,123 @@ class RotatingKVCache(_BaseCache):
+         return self.keys.nbytes + self.values.nbytes
+ 
+ 
++class ShiftingWindowCache(_BaseCache):
++    """A sliding-window KV cache whose entries stay in temporal order.
++
++    The cache retains the ``max_size - 1`` most recent keys and values.
++    ``update_and_fetch`` returns them followed by the new entries, so a causal
++    mask with window ``max_size`` over the result is exactly the sliding
++    window, and a single new token needs no mask at all. Unlike
++    ``RotatingKVCache`` the entries are never rotated, so a mask that depends
++    on the distance between a query and a key (for example a relative position
++    bias) can be built by slicing instead of gathering.
++
++    Entries are written in place into a buffer that is reallocated every
++    ``step`` tokens; a decode step costs one slice update per array.
++    """
++
++    step = 256
++
++    def __init__(self, max_size):
++        self.keys = None
++        self.values = None
++        self.offset = 0
++        self.max_size = max_size
++        self._idx = 0
++
++    @property
++    def _n_retained(self):
++        return min(self.offset, self.max_size - 1)
++
++    def update_and_fetch(self, keys, values):
++        B, n_kv_heads, L, k_head_dim = keys.shape
++        v_head_dim = values.shape[3]
++        n_retained = self._n_retained
++        if self.keys is None or self._idx + L > self.keys.shape[2]:
++            # (Re)allocate with room for ``step`` more tokens and move the
++            # retained entries to the front.
++            capacity = self.max_size - 1 + max(self.step, L)
++            k_shape = (B, n_kv_heads, capacity - n_retained, k_head_dim)
++            v_shape = (B, n_kv_heads, capacity - n_retained, v_head_dim)
++            new_k = mx.zeros(k_shape, keys.dtype)
++            new_v = mx.zeros(v_shape, values.dtype)
++            if n_retained > 0:
++                start = self._idx - n_retained
++                new_k = mx.concatenate(
++                    [self.keys[..., start : self._idx, :], new_k], axis=2
++                )
++                new_v = mx.concatenate(
++                    [self.values[..., start : self._idx, :], new_v], axis=2
++                )
++            self.keys, self.values = new_k, new_v
++            self._idx = n_retained
++
++        self.keys[..., self._idx : self._idx + L, :] = keys
++        self.values[..., self._idx : self._idx + L, :] = values
++        self._idx += L
++        self.offset += L
++        start = self._idx - L - n_retained
++        return (
++            self.keys[..., start : self._idx, :],
++            self.values[..., start : self._idx, :],
++        )
++
++    def keys_and_values(self):
++        n = min(self.offset, self.max_size)
++        return (
++            self.keys[..., self._idx - n : self._idx, :],
++            self.values[..., self._idx - n : self._idx, :],
++        )
++
++    def size(self):
++        return min(self.offset, self.max_size)
++
++    @property
++    def state(self):
++        return self.keys, self.values, self.offset, self.max_size, self._idx
++
++    @state.setter
++    def state(self, v):
++        self.keys, self.values, self.offset, self.max_size, self._idx = v
++
++    def is_trimmable(self):
++        # Entries are discarded once the window is full
++        return self.offset < self.max_size
++
++    def trim(self, n):
++        n = min(self.offset, n)
++        self.offset -= n
++        self._idx -= n
++        return n
++
++    def to_quantized(self, group_size: int = 64, bits: int = 4) -> QuantizedKVCache:
++        raise NotImplementedError("ShiftingWindowCache Quantization NYI")
++
++    def make_mask(
++        self, N: int, window_size: Optional[int] = None, return_array: bool = False
++    ):
++        window_size = window_size or self.max_size
++        if N > 1:
++            return create_causal_mask(N, self._n_retained, window_size=window_size)
++        if window_size >= self.max_size:
++            return None
++        S = self._n_retained + 1
++        return mx.arange(S) >= (S - window_size)
++
++    @classmethod
++    def merge(_, caches):
++        return BatchShiftingWindowCache.merge(caches)
++
++    def empty(self):
++        return self.keys is None
++
++    @property
++    def nbytes(self):
++        if self.keys is None:
++            return 0
++        return self.keys.nbytes + self.values.nbytes
++
++
+ class ArraysCache(_BaseCache):
+     def __init__(self, size, left_padding: Optional[List[int]] = None):
+         self.cache = [None] * size

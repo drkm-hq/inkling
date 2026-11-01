@@ -1,0 +1,16 @@
+ mlx_vlm/models/cache.py                       | 188 ++++-
+ mlx_vlm/models/inkling/language.py            | 149 +++-
+ mlx_vlm/tests/_a4_common.py                   | 116 +++
+ mlx_vlm/tests/_a4_language_138d761.py         | 996 ++++++++++++++++++++++++++
+ mlx_vlm/tests/test_a4_attention_vs_138d761.py | 112 +++
+ mlx_vlm/tests/test_a4_kv_bits.py              |  65 ++
+ mlx_vlm/tests/test_a4_loader.py               |  22 +
+ mlx_vlm/tests/test_a4_logits_to_keep.py       |  81 +++
+ mlx_vlm/tests/test_a4_sconv_random.py         |  78 ++
+ mlx_vlm/tests/test_a4_window_cache.py         | 254 +++++++
+ mlx_vlm/tests/test_cache.py                   |   3 +-
+ mlx_vlm/tests/test_inkling_fast_path.py       | 546 ++++++++++++++
+ mlx_vlm/tests/test_load_eval_chunks.py        |  84 +++
+ mlx_vlm/tests/test_sliding_window_cache.py    | 244 +++++++
+ mlx_vlm/utils.py                              |  30 +-
+ 15 files changed, 2936 insertions(+), 32 deletions(-)

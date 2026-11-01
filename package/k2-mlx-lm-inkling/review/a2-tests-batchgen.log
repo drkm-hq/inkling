@@ -1,0 +1,44 @@
+test_batch_generator (tests.test_inkling_a2.TestInklingA2.test_batch_generator) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.174s
+
+OK
+
+A2 report (rel error, tolerance):
+  1.457e-07 <= 1e-04  cpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 0
+  1.281e-07 <= 1e-04  cpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 1
+  1.628e-07 <= 1e-04  cpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 2
+  2.673e-07 <= 1e-04  cpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 3
+  2.868e-07 <= 1e-04  cpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 4
+  2.366e-07 <= 1e-04  cpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 5
+  1.644e-07 <= 1e-04  cpu: BatchGenerator seq 1 (prompt 4, 3 tokens) logprobs step 0
+  2.456e-07 <= 1e-04  cpu: BatchGenerator seq 1 (prompt 4, 3 tokens) logprobs step 1
+  1.395e-07 <= 1e-04  cpu: BatchGenerator seq 1 (prompt 4, 3 tokens) logprobs step 2
+  2.194e-07 <= 1e-04  cpu: BatchGenerator seq 2 (prompt 13, 5 tokens) logprobs step 0
+  1.871e-07 <= 1e-04  cpu: BatchGenerator seq 2 (prompt 13, 5 tokens) logprobs step 1
+  2.034e-07 <= 1e-04  cpu: BatchGenerator seq 2 (prompt 13, 5 tokens) logprobs step 2
+  1.772e-07 <= 1e-04  cpu: BatchGenerator seq 2 (prompt 13, 5 tokens) logprobs step 3
+  1.812e-07 <= 1e-04  cpu: BatchGenerator seq 2 (prompt 13, 5 tokens) logprobs step 4
+  1.467e-07 <= 1e-04  cpu: BatchGenerator seq 3 (prompt 7, 4 tokens) logprobs step 0
+  1.286e-07 <= 1e-04  cpu: BatchGenerator seq 3 (prompt 7, 4 tokens) logprobs step 1
+  1.761e-07 <= 1e-04  cpu: BatchGenerator seq 3 (prompt 7, 4 tokens) logprobs step 2
+  3.693e-07 <= 1e-04  cpu: BatchGenerator seq 3 (prompt 7, 4 tokens) logprobs step 3
+  1.572e-07 <= 1e-04  gpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 0
+  1.190e-07 <= 1e-04  gpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 1
+  1.657e-07 <= 1e-04  gpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 2
+  2.673e-07 <= 1e-04  gpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 3
+  1.984e-07 <= 1e-04  gpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 4
+  1.588e-07 <= 1e-04  gpu: BatchGenerator seq 0 (prompt 9, 6 tokens) logprobs step 5
+  1.644e-07 <= 1e-04  gpu: BatchGenerator seq 1 (prompt 4, 3 tokens) logprobs step 0
+  2.456e-07 <= 1e-04  gpu: BatchGenerator seq 1 (prompt 4, 3 tokens) logprobs step 1
+  1.395e-07 <= 1e-04  gpu: BatchGenerator seq 1 (prompt 4, 3 tokens) logprobs step 2
+  2.194e-07 <= 1e-04  gpu: BatchGenerator seq 2 (prompt 13, 5 tokens) logprobs step 0
+  1.871e-07 <= 1e-04  gpu: BatchGenerator seq 2 (prompt 13, 5 tokens) logprobs step 1
+  2.034e-07 <= 1e-04  gpu: BatchGenerator seq 2 (prompt 13, 5 tokens) logprobs step 2
+  1.772e-07 <= 1e-04  gpu: BatchGenerator seq 2 (prompt 13, 5 tokens) logprobs step 3
+  3.115e-07 <= 1e-04  gpu: BatchGenerator seq 2 (prompt 13, 5 tokens) logprobs step 4
+  1.607e-07 <= 1e-04  gpu: BatchGenerator seq 3 (prompt 7, 4 tokens) logprobs step 0
+  1.643e-07 <= 1e-04  gpu: BatchGenerator seq 3 (prompt 7, 4 tokens) logprobs step 1
+  1.819e-07 <= 1e-04  gpu: BatchGenerator seq 3 (prompt 7, 4 tokens) logprobs step 2
+  2.320e-07 <= 1e-04  gpu: BatchGenerator seq 3 (prompt 7, 4 tokens) logprobs step 3

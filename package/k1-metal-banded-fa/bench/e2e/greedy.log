@@ -1,0 +1,21 @@
+=== llama-server -fa on (03:01:22Z)
+server up after ~10 s
+p_short: prompt_n=226 prompt_ms=807 predicted_n=128 predicted_ms=7438 wall=8.3s
+p_8k: prompt_n=8218 prompt_ms=25820 predicted_n=128 predicted_ms=8459 wall=34.4s
+p_32k: prompt_n=32794 prompt_ms=105559 predicted_n=128 predicted_ms=11777 wall=117.7s
+        100739399680  maximum resident set size
+=== llama-server -fa off (03:15:43Z)
+server up after ~8 s
+p_short: prompt_n=226 prompt_ms=862 predicted_n=128 predicted_ms=13076 wall=14.0s
+p_8k: prompt_n=8218 prompt_ms=22267 predicted_n=128 predicted_ms=15219 wall=37.6s
+p_32k: prompt_n=32794 prompt_ms=130658 predicted_n=128 predicted_ms=19951 wall=150.7s
+        100750589952  maximum resident set size
+p_short: DIVERGE at token 11 of 128/128
+  fa0: ' Answer: The narrator is Ishmael and the ship\n\nThe user wants me to identify the narrator and the ship name from the provided text, which is clearly the table of contents of Moby-Dick by Herman Melville. The chapters listed include "Loomings", "The Carpet-Bag", "The Spouter-Inn", "Nantucket", "Chowd'
+  fa1: ' Answer: The narrator is Ishmael and the ship\n\nThe user wants me to identify the narrator and the ship name from the provided text, which is clearly the table of contents of Herman Melville\'s *Moby-Dick*. The chapters listed include "Loomings," "The Carpet-Bag," "The Spouter-Inn," "Nantucket," "The '
+p_8k: DIVERGE at token 12 of 128/128
+  fa0: ' The narrator is Ishmael and the ship is Pequod.\n\nThe user wants me to identify the narrator and the ship name from the provided text, specifically answering in one sentence.\n\nFrom the text:\n- "Call me Ishmael." -> Narrator is Ishmael.\n- The table of contents lists "CHAPTER 16. The Ship." and later '
+  fa1: ' The narrator is Ishmael and the ship is Pequod.\n\nThe user wants me to identify the narrator and the ship name from the provided text, specifically in one sentence.\n\nFrom the text:\n- "Call me Ishmael." -> Narrator is Ishmael.\n- The table of contents lists "CHAPTER 16. The Ship." and later chapters m'
+p_32k: DIVERGE at token 29 of 128/128
+  fa0: ' The narrator is Ishmael, and the ship is the Pequod.\n\nReturning to the Spouter-Inn, I found Queequeg had disappeared. But\nthe room was in some disorder; the counterpane was\n\nBut the text is truncated. But But But But But But But But But But But But But But But But But But But But But But But But Bu'
+  fa1: ' The narrator is Ishmael, and the ship is the Pequod.\n\nReturning to the Spouter-Inn, I found Queequeg had already left, but\nhad left behind him his heavy grego, or wrap-all, his enormous\nseaboots, and his hat; but leaving no communication of his whereabouts\nupon the black stone thing at the door, le'

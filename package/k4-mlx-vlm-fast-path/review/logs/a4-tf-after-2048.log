@@ -1,0 +1,9 @@
+[02:56:35] {"kind": "meta", "tag": "a4-tf-after-2048", "model": "~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit/snapshots/f8a0af554e168077bdaf48e1fb6682fb395c807c/", "mlx": "0.32.4", "mlx_vlm": "0.7.11", "mlx_vlm_file": "<workdir>/upstream/mlx-vlm-a4/mlx_vlm/__init__.py", "git": "026dd58", "python": "~/.venvs/inkling-a4/bin/python", "device": "Apple M5 Max", "argv": ["<workdir>/package/k4-mlx-vlm-fast-path/review/a4_equiv_bench.py", "--no-lock", "--tag", "a4-tf-after-2048", "--out-dir", "<workdir>/package/k4-mlx-vlm-fast-path/review/results", "--teacher-forced", "<workdir>/package/k4-mlx-vlm-fast-path/review/results/a4-before-gen.jsonl", "--max-tokens", "64", "--prompts", "p_short,p_8k", "--prefill-step-size", "2048", "--tf-reference", "a4-tf-before-2048"], "pid": 56230, "load1": 4.5322265625, "env_tf32": null}
+[02:56:46] load: lazy 0.7s, chunked eval 10.2s, 82.3 GiB of parameters, active 82.3 GiB, peak 82.4 GiB
+[02:56:46] parameter dtypes: {'mlx.core.bfloat16': 1014, 'mlx.core.uint32': 250, 'mlx.core.float32': 160}
+[02:56:46] make_cache kv kinds: ['KVCache', 'SlidingWindowKVCache']
+[02:56:46] prompt p_short: 833 chars, 239 tokens
+[02:56:46] prompt p_8k: 30131 chars, 8231 tokens
+[02:56:46] gen kwargs: {'max_tokens': 64, 'temperature': 0.0, 'top_p': 1.0, 'top_k': 0, 'verbose': False, 'prefill_step_size': 2048}
+[02:56:59] tf p_short: chunk 2048, 239 prompt tokens + 64 teacher tokens in 12.6s, teacher top-1 63/64, md5 b1903252c46d, vs a4-tf-before-2048: identical=True KL mean 0.00e+00 max 0.00e+00 at 0, |dlogprob| mean 0.00e+00 max 0.00e+00, top-1 agree 64/64
+[02:57:23] tf p_8k: chunk 2048, 8231 prompt tokens + 64 teacher tokens in 24.1s, teacher top-1 63/64, md5 a57301af01f9, vs a4-tf-before-2048: identical=True KL mean 0.00e+00 max 0.00e+00 at 0, |dlogprob| mean 0.00e+00 max 0.00e+00, top-1 agree 64/64

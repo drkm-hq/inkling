@@ -1,0 +1,105 @@
+K4 review validation (2026-10-31)
+
+Source base: mlx-vlm inkling-fast-path ee1be2540c9ec3266dabdd86d46764404a8a80e7.
+Original checkout and review snapshot were not modified.
+Isolated source: <workdir>
+Python: ~/.venvs/inkling/bin/python
+All Python invocations below used PYTHONDONTWRITEBYTECODE=1. Runtime execution
+required elevated local access because MLX import otherwise failed with:
+ImportError: [metal::load_device] No Metal device available.
+No model weights were loaded or downloaded. Reproduction scripts explicitly
+selected mx.cpu; pytest files used their normal runtime/device configuration.
+
+1. Original-code reproduction
+Working directory: isolated source above.
+Command: PYTHONDONTWRITEBYTECODE=1 ~/.venvs/inkling/bin/python repro_disk.py
+Result: exit 0; reproduced both failures before applying fixes.
+Relevant output:
+Original class: SlidingWindowKVCache
+Restored class: RotatingKVCache
+next 20 original [10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0] restored [20.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+next 21 original [10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0] restored [20.0, 21.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+next 22 original [15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0] restored [20.0, 21.0, 22.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+next 23 original [15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0] restored [20.0, 21.0, 22.0, 23.0, 0.0, 0.0, 0.0, 0.0]
+Batch state restore: AttributeError("'BatchSlidingWindowKVCache' object has no attribute '_right_padding'")
+
+2. Initial regression test run before serializer fix
+Command: PYTHONDONTWRITEBYTECODE=1 ~/.venvs/inkling/bin/python -m pytest -q mlx_vlm/tests/test_cache.py -k sliding_window_disk_restore -p no:cacheprovider
+Result: 2 failed, 414 deselected in 9.98s.
+The length-20 case failed on restored type RotatingKVCache versus expected
+SlidingWindowKVCache. The length-4 case initially failed at store admission
+because the fixture's default minimum prefix length was larger than 4; the
+regression was corrected to explicitly set exact_cache_min_tokens=1.
+
+3. Serializer fix plus corrected disk regressions
+Command: PYTHONDONTWRITEBYTECODE=1 ~/.venvs/inkling/bin/python -m pytest -q mlx_vlm/tests/test_cache.py -k 'sliding_window_disk_restore or disk' -p no:cacheprovider
+Result: 32 passed, 384 deselected in 7.80s.
+
+4. Focused K4 integration suite after serializer fix
+Formatting command: PYTHONDONTWRITEBYTECODE=1 ~/.venvs/inkling/bin/python -m black mlx_vlm/apc.py mlx_vlm/tests/test_cache.py
+Formatting result: 2 files left unchanged.
+Test command: PYTHONDONTWRITEBYTECODE=1 ~/.venvs/inkling/bin/python -m pytest -q mlx_vlm/tests/test_load_eval_chunks.py mlx_vlm/tests/test_sliding_window_cache.py mlx_vlm/tests/test_inkling_fast_path.py mlx_vlm/tests/test_cache.py -p no:cacheprovider
+Result: 467 passed in 20.43s.
+
+5. Batch-state fix and additional round-trip regressions
+Formatting command: PYTHONDONTWRITEBYTECODE=1 ~/.venvs/inkling/bin/python -m black mlx_vlm/models/cache.py mlx_vlm/tests/test_sliding_window_cache.py
+Formatting result: test_sliding_window_cache.py reformatted; cache.py unchanged.
+Test command: PYTHONDONTWRITEBYTECODE=1 ~/.venvs/inkling/bin/python -m pytest -q mlx_vlm/tests/test_sliding_window_cache.py mlx_vlm/tests/test_cache.py -p no:cacheprovider
+Result: 437 passed in 18.63s.
+These tests include pending-padding continuation and compatibility with the
+original four-field batch state. No broader rerun was necessary.
+
+6. Quantization-hook issue before the separate group-D fix, actual APC clone path
+Command: PYTHONDONTWRITEBYTECODE=1 ~/.venvs/inkling/bin/python repro_quant_clone.py
+Result: exit 0; output:
+source wrapper InklingCacheList restored wrapper CacheList
+quantized KV QuantizedKVCache
+quantized KV KVCache
+The same maybe_quantize_kv_cache call with uniform 8-bit KV, group size 32,
+and quantized_kv_start=8 converts the original but not the APC-cloned cache.
+This issue is not changed by k4-review-fixes.patch; it is addressed separately
+by group-D-uniform-cache-restore.patch (see section 8).
+
+7. Patch applicability
+Working directory: <workdir>/upstream/mlx-vlm
+Command: git apply --check <workdir>
+Result: exit 0, no output.
+
+8. Separate group-D fix for uniform quantization after cache reconstruction
+Patch: work/k4-review/group-D-uniform-cache-restore.patch
+Apply after k4-review-fixes.patch; its disk test exercises the corrected
+window-cache serializer. Source changes are confined to generate/common.py
+and tests/test_inkling_fast_path.py.
+
+The uniform path now honors an explicit entry conversion hook first, including
+its threshold, and traverses generic CacheList/list/tuple entries otherwise.
+Nested window and auxiliary caches remain untouched. Existing direct top-level
+hook behavior remains unchanged.
+
+Formatting command: PYTHONDONTWRITEBYTECODE=1 ~/.venvs/inkling/bin/python -m black mlx_vlm/generate/common.py mlx_vlm/tests/test_inkling_fast_path.py
+Formatting result: 2 files left unchanged.
+Targeted command: PYTHONDONTWRITEBYTECODE=1 ~/.venvs/inkling/bin/python -m pytest -q mlx_vlm/tests/test_inkling_fast_path.py -k 'uniform' -p no:cacheprovider
+Result: 4 passed, 27 deselected in 3.77s.
+The three restoration cases use actual APC memory cloning, disk save/load, and
+extraction of a row from a batch cache. They verify delayed conversion,
+retention of sliding/conv objects, correct offsets, and finite continuation.
+The fourth case covers plain nested containers and explicit/direct hooks.
+
+Integration command: PYTHONDONTWRITEBYTECODE=1 ~/.venvs/inkling/bin/python -m pytest -q mlx_vlm/tests/test_inkling_fast_path.py mlx_vlm/tests/test_generate.py -p no:cacheprovider
+Result: 573 passed in 6.36s.
+
+Original reproduction rerun after fix:
+Command: PYTHONDONTWRITEBYTECODE=1 ~/.venvs/inkling/bin/python repro_quant_clone.py
+Result: exit 0; output:
+source wrapper InklingCacheList restored wrapper CacheList
+quantized KV QuantizedKVCache
+quantized KV QuantizedKVCache
+
+Patch applicability command (in untouched upstream/mlx-vlm checkout):
+git apply --check <workdir>
+Result: exit 0, no output.
+
+Limits: no full-model quality or performance reruns, and no network/upstream
+freshness check. README evidence corrections use the snapshot's existing
+measurements; they add no new benchmark results. Validation commands overlap;
+the reported pass counts must not be summed as unique tests.

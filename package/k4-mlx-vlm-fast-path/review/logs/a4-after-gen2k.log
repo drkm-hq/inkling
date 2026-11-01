@@ -1,0 +1,13 @@
+[03:09:44] {"kind": "meta", "tag": "a4-after-gen2k", "model": "~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit/snapshots/f8a0af554e168077bdaf48e1fb6682fb395c807c/", "mlx": "0.32.4", "mlx_vlm": "0.7.11", "mlx_vlm_file": "<workdir>/upstream/mlx-vlm-a4/mlx_vlm/__init__.py", "git": "026dd58", "python": "~/.venvs/inkling-a4/bin/python", "device": "Apple M5 Max", "argv": ["<workdir>/package/k4-mlx-vlm-fast-path/review/a4_equiv_bench.py", "--no-lock", "--tag", "a4-after-gen2k", "--out-dir", "<workdir>/package/k4-mlx-vlm-fast-path/review/results", "--prompts", "p_short", "--repeats", "1", "--max-tokens", "2048"], "pid": 59329, "load1": 4.49462890625, "env_tf32": null}
+[03:09:56] load: lazy 0.7s, chunked eval 11.1s, 82.3 GiB of parameters, active 82.4 GiB, peak 82.4 GiB
+[03:09:56] parameter dtypes: {'mlx.core.bfloat16': 1014, 'mlx.core.uint32': 250, 'mlx.core.float32': 160}
+[03:09:56] make_cache kv kinds: ['KVCache', 'SlidingWindowKVCache']
+[03:09:56] prompt p_short: 833 chars, 239 tokens
+[03:09:56] gen kwargs: {'max_tokens': 2048, 'temperature': 0.0, 'top_p': 1.0, 'top_k': 0, 'verbose': False}
+[03:09:56] warm-up with p_short
+[03:11:39] warmup p_short rep0: prompt 239 tok, prefill 6.18s (38.7 tok/s), TTFT 7.97s, decode 2048 tok 21.52 tok/s wall (21.53 api), peak 89.5 GB api / 83.3 GiB, load1 6.9, aborted=None
+[03:11:39]   text64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[03:13:11] run p_short rep1: prompt 239 tok, prefill 1.30s (184.5 tok/s), TTFT 1.30s, decode 2048 tok 22.67 tok/s wall (22.68 api), peak 89.5 GB api / 83.3 GiB, load1 6.1, aborted=None
+[03:13:11]   text64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[03:13:11] SUMMARY p_short: prompt 239 tok | prefill 184.5 tok/s (spread 0.0%) | TTFT 1.30s | decode 22.67 tok/s (spread 0.0%) | peak 83.3 GiB | identical=True
+[03:13:11] done; maxrss 57.6 GiB

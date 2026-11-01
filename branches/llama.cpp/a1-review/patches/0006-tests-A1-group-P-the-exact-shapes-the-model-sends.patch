@@ -1,0 +1,29 @@
+From 114a8aae1c90925a571ac5157f0555148ba26e3b Mon Sep 17 00:00:00 2001
+From: A1 review <a1@review.local>
+Date: Wed, 28 Oct 2026 23:51:13 -0400
+Subject: [PATCH 6/7] tests : A1 group P, the exact shapes the model sends
+
+---
+ tests/test-backend-ops.cpp | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/tests/test-backend-ops.cpp b/tests/test-backend-ops.cpp
+index d74a95b85..333d08115 100644
+--- a/tests/test-backend-ops.cpp
++++ b/tests/test-backend-ops.cpp
+@@ -12555,6 +12555,15 @@ static std::vector<std::unique_ptr<test_case>> make_test_cases_eval() {
+         test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8,   7, 2048, 1024, 1, F16, F32, false, 0, INT64_MIN,   0, 1, 1, 2048));
+         test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8,   1, 8192,  512, 2, F16, F32, false, 0, INT64_MIN, 512, 1, 1,  512));
+         test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8,   2, 1024, 1024, 1, F16, F32, false, 0, INT64_MIN,   0, 1, 1, 1024));
++        // P: the exact shapes the model sends (256-padded cache views, q_offset = pos_max + 1 - n_tokens, masked padding)
++        test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8, 512, 32794, 1024, 1, F16, F32, false, 230));
++        test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8,   1, 32795, 1024, 1, F16, F32, false, 229));
++        test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8, 512,  1000,  512, 2, F16, F32, false,  24));
++        test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8,   1,   777,  512, 2, F16, F32, false, 247));
++        test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8, 2048, 2048, 1024, 1, F16, F32));
++        test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8, 2048, 8192, 1024, 1, F16, F32, false, 0));
++        test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8, 226,  226,  1024, 1, F16, F32, false,  30));
++        test_cases.emplace_back(new test_flash_attn_ext_banded(128, 32, 8, 226,  226,   512, 2, F16, F32, false,  30));
+         // O: large KV (offset arithmetic)
+         test_cases.emplace_back(new test_flash_attn_ext_banded(128,  8, 2,   1, 1048576, 1024, 1, F16, F32));
+         test_cases.emplace_back(new test_flash_attn_ext_banded(128,  8, 2,  32, 1048576, 1024, 1, F16, F32));

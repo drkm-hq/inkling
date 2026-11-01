@@ -1,0 +1,60 @@
+[22:18:42] GPU_LOCK acquired by pid 45938
+W1028 22:18:48.782000 45938 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+[22:18:49] {"kind": "meta", "tag": "baseline", "model": "~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit/snapshots/f8a0af554e168077bdaf48e1fb6682fb395c807c/", "mlx": "0.32.4", "mlx_vlm": "0.7.11", "device": "Apple M5 Max", "argv": ["baseline/bench_mlx.py", "--tag", "baseline", "--prompts", "p_short,p_2k,p_8k,p_32k,p_64k", "--repeats", "3", "--max-tokens", "128"], "pid": 45938, "load1": 13.1025390625}
+[22:19:03] load: lazy 0.8s, chunked eval 13.0s, 82.3 GiB of parameters, active 82.4 GiB, peak 82.4 GiB
+[22:19:03] prompt p_short: 833 chars, 239 tokens; head='<|message_system|><|content_text|>Thinking effort level: 0<|end_message|><|message_user|><|content_text|>CHAPTER 1. Loomings.\n\nCHAPTER 2. Th' tail='entence, who is the narrator of the text above and what is the name of the ship? Answer:<|end_message|><|message_model|>'
+[22:19:03] prompt p_2k: 6929 chars, 2085 tokens; head='<|message_system|><|content_text|>Thinking effort level: 0<|end_message|><|message_user|><|content_text|>CHAPTER 1. Loomings.\n\nCHAPTER 2. Th' tail='entence, who is the narrator of the text above and what is the name of the ship? Answer:<|end_message|><|message_model|>'
+[22:19:03] prompt p_8k: 30131 chars, 8231 tokens; head='<|message_system|><|content_text|>Thinking effort level: 0<|end_message|><|message_user|><|content_text|>CHAPTER 1. Loomings.\n\nCHAPTER 2. Th' tail='entence, who is the narrator of the text above and what is the name of the ship? Answer:<|end_message|><|message_model|>'
+[22:19:03] prompt p_32k: 128212 chars, 32807 tokens; head='<|message_system|><|content_text|>Thinking effort level: 0<|end_message|><|message_user|><|content_text|>CHAPTER 1. Loomings.\n\nCHAPTER 2. Th' tail='entence, who is the narrator of the text above and what is the name of the ship? Answer:<|end_message|><|message_model|>'
+[22:19:03] prompt p_64k: 257496 chars, 65574 tokens; head='<|message_system|><|content_text|>Thinking effort level: 0<|end_message|><|message_user|><|content_text|>CHAPTER 1. Loomings.\n\nCHAPTER 2. Th' tail='entence, who is the narrator of the text above and what is the name of the ship? Answer:<|end_message|><|message_model|>'
+[22:19:03] gen kwargs: {'max_tokens': 128, 'temperature': 0.0, 'top_p': 1.0, 'top_k': 0, 'verbose': False}
+[22:19:03] warm-up with p_short (128 tokens)
+[22:19:20] warmup p_short rep0: prompt 239 tok, prefill 10.31s (23.2 tok/s api), TTFT wall 11.69s, decode 128 tok 23.24 tok/s wall (23.42 api), total 17.2s, peak 89.3 GB api / 83.2 GiB, rss 46.0 GiB, eos@16 ok=True aborted=None
+[22:19:20]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[22:19:26] run p_short rep1: prompt 239 tok, prefill 1.09s (219.2 tok/s api), TTFT wall 1.09s, decode 128 tok 25.48 tok/s wall (25.68 api), total 6.1s, peak 89.4 GB api / 83.2 GiB, rss 46.0 GiB, eos@16 ok=True aborted=None
+[22:19:26]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[22:19:32] run p_short rep2: prompt 239 tok, prefill 0.94s (254.5 tok/s api), TTFT wall 0.94s, decode 128 tok 27.87 tok/s wall (28.09 api), total 5.5s, peak 89.4 GB api / 83.2 GiB, rss 46.0 GiB, eos@16 ok=True aborted=None
+[22:19:32]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[22:19:38] run p_short rep3: prompt 239 tok, prefill 0.89s (269.3 tok/s api), TTFT wall 0.89s, decode 128 tok 22.50 tok/s wall (22.68 api), total 6.5s, peak 89.4 GB api / 83.2 GiB, rss 46.0 GiB, eos@16 ok=True aborted=None
+[22:19:38]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[22:19:38] SUMMARY p_short: prompt 239 tok | prefill 254.5 tok/s (spread 19.7%) | TTFT 0.94s | decode 25.48 tok/s wall (spread 21.1%) | peak 89.4 GB | answer_ok=True identical=True
+[22:19:50] run p_2k rep1: prompt 2085 tok, prefill 4.28s (486.6 tok/s api), TTFT wall 4.30s, decode 128 tok 18.83 tok/s wall (18.98 api), total 11.0s, peak 93.7 GB api / 87.3 GiB, rss 46.0 GiB, eos@None ok=False aborted=None
+[22:19:50]   first64: '<|content_thinking|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:"\n\nWe need to identify the narrator of the text above (the excerpt from Moby-Dick). The text is from Chapter 1 "Loomings" and the et'
+[22:20:04] run p_2k rep2: prompt 2085 tok, prefill 4.04s (515.8 tok/s api), TTFT wall 4.06s, decode 128 tok 12.52 tok/s wall (12.61 api), total 14.2s, peak 93.7 GB api / 87.3 GiB, rss 46.0 GiB, eos@None ok=False aborted=None
+[22:20:04]   first64: '<|content_thinking|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:"\n\nWe need to identify the narrator of the text above (the excerpt from Moby-Dick). The text is from Chapter 1 "Loomings" and the et'
+[22:20:21] run p_2k rep3: prompt 2085 tok, prefill 4.73s (441.0 tok/s api), TTFT wall 4.74s, decode 128 tok 10.05 tok/s wall (10.13 api), total 17.4s, peak 93.9 GB api / 87.4 GiB, rss 46.0 GiB, eos@None ok=False aborted=None
+[22:20:21]   first64: '<|content_thinking|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:"\n\nWe need to identify the narrator of the text above (the excerpt from Moby-Dick). The text is from Chapter 1 "Loomings" and the et'
+[22:20:21] SUMMARY p_2k: prompt 2085 tok | prefill 486.6 tok/s (spread 15.4%) | TTFT 4.30s | decode 12.52 tok/s wall (spread 70.2%) | peak 93.9 GB | answer_ok=False identical=True
+[22:20:54] run p_8k rep1: prompt 8231 tok, prefill 17.71s (464.7 tok/s api), TTFT wall 17.77s, decode 128 tok 8.23 tok/s wall (8.30 api), total 33.2s, peak 100.4 GB api / 93.5 GiB, rss 46.0 GiB, eos@16 ok=True aborted=None
+[22:20:54]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>_<|content_text|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" They want a one-sentence answer identifying the narrator and the ship name from the provided'
+[22:21:26] run p_8k rep2: prompt 8231 tok, prefill 17.43s (472.2 tok/s api), TTFT wall 17.47s, decode 128 tok 9.04 tok/s wall (9.11 api), total 31.5s, peak 100.4 GB api / 93.5 GiB, rss 46.0 GiB, eos@16 ok=True aborted=None
+[22:21:26]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>_<|content_text|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" They want a one-sentence answer identifying the narrator and the ship name from the provided'
+[22:21:58] run p_8k rep3: prompt 8231 tok, prefill 17.85s (461.2 tok/s api), TTFT wall 17.91s, decode 128 tok 9.01 tok/s wall (9.08 api), total 32.0s, peak 100.3 GB api / 93.4 GiB, rss 46.0 GiB, eos@16 ok=True aborted=None
+[22:21:58]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>_<|content_text|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" They want a one-sentence answer identifying the narrator and the ship name from the provided'
+[22:21:58] SUMMARY p_8k: prompt 8231 tok | prefill 464.7 tok/s (spread 2.4%) | TTFT 17.77s | decode 9.01 tok/s wall (spread 9.0%) | peak 100.4 GB | answer_ok=True identical=True
+[22:23:16] run p_32k rep1: prompt 32807 tok, prefill 70.71s (464.0 tok/s api), TTFT wall 70.93s, decode 128 tok 18.83 tok/s wall (18.98 api), total 77.7s, peak 112.4 GB api / 104.7 GiB, rss 46.0 GiB, eos@16 ok=True aborted=None
+[22:23:16]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" The text is clearly Moby-Dick (Melville). The narrator is Ishmael ("Call'
+[22:24:27] run p_32k rep2: prompt 32807 tok, prefill 66.50s (493.4 tok/s api), TTFT wall 66.71s, decode 128 tok 25.91 tok/s wall (26.12 api), total 71.6s, peak 112.7 GB api / 104.9 GiB, rss 46.0 GiB, eos@16 ok=True aborted=None
+[22:24:27]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" The text is clearly Moby-Dick (Melville). The narrator is Ishmael ("Call'
+[22:25:43] run p_32k rep3: prompt 32807 tok, prefill 69.72s (470.6 tok/s api), TTFT wall 69.82s, decode 128 tok 22.67 tok/s wall (22.85 api), total 75.4s, peak 112.5 GB api / 104.8 GiB, rss 46.0 GiB, eos@16 ok=True aborted=None
+[22:25:43]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" The text is clearly Moby-Dick (Melville). The narrator is Ishmael ("Call'
+[22:25:43] SUMMARY p_32k: prompt 32807 tok | prefill 470.6 tok/s (spread 6.2%) | TTFT 69.82s | decode 22.67 tok/s wall (spread 31.2%) | peak 112.7 GB | answer_ok=True identical=True
+[22:25:59] GPU_LOCK released
+      438.86 real        78.53 user       141.41 sys
+         49407950848  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+             5390693  page reclaims
+                  58  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   1  signals received
+                2305  voluntary context switches
+             2092254  involuntary context switches
+        820673940755  instructions retired
+        579252115972  cycles elapsed
+        113826396920  peak memory footprint

@@ -1,0 +1,50 @@
+W1028 22:00:31.891000 34010 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+== layer_bench e2_abf16_hbf16  mlx 0.32.4
+model built in 6.0s; active memory 7.68 GB
+head: lm_head 3.673 ms, norm+lm_head+argmax 5.285 ms, embed 1.418 ms
+residual stream dtype after 3 layers: mlx.core.bfloat16
+-- decode at context 0
+   full 3-layer loop: async 9.662 ms/tok, sync 8.652, graph build 1.131
+   L0 dense+SWA   layer 1.034 ms (attn 0.728, mlp 0.527, sconv 0.095) -> 146 GB/s eff; extras {norm_ms=0.053}
+   L1 MoE+SWA     layer 0.720 ms (attn 0.303, mlp 0.285, sconv 0.033) -> 213 GB/s eff; extras {norm_ms=0.025, router_logits+route_kernel_ms=0.197, route_kernel_only_ms=0.192, shared_experts_ms=0.082, routed_experts_ms=0.156}
+   L2 MoE+global  layer 0.606 ms (attn 0.310, mlp 0.266, sconv 0.032) -> 252 GB/s eff; extras {norm_ms=0.025, attn_no_tau_ms=0.319, router_logits+route_kernel_ms=0.251, route_kernel_only_ms=0.235, shared_experts_ms=0.088, routed_experts_ms=0.189}
+   => 42-layer prediction: 27.2 tok/s (sum of parts), 26.8 tok/s (loop-based); 8.07 GB/token, roofline@480GB/s 59.5 tok/s
+-- decode at context 2048
+   full 3-layer loop: async 4.153 ms/tok, sync 6.157, graph build 0.412
+   L0 dense+SWA   layer 0.981 ms (attn 0.778, mlp 0.470, sconv 0.044) -> 156 GB/s eff; extras {norm_ms=0.045}
+   L1 MoE+SWA     layer 0.742 ms (attn 0.983, mlp 0.676, sconv 0.066) -> 209 GB/s eff; extras {norm_ms=0.060, attn_no_kv_slice_ms=1.085, router_logits+route_kernel_ms=0.271, route_kernel_only_ms=0.198, shared_experts_ms=0.326, routed_experts_ms=0.706}
+   L2 MoE+global  layer 0.919 ms (attn 0.500, mlp 0.457, sconv 0.035) -> 176 GB/s eff; extras {norm_ms=0.030, attn_no_tau_ms=0.453, router_logits+route_kernel_ms=0.226, route_kernel_only_ms=0.198, shared_experts_ms=0.123, routed_experts_ms=0.252}
+   => 42-layer prediction: 25.3 tok/s (sum of parts), 29.1 tok/s (loop-based); 8.21 GB/token, roofline@480GB/s 58.5 tok/s
+-- decode at context 8192
+   full 3-layer loop: async 4.728 ms/tok, sync 5.544, graph build 0.324
+   L0 dense+SWA   layer 0.743 ms (attn 0.424, mlp 0.264, sconv 0.038) -> 206 GB/s eff; extras {norm_ms=0.028}
+   L1 MoE+SWA     layer 0.863 ms (attn 0.418, mlp 0.372, sconv 0.036) -> 180 GB/s eff; extras {norm_ms=0.039, attn_no_kv_slice_ms=0.532, router_logits+route_kernel_ms=0.247, route_kernel_only_ms=0.277, shared_experts_ms=0.099, routed_experts_ms=0.212}
+   L2 MoE+global  layer 1.051 ms (attn 0.618, mlp 0.360, sconv 0.032) -> 178 GB/s eff; extras {norm_ms=0.030, attn_no_tau_ms=0.538, router_logits+route_kernel_ms=0.227, route_kernel_only_ms=0.206, shared_experts_ms=0.093, routed_experts_ms=0.214}
+   => 42-layer prediction: 22.7 tok/s (sum of parts), 25.4 tok/s (loop-based); 8.38 GB/token, roofline@480GB/s 57.3 tok/s
+-- decode at context 32768
+   full 3-layer loop: async 4.741 ms/tok, sync 5.434, graph build 0.289
+   L0 dense+SWA   layer 0.946 ms (attn 0.736, mlp 0.246, sconv 0.040) -> 162 GB/s eff; extras {norm_ms=0.034}
+   L1 MoE+SWA     layer 1.104 ms (attn 0.751, mlp 0.390, sconv 0.035) -> 141 GB/s eff; extras {norm_ms=0.033, attn_no_kv_slice_ms=1.291, router_logits+route_kernel_ms=0.276, route_kernel_only_ms=0.222, shared_experts_ms=0.111, routed_experts_ms=0.265}
+   L2 MoE+global  layer 1.781 ms (attn 1.459, mlp 0.447, sconv 0.047) -> 161 GB/s eff; extras {norm_ms=0.037, attn_no_tau_ms=1.598, router_logits+route_kernel_ms=0.273, route_kernel_only_ms=0.323, shared_experts_ms=0.137, routed_experts_ms=0.309}
+   => 42-layer prediction: 17.4 tok/s (sum of parts), 19.3 tok/s (loop-based); 9.09 GB/token, roofline@480GB/s 52.8 tok/s
+-- prefill T=512
+   L0 dense+SWA   layer 14.0 ms (attn 3.6, mlp 11.5, sconv 0.52) extras {}
+   L1 MoE+SWA     layer 15.4 ms (attn 2.3, mlp 12.9, sconv 0.38) extras {route_kernel_only_ms=0.29, shared_experts_ms=1.86, routed_experts_ms=14.67}
+   L2 MoE+global  layer 25.5 ms (attn 7.9, mlp 18.3, sconv 0.49) extras {attn_no_tau_ms=3.40, route_kernel_only_ms=0.27, shared_experts_ms=2.98, routed_experts_ms=17.48}
+   => 42-layer prefill prediction at T=512: 714 ms -> 717 tok/s
+-- prefill T=2048
+   L0 dense+SWA   layer 56.4 ms (attn 22.5, mlp 39.9, sconv 7.40) extras {}
+   L1 MoE+SWA     layer 76.6 ms (attn 25.1, mlp 54.6, sconv 1.25) extras {route_kernel_only_ms=0.26, shared_experts_ms=21.09, routed_experts_ms=45.12}
+   L2 MoE+global  layer 79.6 ms (attn 22.6, mlp 55.5, sconv 3.22) extras {attn_no_tau_ms=19.73, route_kernel_only_ms=4.62, shared_experts_ms=7.58, routed_experts_ms=41.13}
+   L1 MoE+SWA     chunk 2048 at offset 2048: 70.9 ms
+   L2 MoE+global  chunk 2048 at offset 2048: 89.2 ms
+   L1 MoE+SWA     chunk 2048 at offset 6144: 63.8 ms
+   L2 MoE+global  chunk 2048 at offset 6144: 107.6 ms
+   => 42-layer prefill prediction at T=2048: 3197 ms -> 641 tok/s
+-- prefill T=8192
+   L0 dense+SWA   layer 284.3 ms (attn 136.8, mlp 190.6, sconv 7.45) extras {}
+   L1 MoE+SWA     layer 361.5 ms (attn 180.8, mlp 230.4, sconv 6.03) extras {route_kernel_only_ms=0.45, shared_experts_ms=46.94, routed_experts_ms=120.37}
+   L2 MoE+global  layer 460.0 ms (attn 227.0, mlp 199.6, sconv 6.19) extras {attn_no_tau_ms=176.79, route_kernel_only_ms=0.41, shared_experts_ms=42.17, routed_experts_ms=166.71}
+   => 42-layer prefill prediction at T=8192: 15718 ms -> 521 tok/s
+peak MLX memory 68.58 GB
+wrote <workdir>/bench/R1/results/layer_bench_e2_abf16_hbf16.json

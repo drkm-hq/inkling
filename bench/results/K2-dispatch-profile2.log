@@ -1,0 +1,28 @@
+mlx-lm   graph build only (no eval): 2.04 ms/token (best 1.70)
+mlx-vlm  graph build only (no eval): 3.03 ms/token (best 2.53)
+         39070 function calls in 0.027 seconds
+
+   Ordered by: internal time
+   List reduced from 32 to 18 due to restriction <18>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+     1260    0.006    0.000    0.006    0.000 <workdir>/upstream/mlx-lm/mlx_lm/models/inkling_mm_model.py:201(__call__)
+      420    0.004    0.000    0.012    0.000 <workdir>/upstream/mlx-lm/mlx_lm/models/inkling_mm_model.py:371(__call__)
+      400    0.004    0.000    0.007    0.000 <workdir>/upstream/mlx-lm/mlx_lm/models/inkling_mm_model.py:508(__call__)
+      420    0.002    0.000    0.002    0.000 <workdir>/upstream/mlx-lm/mlx_lm/models/base.py:110(scaled_dot_product_attention)
+     1200    0.002    0.000    0.002    0.000 <workdir>/upstream/mlx-lm/mlx_lm/models/switch_layers.py:139(__call__)
+    12130    0.001    0.000    0.002    0.000 ~/.venvs/inkling/lib/python3.12/site-packages/mlx/nn/layers/base.py:99(__getattr__)
+      420    0.001    0.000    0.026    0.000 <workdir>/upstream/mlx-lm/mlx_lm/models/inkling_mm_model.py:530(__call__)
+      350    0.001    0.000    0.001    0.000 <workdir>/upstream/mlx-lm/mlx_lm/models/cache.py:482(_update_in_place)
+      400    0.001    0.000    0.003    0.000 <workdir>/upstream/mlx-lm/mlx_lm/models/switch_layers.py:198(__call__)
+     1700    0.001    0.000    0.001    0.000 ~/.venvs/inkling/lib/python3.12/site-packages/mlx/nn/layers/normalization.py:165(__call__)
+      910    0.001    0.000    0.001    0.000 ~/.venvs/inkling/lib/python3.12/site-packages/mlx/nn/layers/linear.py:70(__call__)
+    12130    0.001    0.000    0.001    0.000 {method 'get' of 'dict' objects}
+      400    0.001    0.000    0.001    0.000 <workdir>/upstream/mlx-lm/mlx_lm/models/switch_layers.py:178(__call__)
+       10    0.000    0.000    0.027    0.003 <workdir>/upstream/mlx-lm/mlx_lm/models/inkling_mm_model.py:565(__call__)
+       70    0.000    0.000    0.000    0.000 <workdir>/upstream/mlx-lm/mlx_lm/models/cache.py:347(update_and_fetch)
+     1280    0.000    0.000    0.000    0.000 {built-in method builtins.min}
+       70    0.000    0.000    0.000    0.000 <workdir>/upstream/mlx-lm/mlx_lm/models/cache.py:371(keys_and_values)
+       10    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+
+

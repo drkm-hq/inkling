@@ -1,0 +1,5 @@
+[03:19:15] lazy load 0.6s
+[INFO] Quantized model with 2.584 bits per weight.
+[03:19:15] quantized 86 modules at 8 bits; saving to ~/models/inkling-small/mlx-2bit-attn8
+[03:19:29] saved in 13.5s, peak memory 5.3 GiB
+[03:19:29] weights on disk: 79.33 GiB

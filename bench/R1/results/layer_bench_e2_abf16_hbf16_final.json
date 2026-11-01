@@ -1,0 +1,240 @@
+{
+ "tag": "e2_abf16_hbf16_final",
+ "experts_bits": 2,
+ "attn_bits": null,
+ "head_bits": null,
+ "mlx": "0.32.4",
+ "device": "{'device_name': 'Apple M5 Max', 'max_recommended_working_set_size': 115448725504, 'memory_size': 137438953472, 'architecture': 'applegpu_g17s', 'max_buffer_length': 86586540032, 'resource_limit': 499000}",
+ "decode": {
+  "0": {
+   "ctx": 0,
+   "layers": {
+    "0": {
+     "layer_ms": 1.9630590001421904,
+     "attn_ms": 1.0934166666629608,
+     "mlp_ms": 0.7558437497815854,
+     "sconv_ms": 0.08781941687630024,
+     "norm_ms": 0.08999649980978575,
+     "bytes": 150994944.0,
+     "GB/s": 76.91818941206706
+    },
+    "1": {
+     "layer_ms": 4.845183999956741,
+     "attn_ms": 2.0796354168245066,
+     "mlp_ms": 2.8160833332246207,
+     "sconv_ms": 0.10392016671782282,
+     "norm_ms": 0.1570312500310441,
+     "router_logits+route_kernel_ms": 0.9533330012345687,
+     "route_kernel_only_ms": 0.9910839980875608,
+     "shared_experts_ms": 0.2828889164447901,
+     "routed_experts_ms": 0.8083333332251641,
+     "bytes": 153108480.0,
+     "GB/s": 31.60013737380603
+    },
+    "2": {
+     "layer_ms": 2.5502187500023865,
+     "attn_ms": 2.0796944166553053,
+     "mlp_ms": 2.256496500194771,
+     "sconv_ms": 0.12230558331793873,
+     "norm_ms": 0.07373616669307619,
+     "attn_no_tau_ms": 1.4947777502432775,
+     "router_logits+route_kernel_ms": 0.8999999990919605,
+     "route_kernel_only_ms": 0.9936249989550561,
+     "shared_experts_ms": 0.7002881669298707,
+     "routed_experts_ms": 4.51045833324315,
+     "bytes": 153108480.0,
+     "GB/s": 60.03739091003732
+    }
+   },
+   "full3": {
+    "async_ms": 24.418854500254383,
+    "graph_build_ms": 0.5250835001788801,
+    "sync_ms": 20.93589599826373
+   },
+   "extrapolated_42": {
+    "sum_of_parts_ms": 187.36472024860026,
+    "loop_based_ms": 196.7291139990266,
+    "tok_s_sum_of_parts": 5.3371840689814745,
+    "tok_s_loop_based": 5.083131721952186,
+    "bytes_per_token": 8073117696.0,
+    "roofline_tok_s_at_480GBs": 59.45658394622765
+   }
+  },
+  "2048": {
+   "ctx": 2048,
+   "layers": {
+    "0": {
+     "layer_ms": 2.097322916597477,
+     "attn_ms": 1.10703475002083,
+     "mlp_ms": 0.7885520835770876,
+     "sconv_ms": 0.09813541661666629,
+     "norm_ms": 0.07181249990632448,
+     "bytes": 153088000.0,
+     "GB/s": 72.99209806392489
+    },
+    "1": {
+     "layer_ms": 6.806100749903028,
+     "attn_ms": 2.175701416793648,
+     "mlp_ms": 0.892253416471552,
+     "sconv_ms": 0.04253824984819706,
+     "norm_ms": 0.025416666782499913,
+     "attn_no_kv_slice_ms": 0.8466944166987863,
+     "router_logits+route_kernel_ms": 1.0236659982183482,
+     "route_kernel_only_ms": 1.0644590001902543,
+     "shared_experts_ms": 0.2597395832708571,
+     "routed_experts_ms": 0.3689409165114436,
+     "bytes": 155201536.0,
+     "GB/s": 22.80329688070093
+    },
+    "2": {
+     "layer_ms": 1.2067673333149287,
+     "attn_ms": 1.858798583270982,
+     "mlp_ms": 0.5980555000254147,
+     "sconv_ms": 0.0712847501442108,
+     "norm_ms": 0.05376041675238715,
+     "attn_no_tau_ms": 0.5207777500496983,
+     "router_logits+route_kernel_ms": 0.4886249989795033,
+     "route_kernel_only_ms": 0.39275000017369166,
+     "shared_experts_ms": 0.3455312501804049,
+     "routed_experts_ms": 1.5226075832591353,
+     "bytes": 161497088.0,
+     "GB/s": 133.8262012416061
+    }
+   },
+   "full3": {
+    "async_ms": 10.959541001284379,
+    "graph_build_ms": 0.7836460008547874,
+    "sync_ms": 11.279395997917163
+   },
+   "extrapolated_42": {
+    "sum_of_parts_ms": 242.93934091292613,
+    "loop_based_ms": 238.09269191466834,
+    "tok_s_sum_of_parts": 4.116253860910976,
+    "tok_s_loop_based": 4.200044915105571,
+    "bytes_per_token": 8205094912.0,
+    "roofline_tok_s_at_480GBs": 58.500237370563156
+   }
+  },
+  "8192": {
+   "ctx": 8192,
+   "layers": {
+    "0": {
+     "layer_ms": 4.739458333460789,
+     "attn_ms": 2.755152750069101,
+     "mlp_ms": 0.9822604167008345,
+     "sconv_ms": 0.13704508334437074,
+     "norm_ms": 0.14278466642281273,
+     "bytes": 153088000.0,
+     "GB/s": 32.300737601002176
+    },
+    "1": {
+     "layer_ms": 2.392670166652048,
+     "attn_ms": 1.2732187500053744,
+     "mlp_ms": 1.2669895835036489,
+     "sconv_ms": 0.16059716654126532,
+     "norm_ms": 0.13642708321034056,
+     "attn_no_kv_slice_ms": 1.4847535000323357,
+     "router_logits+route_kernel_ms": 2.4883749974833336,
+     "route_kernel_only_ms": 1.5625840023858473,
+     "shared_experts_ms": 0.4322777501026091,
+     "routed_experts_ms": 0.9402360835035021,
+     "bytes": 155201536.0,
+     "GB/s": 64.86541194149058
+    },
+    "2": {
+     "layer_ms": 3.792270833400835,
+     "attn_ms": 2.1059444167500865,
+     "mlp_ms": 2.3524618333491767,
+     "sconv_ms": 0.3944617498442919,
+     "norm_ms": 0.5410034167046737,
+     "attn_no_tau_ms": 2.224673583441472,
+     "router_logits+route_kernel_ms": 2.28320799942594,
+     "route_kernel_only_ms": 3.044666998903267,
+     "shared_experts_ms": 0.3730972500003797,
+     "routed_experts_ms": 1.7712464999325068,
+     "bytes": 186662912.0,
+     "GB/s": 49.22193593240922
+    }
+   },
+   "full3": {
+    "async_ms": 16.051687500294065,
+    "graph_build_ms": 1.0838955004146555,
+    "sync_ms": 22.354166500008432
+   },
+   "extrapolated_42": {
+    "sum_of_parts_ms": 120.67892699997174,
+    "loop_based_ms": 120.1102161670254,
+    "tok_s_sum_of_parts": 8.286450873069448,
+    "tok_s_loop_based": 8.3256864562578,
+    "bytes_per_token": 8381255680.0,
+    "roofline_tok_s_at_480GBs": 57.270654699797916
+   }
+  },
+  "32768": {
+   "ctx": 32768,
+   "layers": {
+    "0": {
+     "layer_ms": 3.8561839998389282,
+     "attn_ms": 3.5146979165195567,
+     "mlp_ms": 0.8622812498894442,
+     "sconv_ms": 1.253288249851418,
+     "norm_ms": 0.6715729165686449,
+     "bytes": 153088000.0,
+     "GB/s": 39.69935044759131
+    },
+    "1": {
+     "layer_ms": 6.4791562499522115,
+     "attn_ms": 3.3534375000575287,
+     "mlp_ms": 2.7886285000325493,
+     "sconv_ms": 0.41682641646427027,
+     "norm_ms": 0.31967708340137807,
+     "attn_no_kv_slice_ms": 5.536777833185624,
+     "router_logits+route_kernel_ms": 6.242542000109097,
+     "route_kernel_only_ms": 4.222375002427725,
+     "shared_experts_ms": 0.6258958331576044,
+     "routed_experts_ms": 1.9329826667065693,
+     "bytes": 155201536.0,
+     "GB/s": 23.953973328108074
+    },
+    "2": {
+     "layer_ms": 7.580156249787251,
+     "attn_ms": 5.528607666747121,
+     "mlp_ms": 3.365593749852754,
+     "sconv_ms": 0.38859375005510327,
+     "norm_ms": 0.27969441665239475,
+     "attn_no_tau_ms": 3.379211833513788,
+     "router_logits+route_kernel_ms": 4.877165996731492,
+     "route_kernel_only_ms": 4.942290997860255,
+     "shared_experts_ms": 0.5203159998927731,
+     "routed_experts_ms": 1.4970451669190272,
+     "bytes": 287326208.0,
+     "GB/s": 37.90505083692229
+    }
+   },
+   "full3": {
+    "async_ms": 11.177874999702908,
+    "graph_build_ms": 1.697979500022484,
+    "sync_ms": 15.0209375005943
+   },
+   "extrapolated_42": {
+    "sum_of_parts_ms": 280.2816169963383,
+    "loop_based_ms": 267.84799649673613,
+    "tok_s_sum_of_parts": 3.5678401270714244,
+    "tok_s_loop_based": 3.733460817625289,
+    "bytes_per_token": 9085898752.0,
+    "roofline_tok_s_at_480GBs": 52.8291160953496
+   }
+  }
+ },
+ "prefill": {},
+ "head": {
+  "lm_head_ms": 4.77093750032509,
+  "lm_head_bytes": 1646788608,
+  "norm_lmhead_argmax_ms": 5.361790997994831,
+  "embed_ms": 0.3342080017318949
+ },
+ "residual_dtype_after_3_layers": "mlx.core.bfloat16",
+ "peak_memory_gb": 68.58101657,
+ "canary_1GB_copy_ms_end": 8.523917000275105,
+ "canary_lm_head_ms_end": 4.343385500760633
+}

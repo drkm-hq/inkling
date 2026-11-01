@@ -1,0 +1,30 @@
+{
+ "obs": [
+  [
+   0,
+   200
+  ],
+  [
+   0,
+   2000
+  ],
+  [
+   0,
+   2000
+  ],
+  [
+   0,
+   2000
+  ],
+  [
+   0,
+   2000
+  ]
+ ],
+ "extra": {},
+ "deviations": {
+  "extension 200->2000": 0.0,
+  "edit at 210 with an early checkpoint": 0.0,
+  "edit at 210 without an early checkpoint": 0.0
+ }
+}

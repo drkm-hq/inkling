@@ -1,0 +1,36 @@
+Optional relative-projection experiment — final validation, 2026-10-31
+
+Apply main patch 01, then experimental patches 02 and 03. All three were
+applied to a clean archive of 7c25a0a9b55bd336e0bf050f11a17c78f9337100;
+the resulting touched files exactly match the tested source.
+
+The original traversal visited CONT(weight), then the dynamic relative-input
+projection, then the relative MUL_MAT. The fusion matcher correctly rejected
+that separated pair. Patch 03 explicitly expands r2 first, placing the eligible
+CONT and relative MUL_MAT together. It changes scheduling, not the graph's
+arithmetic. Patch 02 limits execution to <=64 columns but permits structural
+packing independently of column count, preserving the optimizer's convention.
+
+Final checks:
+- Rebuilt llama-server and both test executables successfully.
+- All Metal graph optimizer tests passed, including new packing/adjacency
+  cases at 1, 32, 65 and 512 columns.
+- 17/17 dedicated CONT_MUL_MAT Metal backend cases passed after hardening.
+- Real local Inkling-Small UD-IQ3_XXS server probe compiled/loaded
+  kernel_cont_mul_mat_f32_k16, which was absent from the earlier baseline and
+  pre-ordering-fix probes. All 42 model relative projection weights are F32
+  with a contracted width of 16, so they meet the type/shape requirements.
+- All 32 generated token IDs and completion text exactly matched the saved
+  unfused baseline for the same natural-language request.
+
+Evidence is under ../evidence/k1/:
+  graph-order-tests.log
+  test-relative-hardened.log
+  relative-order-probe.log
+  relative-order-probe/{summary.json,request.json,completion.json,server.log}
+  verify-relative-order.log
+
+The representative synthetic projection graph improved from 451.43 to356.79
+microseconds in the earlier paired component benchmark. No new full-model
+timing sweep was run after enabling the fusion, and no whole-model speed gain
+is established. Keep this experiment separate when reviewing the main patches.

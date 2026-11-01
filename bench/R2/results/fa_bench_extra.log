@@ -1,0 +1,15 @@
+# started 2026-10-29T01:53:19Z
+RESULT backend=CPU variant=banded n_q=1 n_kv=2048 swa=0 extent=1024 threads=18 pool=1 nodes=7 compute_MiB=0.0 us_mean=58094.9 us_min=19738.0 gflops=1.7
+RESULT backend=CPU variant=banded n_q=1 n_kv=8192 swa=0 extent=1024 threads=18 pool=1 nodes=7 compute_MiB=0.0 us_mean=88263.4 us_min=28191.2 gflops=4.8
+RESULT backend=CPU variant=banded n_q=1 n_kv=32768 swa=0 extent=1024 threads=18 pool=1 nodes=7 compute_MiB=0.0 us_mean=34217.2 us_min=26685.6 gflops=20.1
+RESULT backend=CPU variant=banded n_q=1 n_kv=768 swa=512 extent=1024 threads=18 pool=1 nodes=7 compute_MiB=0.0 us_mean=7398.1 us_min=2493.8 gflops=5.0
+RESULT backend=CPU variant=banded n_q=512 n_kv=8192 swa=0 extent=1024 threads=18 pool=1 nodes=7 compute_MiB=8.0 us_mean=5198611.9 us_min=3405570.8 gflops=20.2
+RESULT backend=CPU variant=banded n_q=512 n_kv=1024 swa=512 extent=1024 threads=18 pool=1 nodes=7 compute_MiB=8.0 us_mean=82146.2 us_min=69965.8 gflops=122.8
+RESULT backend=CPU variant=banded n_q=1 n_kv=8192 swa=0 extent=1024 threads=6 pool=1 nodes=7 compute_MiB=0.0 us_mean=7271.3 us_min=6783.7 gflops=19.8
+RESULT backend=CPU variant=banded n_q=1 n_kv=8192 swa=0 extent=1024 threads=12 pool=1 nodes=7 compute_MiB=0.0 us_mean=3489.3 us_min=2794.1 gflops=48.0
+RESULT backend=MTL0 variant=fa n_q=512 n_kv=8209 swa=0 extent=1024 threads=0 pool=0 nodes=6 compute_MiB=58.4 us_mean=6795.7 us_min=6385.2 gflops=10784.6
+RESULT backend=MTL0 variant=fa n_q=512 n_kv=32785 swa=0 extent=1024 threads=0 pool=0 nodes=6 compute_MiB=154.4 us_mean=35803.8 us_min=34009.3 gflops=8086.6
+RESULT backend=MTL0 variant=fa n_q=1 n_kv=32785 swa=0 extent=1024 threads=0 pool=0 nodes=6 compute_MiB=130.6 us_mean=575.5 us_min=481.3 gflops=1116.1
+RESULT backend=MTL0 variant=fa n_q=512 n_kv=32768 swa=0 extent=1024 threads=0 pool=0 nodes=6 compute_MiB=154.3 us_mean=19651.6 us_min=16178.1 gflops=16990.8
+RESULT backend=MTL0 variant=dense n_q=512 n_kv=32768 swa=0 extent=1024 threads=0 pool=0 nodes=20 compute_MiB=6280.1 us_mean=210131.2 us_min=204205.7 gflops=1346.1
+# finished 2026-10-29T01:54:04Z

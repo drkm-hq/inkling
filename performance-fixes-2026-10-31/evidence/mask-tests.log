@@ -1,0 +1,6 @@
+Waiting for GPU benchmark lock: pid=38955
+Acquired GPU benchmark lock: pid=38955 time=1793471467.283524
+........................................................................ [ 98%]
+.                                                                        [100%]
+73 passed in 6.24s
+Released GPU benchmark lock: pid=38955

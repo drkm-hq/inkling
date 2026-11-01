@@ -1,0 +1,36 @@
+$ mlx_lm.generate --model ~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit/snapshots/f8a0af554e168077bdaf48e1fb6682fb395c807c/ -p 'The secret to baking a good cake is' -m 200
+==========
+<|content_thinking|>The user is asking "The secret to baking a good cake is" which seems like they want to know the secret or key to baking a good cake, but it's phrased as a fill-in-the-blank or asking for a specific answer. However, it's somewhat ambiguous - they might be asking for general tips, or they might be referencing a specific saying/phrase.
+
+Actually, looking at it again: "The secret to baking a good cake is" - this could be a prompt asking me to complete the sentence, or asking for advice. But there's no specific context. I should provide a comprehensive answer covering the main "secrets" or key principles.
+
+Key things for baking a good cake:
+1. Precision/measurement (not just "a bit")
+2. Temperature of ingredients (room temperature eggs/butter)
+3. Don't overmix (especially with flour)
+4. Oven temperature/accuracy
+5. Fresh ingredients
+6. The "secret" often cited: "the secret is
+==========
+Prompt: 23 tokens, 3.517 tokens-per-sec
+Generation: 200 tokens, 17.885 tokens-per-sec
+Peak memory: 88.618 GB
+       37.24 real         8.83 user        42.72 sys
+         61698359296  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+             5335447  page reclaims
+                 108  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                2813  voluntary context switches
+              705787  involuntary context switches
+        208775559311  instructions retired
+        167752184077  cycles elapsed
+         89616857752  peak memory footprint
+[exit code 0]

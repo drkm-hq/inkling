@@ -1,0 +1,72 @@
+[22:31:07] GPU_LOCK acquired by pid 57018
+W1028 22:31:12.552000 57018 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+[22:31:13] {"kind": "meta", "tag": "rerun", "model": "~/.cache/huggingface/hub/models--mlx-community--Inkling-Small-mlx-2bit/snapshots/f8a0af554e168077bdaf48e1fb6682fb395c807c/", "mlx": "0.32.4", "mlx_vlm": "0.7.11", "device": "Apple M5 Max", "argv": ["baseline/bench_mlx.py", "--tag", "rerun", "--max-tokens", "128", "--quiet-wait", "600", "--prompts", "p_short,p_2k,p_8k,p_short", "--repeats", "3"], "pid": 57018, "load1": 15.01416015625}
+[22:31:26] load: lazy 0.7s, chunked eval 12.3s, 82.3 GiB of parameters, active 82.4 GiB, peak 82.4 GiB
+[22:31:26] prompt p_short: 833 chars, 239 tokens; head='<|message_system|><|content_text|>Thinking effort level: 0<|end_message|><|message_user|><|content_text|>CHAPTER 1. Loomings.\n\nCHAPTER 2. Th' tail='entence, who is the narrator of the text above and what is the name of the ship? Answer:<|end_message|><|message_model|>'
+[22:31:26] prompt p_2k: 6929 chars, 2085 tokens; head='<|message_system|><|content_text|>Thinking effort level: 0<|end_message|><|message_user|><|content_text|>CHAPTER 1. Loomings.\n\nCHAPTER 2. Th' tail='entence, who is the narrator of the text above and what is the name of the ship? Answer:<|end_message|><|message_model|>'
+[22:31:26] prompt p_8k: 30131 chars, 8231 tokens; head='<|message_system|><|content_text|>Thinking effort level: 0<|end_message|><|message_user|><|content_text|>CHAPTER 1. Loomings.\n\nCHAPTER 2. Th' tail='entence, who is the narrator of the text above and what is the name of the ship? Answer:<|end_message|><|message_model|>'
+[22:31:26] gen kwargs: {'max_tokens': 128, 'temperature': 0.0, 'top_p': 1.0, 'top_k': 0, 'verbose': False}
+[22:31:26] warm-up with p_short (128 tokens)
+[22:31:42] warmup p_short rep0: prompt 239 tok, prefill 8.50s (28.1 tok/s api), TTFT wall 9.81s, decode 128 tok 22.45 tok/s wall (22.62 api), total 15.5s, peak 89.4 GB api / 83.2 GiB, rss 56.1 GiB, eos@16 ok=True aborted=None load1=13.7
+[22:31:42]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[22:31:42]   cache: {'kinds': {'CacheList(KVCache,ArraysCache)': 42}, 'offsets': [367], 'state_gib': 0.06360626220703125}
+[22:31:48] run p_short rep1: prompt 239 tok, prefill 0.78s (305.9 tok/s api), TTFT wall 0.78s, decode 128 tok 27.09 tok/s wall (27.31 api), total 5.5s, peak 89.4 GB api / 83.2 GiB, rss 56.1 GiB, eos@16 ok=True aborted=None load1=13.8
+[22:31:48]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[22:31:48]   cache: {'kinds': {'CacheList(KVCache,ArraysCache)': 42}, 'offsets': [367], 'state_gib': 0.06360626220703125}
+[22:32:09] run p_short rep2: prompt 239 tok, prefill 1.58s (151.6 tok/s api), TTFT wall 1.58s, decode 128 tok 26.59 tok/s wall (26.80 api), total 6.4s, peak 89.4 GB api / 83.2 GiB, rss 56.1 GiB, eos@16 ok=True aborted=None load1=12.0
+[22:32:09]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[22:32:09]   cache: {'kinds': {'CacheList(KVCache,ArraysCache)': 42}, 'offsets': [367], 'state_gib': 0.06360626220703125}
+[22:34:04] run p_short rep3: prompt 239 tok, prefill 2.10s (113.6 tok/s api), TTFT wall 2.11s, decode 128 tok 21.07 tok/s wall (21.23 api), total 8.1s, peak 89.4 GB api / 83.2 GiB, rss 56.1 GiB, eos@16 ok=True aborted=None load1=20.2
+[22:34:04]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[22:34:04]   cache: {'kinds': {'CacheList(KVCache,ArraysCache)': 42}, 'offsets': [367], 'state_gib': 0.06360626220703125}
+[22:34:04] SUMMARY p_short: prompt 239 tok | prefill 151.6 tok/s (spread 126.9%) | TTFT 1.58s | decode 26.59 tok/s wall (spread 22.7%) | peak 89.4 GB | answer_ok=True identical=True
+[22:34:15] run p_2k rep1: prompt 2085 tok, prefill 4.52s (461.2 tok/s api), TTFT wall 4.53s, decode 128 tok 24.02 tok/s wall (24.21 api), total 9.8s, peak 94.2 GB api / 87.7 GiB, rss 56.1 GiB, eos@None ok=False aborted=None load1=18.8
+[22:34:15]   first64: '<|content_thinking|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:"\n\nWe need to identify the narrator of the text above (the excerpt from Moby-Dick). The text is from Chapter 1 "Loomings" and the et'
+[22:34:15]   cache: {'kinds': {'CacheList(KVCache,ArraysCache)': 42}, 'offsets': [2213], 'state_gib': 0.35936737060546875}
+[22:34:25] run p_2k rep2: prompt 2085 tok, prefill 3.79s (549.6 tok/s api), TTFT wall 3.81s, decode 128 tok 21.38 tok/s wall (21.55 api), total 9.8s, peak 94.3 GB api / 87.8 GiB, rss 56.1 GiB, eos@None ok=False aborted=None load1=17.8
+[22:34:25]   first64: '<|content_thinking|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:"\n\nWe need to identify the narrator of the text above (the excerpt from Moby-Dick). The text is from Chapter 1 "Loomings" and the et'
+[22:34:25]   cache: {'kinds': {'CacheList(KVCache,ArraysCache)': 42}, 'offsets': [2213], 'state_gib': 0.35936737060546875}
+[22:34:36] run p_2k rep3: prompt 2085 tok, prefill 3.73s (558.2 tok/s api), TTFT wall 3.75s, decode 128 tok 20.06 tok/s wall (20.22 api), total 10.1s, peak 93.8 GB api / 87.4 GiB, rss 56.1 GiB, eos@None ok=False aborted=None load1=17.2
+[22:34:36]   first64: '<|content_thinking|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:"\n\nWe need to identify the narrator of the text above (the excerpt from Moby-Dick). The text is from Chapter 1 "Loomings" and the et'
+[22:34:36]   cache: {'kinds': {'CacheList(KVCache,ArraysCache)': 42}, 'offsets': [2213], 'state_gib': 0.35936737060546875}
+[22:34:36] SUMMARY p_2k: prompt 2085 tok | prefill 549.6 tok/s (spread 17.7%) | TTFT 3.81s | decode 21.38 tok/s wall (spread 18.5%) | peak 94.3 GB | answer_ok=False identical=True
+[22:35:00] run p_8k rep1: prompt 8231 tok, prefill 14.78s (557.0 tok/s api), TTFT wall 14.81s, decode 128 tok 14.12 tok/s wall (14.23 api), total 23.8s, peak 100.4 GB api / 93.5 GiB, rss 56.1 GiB, eos@16 ok=True aborted=None load1=21.0
+[22:35:00]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>_<|content_text|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" They want a one-sentence answer identifying the narrator and the ship name from the provided'
+[22:35:00]   cache: {'kinds': {'CacheList(KVCache,ArraysCache)': 42}, 'offsets': [8359], 'state_gib': 1.3440628051757812}
+[22:35:21] run p_8k rep2: prompt 8231 tok, prefill 14.57s (564.8 tok/s api), TTFT wall 14.60s, decode 128 tok 20.50 tok/s wall (20.66 api), total 20.8s, peak 100.4 GB api / 93.5 GiB, rss 56.1 GiB, eos@16 ok=True aborted=None load1=17.7
+[22:35:21]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>_<|content_text|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" They want a one-sentence answer identifying the narrator and the ship name from the provided'
+[22:35:21]   cache: {'kinds': {'CacheList(KVCache,ArraysCache)': 42}, 'offsets': [8359], 'state_gib': 1.3440628051757812}
+[22:35:43] run p_8k rep3: prompt 8231 tok, prefill 14.60s (563.7 tok/s api), TTFT wall 14.64s, decode 128 tok 21.08 tok/s wall (21.24 api), total 20.7s, peak 100.4 GB api / 93.5 GiB, rss 56.1 GiB, eos@16 ok=True aborted=None load1=15.4
+[22:35:43]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|>_<|content_text|>The user asks: "In one sentence, who is the narrator of the text above and what is the name of the ship? Answer:" They want a one-sentence answer identifying the narrator and the ship name from the provided'
+[22:35:43]   cache: {'kinds': {'CacheList(KVCache,ArraysCache)': 42}, 'offsets': [8359], 'state_gib': 1.3440628051757812}
+[22:35:43] SUMMARY p_8k: prompt 8231 tok | prefill 563.7 tok/s (spread 1.4%) | TTFT 14.64s | decode 20.50 tok/s wall (spread 33.9%) | peak 100.4 GB | answer_ok=True identical=True
+[22:35:50] run p_short rep1: prompt 239 tok, prefill 0.45s (528.0 tok/s api), TTFT wall 0.47s, decode 128 tok 21.63 tok/s wall (21.80 api), total 6.3s, peak 89.3 GB api / 83.2 GiB, rss 56.1 GiB, eos@16 ok=True aborted=None load1=15.1
+[22:35:50]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[22:35:50]   cache: {'kinds': {'CacheList(KVCache,ArraysCache)': 42}, 'offsets': [367], 'state_gib': 0.06360626220703125}
+[22:35:57] run p_short rep2: prompt 239 tok, prefill 0.47s (511.2 tok/s api), TTFT wall 0.47s, decode 128 tok 21.30 tok/s wall (21.47 api), total 6.4s, peak 89.2 GB api / 83.1 GiB, rss 56.1 GiB, eos@16 ok=True aborted=None load1=15.4
+[22:35:57]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[22:35:57]   cache: {'kinds': {'CacheList(KVCache,ArraysCache)': 42}, 'offsets': [367], 'state_gib': 0.06360626220703125}
+[22:36:04] run p_short rep3: prompt 239 tok, prefill 0.45s (526.8 tok/s api), TTFT wall 0.46s, decode 128 tok 20.34 tok/s wall (20.50 api), total 6.7s, peak 89.3 GB api / 83.2 GiB, rss 56.1 GiB, eos@16 ok=True aborted=None load1=15.3
+[22:36:04]   first64: '<|content_text|>The narrator is Ishmael, and the ship is the Pequod.<|end_message|><|content_model_end_sampling|><|content_text|>The user is asking for the narrator and the ship name based on the chapter titles provided, which are from Moby-Dick by Herman Melville. The narrator is Ishmael, and the ship is the Pequod (though "'
+[22:36:04]   cache: {'kinds': {'CacheList(KVCache,ArraysCache)': 42}, 'offsets': [367], 'state_gib': 0.06360626220703125}
+[22:36:04] SUMMARY p_short: prompt 239 tok | prefill 526.8 tok/s (spread 3.2%) | TTFT 0.47s | decode 21.30 tok/s wall (spread 6.1%) | peak 89.3 GB | answer_ok=True identical=True
+[22:36:04] done; maxrss 56.1 GiB, mx peak 83.2 GiB
+[22:36:04] GPU_LOCK released
+      299.47 real        72.08 user        79.15 sys
+         60275752960  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+             5510516  page reclaims
+                 112  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                2606  voluntary context switches
+             1721722  involuntary context switches
+        523258940580  instructions retired
+        376400362175  cycles elapsed
+        104998255328  peak memory footprint

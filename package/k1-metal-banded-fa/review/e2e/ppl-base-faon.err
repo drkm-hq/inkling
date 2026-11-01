@@ -1,0 +1,27 @@
+0.11.703.011 I cmn          init: llama threadpool init, n_threads = 6
+0.11.771.147 I 
+0.11.771.182 I system_info: n_threads = 6 (n_threads_batch = 6) / 18 | MTL : EMBED_LIBRARY = 1 | CPU : NEON = 1 | ARM_FMA = 1 | FP16_VA = 1 | MATMUL_INT8 = 1 | DOTPROD = 1 | SME = 1 | SME2 = 1 | ACCELERATE = 1 | REPACK = 1 | 
+0.11.771.213 I perplexity: tokenizing the input ..
+0.11.801.728 I perplexity: tokenization took 30.523 ms
+0.11.801.754 I perplexity: calculating perplexity over 2 chunks, n_ctx=4096, batch_size=2048, n_seq=1
+1.43.133.216 I perplexity: 91.33 seconds per pass - ETA 3.11.846.481 I Final estimate: PPL = 8.2437 +/- 0.41552
+3.11.846.724 W ~llama_context:       MTL0 compute buffer size of 416.4055 MiB, does not match expectation of 409.4036 MiB
+3.11.846.728 W ~llama_context:        CPU compute buffer size of 115.7923 MiB, does not match expectation of 113.7923 MiB
+      195.26 real       790.84 user        24.32 sys
+        101960761344  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+             6245151  page reclaims
+                1765  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                  30  voluntary context switches
+             2691156  involuntary context switches
+       4636372824654  instructions retired
+       2132256990610  cycles elapsed
+          4148060352  peak memory footprint
